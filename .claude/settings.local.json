@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(powershell:*)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(powershell.exe:*)"
     ]
   }
 }

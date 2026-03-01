@@ -76,9 +76,9 @@
 
 ### Options Classes
 
-- [ ] T023 [P] [US2] Create `Application/Options/JwtOptions.cs` — POCO with `[Required]` data annotations on: `Issuer` (string), `Audience` (string), `SecretKey` (string, `[MinLength(32)]`), `AccessTokenExpiryMinutes` (int), `RefreshTokenExpiryDays` (int), `RememberMeExpiryDays` (int); add `[Range]` validation ensuring `RememberMeExpiryDays >= RefreshTokenExpiryDays`; file-scoped namespace `Application.Options`
+- [ ] T023 [P] [US2] Create `Application/Options/JwtOptions.cs` — POCO with `[Required]` on all properties; `[MinLength(32)]` on `SecretKey`; `[Range(1, int.MaxValue)]` on `AccessTokenExpiryMinutes`, `RefreshTokenExpiryDays`, and `RememberMeExpiryDays`; implement `IValidatableObject.Validate()` returning a `ValidationResult("RememberMeExpiryDays must be >= RefreshTokenExpiryDays", ...)` when `RememberMeExpiryDays < RefreshTokenExpiryDays` — `[Range]` cannot enforce cross-property constraints; file-scoped namespace `Application.Options`
 - [ ] T024 [P] [US2] Create `Application/Options/AzureBlobOptions.cs` — POCO with `[Required]` on: `ConnectionString` (string), `ContainerName` (string); file-scoped namespace `Application.Options`
-- [ ] T025 [P] [US2] Create `Application/Options/CorsOptions.cs` — POCO with `[Required]` on: `AllowedOrigins` (string[]); edge-case note in XML doc: empty array → CORS rejects all origins (no startup failure); null → startup fails; file-scoped namespace `Application.Options`
+- [ ] T025 [P] [US2] Create `Application/Options/CorsConfiguration.cs` — class named `CorsConfiguration` (not `CorsOptions` — avoids ambiguous-reference conflict with `Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions` in startup code); POCO with `[Required]` on: `AllowedOrigins` (string[]); XML doc note: empty array → CORS rejects all origins (no startup failure); null → startup fails; file-scoped namespace `Application.Options`
 - [ ] T026 [P] [US2] Create `Application/Options/RateLimitOptions.cs` — POCO with `[Required]` and `[Range(1, int.MaxValue)]` on: `AuthWindowSeconds` (int), `AuthMaxRequests` (int); file-scoped namespace `Application.Options`
 
 ### Assembly Anchor and Domain Exception
@@ -104,10 +104,10 @@
 
 - [ ] T034 [US2] Create `Application/Extensions/ServiceCollectionExtensions.cs` — static class with the following extension methods on `IServiceCollection` (file-scoped namespace `Application.Extensions`):
   - `AddAuth(IConfiguration)` — JWT Bearer with `JwtOptions`; symmetric key HS256; `AddAuthorization()`
-  - `AddCorsPolicy(CorsOptions)` — named policy `"StaccatoPolicy"` with `AllowCredentials()`, `AllowAnyHeader()`, `AllowAnyMethod()`, specific origins from `CorsOptions.AllowedOrigins` (no wildcards)
-  - `AddRateLimiting(RateLimitOptions)` — `AddRateLimiter` with `GlobalLimiter` using `PartitionedRateLimiter<HttpContext>`; partition key = IP; applies fixed-window limit only when path starts with `/auth/`; sets `OnRejected` to return 429 with `Retry-After` header
+  - `AddCorsPolicy(CorsConfiguration)` — named policy `"StaccatoPolicy"` (defined as `private const string`); `AllowCredentials()`, `AllowAnyHeader()`, `AllowAnyMethod()`, specific origins from `CorsConfiguration.AllowedOrigins` (no wildcards)
+  - `AddRateLimiting(RateLimitOptions)` — `AddRateLimiter` with `GlobalLimiter` using `PartitionedRateLimiter<HttpContext>`; policy name defined as `private const string`; partition key = IP; applies fixed-window limit only when path starts with `/auth/`; sets `OnRejected` to return 429 with `Retry-After` header
   - `AddAzureBlob(IConfiguration)` — registers `BlobServiceClient` as singleton using `AzureBlobOptions.ConnectionString`
-  - `AddAutoMapper()` — scans `Application` and `Api` assemblies for AutoMapper profiles
+  - `AddAutoMapper()` — scans `Application`, `Api`, and `Repository` assemblies for AutoMapper profiles; `Repository` is included because `EntityModel → DomainModel` profiles live there per constitution §Technology Stack
   - `AddFluentValidationPipeline()` — `AddFluentValidationAutoValidation()` + `AddValidatorsFromAssembly(typeof(ApiModelsAssemblyMarker).Assembly)`
   - `AddSignalRHub()` — `services.AddSignalR()`
   - `AddBackgroundWorkers()` — registers `PdfExportBackgroundService`, `ExportCleanupService`, `AccountDeletionCleanupService` as `IHostedService`
@@ -151,8 +151,8 @@
 
 - [ ] T036 [US2] Rewrite `Application/Program.cs` with the full pipeline (depends on T023–T035):
   1. `QuestPDF.Settings.License = LicenseType.Community;` — before `WebApplication.CreateBuilder`
-  2. Register options with `.ValidateDataAnnotations().ValidateOnStart()` for all four: `JwtOptions` (section `"Jwt"`), `AzureBlobOptions` (section `"AzureBlob"`), `CorsOptions` (section `"Cors"`), `RateLimitOptions` (section `"RateLimit"`)
-  3. Read bound `CorsOptions` and `RateLimitOptions` from the service provider to pass to extension methods
+  2. Register options with `.ValidateDataAnnotations().ValidateOnStart()` for all four: `JwtOptions` (section `"Jwt"`), `AzureBlobOptions` (section `"AzureBlob"`), `CorsConfiguration` (section `"Cors"`), `RateLimitOptions` (section `"RateLimit"`)
+  3. Read `CorsConfiguration` and `RateLimitOptions` directly from `builder.Configuration` before calling `builder.Build()` — use `builder.Configuration.GetSection("Cors").Get<CorsConfiguration>()!` and `builder.Configuration.GetSection("RateLimit").Get<RateLimitOptions>()!`; do **not** use `BuildServiceProvider()` — that triggers CS0618 and is an anti-pattern
   4. Call extension methods: `AddAuth`, `AddCorsPolicy`, `AddRateLimiting`, `AddAzureBlob`, `AddAutoMapper`, `AddFluentValidationPipeline`, `AddSignalRHub`, `AddBackgroundWorkers`, `AddDatabase`, `AddRepositories`, `AddDomainServices`
   5. `AddControllers()`, `AddProblemDetails()`, `AddHttpContextAccessor()`
   6. `var app = builder.Build()`
@@ -191,7 +191,7 @@
 
 **Independent Test**: Temporarily set `Jwt:SecretKey` to a value shorter than 32 characters and restart; verify startup fails with a validation error that names the failing property. Restore the placeholder value.
 
-- [ ] T039 [US4] Confirm `JwtOptions`, `AzureBlobOptions`, `CorsOptions`, `RateLimitOptions` all have `[Required]` (and `[MinLength]`/`[Range]` where applicable) data annotations and are registered with `.ValidateDataAnnotations().ValidateOnStart()` in `Program.cs` (cross-check T023–T026 and T036)
+- [ ] T039 [US4] Confirm `JwtOptions`, `AzureBlobOptions`, `CorsConfiguration`, `RateLimitOptions` all have `[Required]` (and `[MinLength]`/`[Range]`/`IValidatableObject` where applicable) data annotations and are registered with `.ValidateDataAnnotations().ValidateOnStart()` in `Program.cs` (cross-check T023–T026 and T036)
 - [ ] T040 [US4] Confirm `appsettings.json` contains only safe placeholder values — no real connection strings, JWT secrets, or API keys that would be hazardous to commit
 
 **Checkpoint**: US4 complete — misconfiguration caught at startup with descriptive error.
@@ -215,7 +215,7 @@
 - **Phase 1 (Setup)**: No dependencies — start immediately. All T001–T008 are parallel.
 - **Phase 2 (Foundational)**: Depends on Phase 1 completion. T009–T011 (ref fixes) must precede T013–T019 (package adds) within this phase. T013–T019 are otherwise parallel once T009–T011 are done.
 - **Phase 3 (US1)**: Depends on Phase 2. T020–T021 are parallel; T022 (build verification) follows both.
-- **Phase 4 (US2)**: Depends on Phase 3. T023–T032 are parallel (different files). T033 (middleware) must precede T034 (extensions) because extensions reference middleware types. T035 (appsettings) is parallel to T033–T034. T036 (Program.cs) depends on T023–T035 all being complete.
+- **Phase 4 (US2)**: Depends on Phase 3. T023–T032 are parallel (different files). T034 depends on T027 (`ApiModelsAssemblyMarker` must exist before `AddFluentValidationPipeline()` can reference `typeof(ApiModelsAssemblyMarker).Assembly`). T033 and T034 are otherwise independent of each other. T035 (appsettings) is parallel to T033 and T034. T036 (Program.cs) depends on T023–T035 all being complete.
 - **Phase 5 (US3)**: Depends on Phase 3. T037 (verification) depends on T019, T020, T021, T008. T038 follows T037.
 - **Phase 6 (US4)**: Depends on Phase 4. T039–T040 are verification tasks.
 - **Phase 7 (Polish)**: Depends on Phases 3–6 all complete.
@@ -235,7 +235,7 @@
 # Launch all options classes together:
 T023 JwtOptions.cs
 T024 AzureBlobOptions.cs
-T025 CorsOptions.cs
+T025 CorsConfiguration.cs
 T026 RateLimitOptions.cs
 T027 ApiModelsAssemblyMarker.cs
 T028 BusinessException.cs
@@ -244,10 +244,10 @@ T030 PdfExportBackgroundService.cs
 T031 ExportCleanupService.cs
 T032 AccountDeletionCleanupService.cs
 
-# Then (T033 first, T034 and T035 in parallel once T033 is done):
-T033 BusinessExceptionMiddleware.cs
-T034 ServiceCollectionExtensions.cs  ← parallel with T035
-T035 appsettings.json                ← parallel with T034
+# Then (T027 must complete first; T033, T034, T035 are all parallel after T027):
+T033 BusinessExceptionMiddleware.cs  ← parallel with T034 and T035
+T034 ServiceCollectionExtensions.cs  ← depends on T027; parallel with T033 and T035
+T035 appsettings.json                ← parallel with T033 and T034
 
 # Then (T036 depends on all above):
 T036 Program.cs

@@ -131,7 +131,7 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 **Finding**: When `AllowCredentials()` is set on a CORS policy, the browser rejects wildcard `*` origins. All origins must be explicit strings.
 
-**Decision**: CORS policy is built from `CorsOptions.AllowedOrigins` (always explicit strings). `AllowAnyHeader()` and `AllowAnyMethod()` are used alongside `AllowCredentials()`. If `AllowedOrigins` is empty, CORS middleware returns 403 for all cross-origin requests.
+**Decision**: CORS policy is built from `CorsConfiguration.AllowedOrigins` (always explicit strings). `AllowAnyHeader()` and `AllowAnyMethod()` are used alongside `AllowCredentials()`. If `AllowedOrigins` is empty, CORS middleware returns 403 for all cross-origin requests.
 
 ---
 

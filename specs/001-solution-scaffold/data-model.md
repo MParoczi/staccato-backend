@@ -44,9 +44,9 @@ Bound to `appsettings.json` → `"AzureBlob"` section.
 
 ---
 
-### CorsOptions
+### CorsConfiguration
 
-Bound to `appsettings.json` → `"Cors"` section.
+Bound to `appsettings.json` → `"Cors"` section. Named `CorsConfiguration` to avoid ambiguous-reference conflict with `Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions`.
 
 | Property | Type | Description |
 |---|---|---|

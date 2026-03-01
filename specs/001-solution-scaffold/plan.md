@@ -47,7 +47,7 @@ and verify the solution builds clean with all 9 projects.
 | G7 | HTTP status codes, error envelope, ownership-check behaviour match API Contract Discipline. | ✅ | `BusinessExceptionMiddleware` returns `{ code, message, details }`. Problem Details for 500. FluentValidation auto-pipeline for 400. |
 | G8 | All user text stored as `TextSpan[]` (text + bold only). | ✅ | No content model introduced. |
 | G9 | `ModuleTypeConstraints` and `PageSizeDimensions` are single source of truth. | ✅ | No module content introduced. |
-| G10 | No hardcoded secrets; all config via `IOptions<T>`; token storage per security rules. | ✅ | Four options classes (JwtOptions, AzureBlobOptions, CorsOptions, RateLimitOptions) all loaded via `IOptions<T>`. |
+| G10 | No hardcoded secrets; all config via `IOptions<T>`; token storage per security rules. | ✅ | Four options classes (JwtOptions, AzureBlobOptions, CorsConfiguration, RateLimitOptions) all loaded via `IOptions<T>`. |
 | G11 | Unit tests cover happy + exception paths; integration tests cover all new endpoints. | ✅ | No service or endpoint logic introduced. Test project scaffold only. |
 | G12 | Nullable enabled; no `.Result`/`.Wait()`; `CancellationToken` in all async methods. | ✅ | Nullable enabled in all 9 `.csproj` files already. |
 | G13 | No new library outside approved stack. | ✅ | `FluentValidation.AspNetCore` is the official companion package for the approved `FluentValidation` library — same author, same repository. QuestPDF, Azure.Storage.Blobs, JwtBearer all pre-approved. OpenAPI package removed. |
@@ -87,7 +87,7 @@ Application/
 ├── Options/
 │   ├── JwtOptions.cs                   (NEW)
 │   ├── AzureBlobOptions.cs             (NEW)
-│   ├── CorsOptions.cs                  (NEW)
+│   ├── CorsConfiguration.cs            (NEW)
 │   └── RateLimitOptions.cs             (NEW)
 ├── appsettings.json                    (UPDATED — four config sections added)
 ├── Application.csproj                  (UPDATED — packages added, OpenAPI removed)
@@ -196,15 +196,15 @@ See [research.md](research.md) for full detail. Key decisions:
 2.  builder.Services extensions:
       AddOptions<JwtOptions>().BindConfiguration("Jwt").ValidateDataAnnotations().ValidateOnStart()
       AddOptions<AzureBlobOptions>().BindConfiguration("AzureBlob").ValidateDataAnnotations().ValidateOnStart()
-      AddOptions<CorsOptions>().BindConfiguration("Cors").ValidateDataAnnotations().ValidateOnStart()
+      AddOptions<CorsConfiguration>().BindConfiguration("Cors").ValidateDataAnnotations().ValidateOnStart()
       AddOptions<RateLimitOptions>().BindConfiguration("RateLimit").ValidateDataAnnotations().ValidateOnStart()
-      AddCors(...)          ← reads AllowedOrigins from CorsOptions; calls AllowCredentials()
+      AddCors(...)          ← reads AllowedOrigins from CorsConfiguration; calls AllowCredentials()
       AddRateLimiter(...)   ← GlobalLimiter with path-based /auth/* partition
       AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(...)  ← reads JwtOptions
       AddAuthorization()
       AddSignalR()
-      AddAutoMapper(...)    ← scans Application + Api assemblies for profiles
+      AddAutoMapper(...)    ← scans Application, Api, and Repository assemblies for profiles
       AddFluentValidationAutoValidation()
       AddValidatorsFromAssembly(typeof(SomeApiModelsMarker).Assembly)
       AddControllers()
@@ -235,9 +235,9 @@ See [research.md](research.md) for full detail. Key decisions:
 | `AddRepositories(this IServiceCollection)` | Repository + UnitOfWork DI registrations (future feature) |
 | `AddDomainServices(this IServiceCollection)` | Service interface → implementation registrations (future feature) |
 | `AddAzureBlob(this IServiceCollection, IConfiguration)` | `BlobServiceClient` singleton registration |
-| `AddCorsPolicy(this IServiceCollection, CorsOptions)` | Named CORS policy with `AllowCredentials()` |
+| `AddCorsPolicy(this IServiceCollection, CorsConfiguration)` | Named CORS policy with `AllowCredentials()` |
 | `AddRateLimiting(this IServiceCollection, RateLimitOptions)` | Global path-based rate limiter |
-| `AddAutoMapper(this IServiceCollection)` | AutoMapper profile scanning |
+| `AddAutoMapper(this IServiceCollection)` | AutoMapper profile scanning — scans `Application`, `Api`, and `Repository` assemblies |
 | `AddFluentValidationPipeline(this IServiceCollection)` | Auto-validation pipeline + validator assembly scan |
 | `AddSignalRHub(this IServiceCollection)` | `services.AddSignalR()` |
 | `AddBackgroundWorkers(this IServiceCollection)` | Stub `IHostedService` registrations (3 services) |
