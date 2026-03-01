@@ -60,9 +60,9 @@
 
 **Independent Test**: `dotnet build Staccato.sln` — zero errors, zero warnings.
 
-- [ ] T020 [P] [US1] Create `Tests/Unit/.gitkeep` (empty file) to establish the Unit test subdirectory
-- [ ] T021 [P] [US1] Create `Tests/Integration/.gitkeep` (empty file) to establish the Integration test subdirectory
-- [ ] T022 [US1] Run `dotnet build Staccato.sln` and confirm zero errors and zero warnings across all 9 projects
+- [x] T020 [P] [US1] Create `Tests/Unit/.gitkeep` (empty file) to establish the Unit test subdirectory
+- [x] T021 [P] [US1] Create `Tests/Integration/.gitkeep` (empty file) to establish the Integration test subdirectory
+- [x] T022 [US1] Run `dotnet build Staccato.sln` and confirm zero errors and zero warnings across all 9 projects
 
 **Checkpoint**: US1 complete — solution builds clean. MVP deliverable validated.
 
