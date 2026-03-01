@@ -4,7 +4,10 @@
       "Bash(powershell:*)",
       "Bash(sort:*)",
       "Bash(powershell.exe:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet remove:*)"
     ]
   }
 }

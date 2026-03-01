@@ -32,23 +32,23 @@
 
 ### Fix Pre-Existing Reference Violations
 
-- [ ] T009 Fix `Domain/Domain.csproj`: remove `<ProjectReference>` entries for `ApiModels` and `Repository`; confirm only `DomainModels` reference remains
-- [ ] T010 Fix `Repository/Repository.csproj`: remove `<ProjectReference>` for `DomainModels`; add `<ProjectReference>` for `Domain`
-- [ ] T011 Fix `Api/Api.csproj`: add missing `<ProjectReference>` for `DomainModels`
+- [x] T009 Fix `Domain/Domain.csproj`: remove `<ProjectReference>` entries for `ApiModels` and `Repository`; confirm only `DomainModels` reference remains
+- [x] T010 Fix `Repository/Repository.csproj`: remove `<ProjectReference>` for `DomainModels`; add `<ProjectReference>` for `Domain`
+- [x] T011 Fix `Api/Api.csproj`: add missing `<ProjectReference>` for `DomainModels`
 
 ### Remove Deprecated Package
 
-- [ ] T012 Remove `<PackageReference Include="Microsoft.AspNetCore.OpenApi" .../>` from `Application/Application.csproj`
+- [x] T012 Remove `<PackageReference Include="Microsoft.AspNetCore.OpenApi" .../>` from `Application/Application.csproj`
 
 ### Add NuGet Packages
 
-- [ ] T013 [P] Add to `Application/Application.csproj`: `Microsoft.AspNetCore.Authentication.JwtBearer`, `Azure.Storage.Blobs`, `QuestPDF`, `Microsoft.AspNetCore.SignalR.Core`, `FluentValidation.AspNetCore`
-- [ ] T014 [P] Add to `Api/Api.csproj`: `AutoMapper.Extensions.Microsoft.DependencyInjection`
-- [ ] T015 [P] Add to `Domain/Domain.csproj`: `FluentValidation`
-- [ ] T016 [P] Add to `Repository/Repository.csproj`: `Microsoft.EntityFrameworkCore`
-- [ ] T017 [P] Add to `Persistence/Persistence.csproj`: `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Tools`
-- [ ] T018 [P] Add to `ApiModels/ApiModels.csproj`: `FluentValidation`
-- [ ] T019 [P] Add to `Tests/Tests.csproj`: `Moq`, `Microsoft.AspNetCore.Mvc.Testing`, `Microsoft.EntityFrameworkCore.InMemory`; add `<ProjectReference>` entries for all 8 other projects
+- [x] T013 [P] Add to `Application/Application.csproj`: `Microsoft.AspNetCore.Authentication.JwtBearer`, `Azure.Storage.Blobs`, `QuestPDF`, `FluentValidation.AspNetCore` (Note: `Microsoft.AspNetCore.SignalR.Core` omitted — SignalR is part of the ASP.NET Core Web SDK framework in .NET 10; no NuGet reference needed)
+- [x] T014 [P] Add to `Api/Api.csproj`: `AutoMapper.Extensions.Microsoft.DependencyInjection`
+- [x] T015 [P] Add to `Domain/Domain.csproj`: `FluentValidation`
+- [x] T016 [P] Add to `Repository/Repository.csproj`: `Microsoft.EntityFrameworkCore`
+- [x] T017 [P] Add to `Persistence/Persistence.csproj`: `Microsoft.EntityFrameworkCore.SqlServer`, `Microsoft.EntityFrameworkCore.Tools`
+- [x] T018 [P] Add to `ApiModels/ApiModels.csproj`: `FluentValidation`
+- [x] T019 [P] Add to `Tests/Tests.csproj`: `Moq`, `Microsoft.AspNetCore.Mvc.Testing`, `Microsoft.EntityFrameworkCore.InMemory`; add `<ProjectReference>` entries for all 8 other projects
 
 **Checkpoint**: Run `dotnet build Staccato.sln` — must compile with zero errors before proceeding.
 
