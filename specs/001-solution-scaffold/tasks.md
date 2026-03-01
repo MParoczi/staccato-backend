@@ -13,14 +13,14 @@
 
 **Purpose**: Remove all generated placeholder files before any project work begins.
 
-- [ ] T001 [P] Delete `Api/Class1.cs`
-- [ ] T002 [P] Delete `ApiModels/Class1.cs`
-- [ ] T003 [P] Delete `Domain/Class1.cs`
-- [ ] T004 [P] Delete `DomainModels/Class1.cs`
-- [ ] T005 [P] Delete `EntityModels/Class1.cs`
-- [ ] T006 [P] Delete `Persistence/Class1.cs`
-- [ ] T007 [P] Delete `Repository/Class1.cs`
-- [ ] T008 [P] Delete `Tests/UnitTest1.cs`
+- [x] T001 [P] Delete `Api/Class1.cs`
+- [x] T002 [P] Delete `ApiModels/Class1.cs`
+- [x] T003 [P] Delete `Domain/Class1.cs`
+- [x] T004 [P] Delete `DomainModels/Class1.cs`
+- [x] T005 [P] Delete `EntityModels/Class1.cs`
+- [x] T006 [P] Delete `Persistence/Class1.cs`
+- [x] T007 [P] Delete `Repository/Class1.cs`
+- [x] T008 [P] Delete `Tests/UnitTest1.cs`
 
 ---
 
