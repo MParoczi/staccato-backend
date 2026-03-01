@@ -1,0 +1,91 @@
+# ==============================================================
+# .NET / ASP.NET Core
+# ==============================================================
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+!**/packages/build/
+project.lock.json
+project.fragment.lock.json
+
+# User-specific MSBuild files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# MSBuild binary logs
+*.binlog
+
+# EF Core tooling
+*.dbmdl
+*.jfm
+
+# ==============================================================
+# Test Results & Coverage
+# ==============================================================
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.coverage
+*.coveragexml
+*.trx
+coverage.json
+coverage.xml
+TestResult.xml
+
+# ==============================================================
+# Secrets & Local Configuration
+# ==============================================================
+appsettings.local.json
+appsettings.*.local.json
+secrets.json
+.env
+.env.*
+!.env.example
+local.settings.json
+
+# ==============================================================
+# Rider / JetBrains — ignore everything
+# ==============================================================
+.idea/
+
+# ==============================================================
+# Visual Studio (if ever opened)
+# ==============================================================
+.vs/
+
+# ==============================================================
+# Windows OS
+# ==============================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ==============================================================
+# Azure
+# ==============================================================
+.azure/
+
+# ==============================================================
+# Logs & Temp
+# ==============================================================
+*.log
+logs/
+*.tmp
+*.temp
+
+# ==============================================================
+# Claude Code — keep .claude/ settings, ignore speckit commands
+# ==============================================================
+.claude/commands/speckit.*.md
