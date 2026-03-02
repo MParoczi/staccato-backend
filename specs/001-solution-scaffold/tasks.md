@@ -200,9 +200,9 @@
 
 **Purpose**: Final verification of coding standards applied consistently across all new files.
 
-- [ ] T041 [P] Verify all 9 `.csproj` files contain `<Nullable>enable</Nullable>` (FR-026)
-- [ ] T042 [P] Verify every new `.cs` file uses file-scoped namespace syntax (`namespace Foo.Bar;` not `namespace Foo.Bar { }`) (FR-027)
-- [ ] T043 Run `dotnet build Staccato.sln` one final time and confirm zero errors, zero warnings across the full solution
+- [x] T041 [P] Verify all 9 `.csproj` files contain `<Nullable>enable</Nullable>` (FR-026)
+- [x] T042 [P] Verify every new `.cs` file uses file-scoped namespace syntax (`namespace Foo.Bar;` not `namespace Foo.Bar { }`) (FR-027)
+- [x] T043 Run `dotnet build Staccato.sln` one final time and confirm zero errors, zero warnings across the full solution
 
 ---
 
