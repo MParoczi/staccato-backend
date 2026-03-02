@@ -76,48 +76,46 @@
 
 ### Options Classes
 
-- [ ] T023 [P] [US2] Create `Application/Options/JwtOptions.cs` — POCO with `[Required]` on all properties; `[MinLength(32)]` on `SecretKey`; `[Range(1, int.MaxValue)]` on `AccessTokenExpiryMinutes`, `RefreshTokenExpiryDays`, and `RememberMeExpiryDays`; implement `IValidatableObject.Validate()` returning a `ValidationResult("RememberMeExpiryDays must be >= RefreshTokenExpiryDays", ...)` when `RememberMeExpiryDays < RefreshTokenExpiryDays` — `[Range]` cannot enforce cross-property constraints; file-scoped namespace `Application.Options`
-- [ ] T024 [P] [US2] Create `Application/Options/AzureBlobOptions.cs` — POCO with `[Required]` on: `ConnectionString` (string), `ContainerName` (string); file-scoped namespace `Application.Options`
-- [ ] T025 [P] [US2] Create `Application/Options/CorsConfiguration.cs` — class named `CorsConfiguration` (not `CorsOptions` — avoids ambiguous-reference conflict with `Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions` in startup code); POCO with `[Required]` on: `AllowedOrigins` (string[]); XML doc note: empty array → CORS rejects all origins (no startup failure); null → startup fails; file-scoped namespace `Application.Options`
-- [ ] T026 [P] [US2] Create `Application/Options/RateLimitOptions.cs` — POCO with `[Required]` and `[Range(1, int.MaxValue)]` on: `AuthWindowSeconds` (int), `AuthMaxRequests` (int); file-scoped namespace `Application.Options`
+- [x] T023 [P] [US2] Create `Application/Options/JwtOptions.cs` — POCO with `[Required]` on all properties; `[MinLength(32)]` on `SecretKey`; `[Range(1, int.MaxValue)]` on `AccessTokenExpiryMinutes`, `RefreshTokenExpiryDays`, and `RememberMeExpiryDays`; implement `IValidatableObject.Validate()` returning a `ValidationResult("RememberMeExpiryDays must be >= RefreshTokenExpiryDays", ...)` when `RememberMeExpiryDays < RefreshTokenExpiryDays` — `[Range]` cannot enforce cross-property constraints; file-scoped namespace `Application.Options`
+- [x] T024 [P] [US2] Create `Application/Options/AzureBlobOptions.cs` — POCO with `[Required]` on: `ConnectionString` (string), `ContainerName` (string); file-scoped namespace `Application.Options`
+- [x] T025 [P] [US2] Create `Application/Options/CorsConfiguration.cs` — class named `CorsConfiguration` (not `CorsOptions` — avoids ambiguous-reference conflict with `Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions` in startup code); POCO with `[Required]` on: `AllowedOrigins` (string[]); XML doc note: empty array → CORS rejects all origins (no startup failure); null → startup fails; file-scoped namespace `Application.Options`
+- [x] T026 [P] [US2] Create `Application/Options/RateLimitOptions.cs` — POCO with `[Required]` and `[Range(1, int.MaxValue)]` on: `AuthWindowSeconds` (int), `AuthMaxRequests` (int); file-scoped namespace `Application.Options`
 
 ### Assembly Anchor and Domain Exception
 
-- [ ] T027 [P] [US2] Create `ApiModels/ApiModelsAssemblyMarker.cs` — empty `internal static class ApiModelsAssemblyMarker` used as stable assembly anchor for FluentValidation scanner; file-scoped namespace `ApiModels`
-- [ ] T028 [P] [US2] Create `Domain/Exceptions/BusinessException.cs` — `public abstract class BusinessException : Exception` with properties `string Code`, `int StatusCode { get; protected init; } = 422`, `object? Details`; protected constructor `(string code, string message, object? details = null)`; file-scoped namespace `Domain.Exceptions`
+- [x] T027 [P] [US2] Create `ApiModels/ApiModelsAssemblyMarker.cs` — empty `public static class ApiModelsAssemblyMarker` used as stable assembly anchor for FluentValidation scanner; file-scoped namespace `ApiModels` (Note: made `public` not `internal` — internal types are inaccessible from Application; `public` is required for cross-assembly `typeof()` reference)
+- [x] T028 [P] [US2] Create `Domain/Exceptions/BusinessException.cs` — `public abstract class BusinessException : Exception` with properties `string Code`, `int StatusCode { get; protected init; } = 422`, `object? Details`; protected constructor `(string code, string message, object? details = null)`; file-scoped namespace `Domain.Exceptions`
 
 ### SignalR Hub
 
-- [ ] T029 [P] [US2] Create `Application/Hubs/NotificationHub.cs` — `public interface INotificationClient { Task PdfReady(string exportId, string fileName); }` and `[Authorize] public class NotificationHub : Hub<INotificationClient> { }` in same file; file-scoped namespace `Application.Hubs`
+- [x] T029 [P] [US2] Create `Application/Hubs/NotificationHub.cs` — `public interface INotificationClient { Task PdfReady(string exportId, string fileName); }` and `[Authorize] public sealed class NotificationHub : Hub<INotificationClient> { }` in same file; file-scoped namespace `Application.Hubs`
 
 ### Stub Background Services
 
-- [ ] T030 [P] [US2] Create `Application/BackgroundServices/PdfExportBackgroundService.cs` — stub `IHostedService` implementing `StartAsync(CancellationToken)` and `StopAsync(CancellationToken)` with empty bodies (returns `Task.CompletedTask`); file-scoped namespace `Application.BackgroundServices`
-- [ ] T031 [P] [US2] Create `Application/BackgroundServices/ExportCleanupService.cs` — stub `IHostedService` with empty `StartAsync`/`StopAsync` bodies; file-scoped namespace `Application.BackgroundServices`
-- [ ] T032 [P] [US2] Create `Application/BackgroundServices/AccountDeletionCleanupService.cs` — stub `IHostedService` with empty `StartAsync`/`StopAsync` bodies; file-scoped namespace `Application.BackgroundServices`
+- [x] T030 [P] [US2] Create `Application/BackgroundServices/PdfExportBackgroundService.cs` — stub `IHostedService` implementing `StartAsync(CancellationToken)` and `StopAsync(CancellationToken)` with empty bodies (returns `Task.CompletedTask`); file-scoped namespace `Application.BackgroundServices`
+- [x] T031 [P] [US2] Create `Application/BackgroundServices/ExportCleanupService.cs` — stub `IHostedService` with empty `StartAsync`/`StopAsync` bodies; file-scoped namespace `Application.BackgroundServices`
+- [x] T032 [P] [US2] Create `Application/BackgroundServices/AccountDeletionCleanupService.cs` — stub `IHostedService` with empty `StartAsync`/`StopAsync` bodies; file-scoped namespace `Application.BackgroundServices`
 
 ### Business Exception Middleware
 
-- [ ] T033 [US2] Create `Application/Middleware/BusinessExceptionMiddleware.cs` — catches `BusinessException`; writes `{ "code": ex.Code, "message": ex.Message, "details": ex.Details }` as `application/json` with `ex.StatusCode`; all other exceptions call `await _next(context)` to fall through to the Problem Details handler; use primary constructor; file-scoped namespace `Application.Middleware`
+- [x] T033 [US2] Create `Application/Middleware/BusinessExceptionMiddleware.cs` — catches `BusinessException`; writes `{ "code": ex.Code, "message": ex.Message, "details": ex.Details }` as `application/json` with `ex.StatusCode`; all other exceptions call `await _next(context)` to fall through to the Problem Details handler; use primary constructor; file-scoped namespace `Application.Middleware`
 
 ### Service Collection Extensions
 
-- [ ] T034 [US2] Create `Application/Extensions/ServiceCollectionExtensions.cs` — static class with the following extension methods on `IServiceCollection` (file-scoped namespace `Application.Extensions`):
-  - `AddAuth(IConfiguration)` — JWT Bearer with `JwtOptions`; symmetric key HS256; `AddAuthorization()`
-  - `AddCorsPolicy(CorsConfiguration)` — named policy `"StaccatoPolicy"` (defined as `private const string`); `AllowCredentials()`, `AllowAnyHeader()`, `AllowAnyMethod()`, specific origins from `CorsConfiguration.AllowedOrigins` (no wildcards)
-  - `AddRateLimiting(RateLimitOptions)` — `AddRateLimiter` with `GlobalLimiter` using `PartitionedRateLimiter<HttpContext>`; policy name defined as `private const string`; partition key = IP; applies fixed-window limit only when path starts with `/auth/`; sets `OnRejected` to return 429 with `Retry-After` header
-  - `AddAzureBlob(IConfiguration)` — registers `BlobServiceClient` as singleton using `AzureBlobOptions.ConnectionString`
-  - `AddAutoMapper()` — scans `Application`, `Api`, and `Repository` assemblies for AutoMapper profiles; `Repository` is included because `EntityModel → DomainModel` profiles live there per constitution §Technology Stack
+- [x] T034 [US2] Create `Application/Extensions/ServiceCollectionExtensions.cs` — static class with the following extension methods on `IServiceCollection` (file-scoped namespace `Application.Extensions`):
+  - `AddAuth(IConfiguration)` — JWT Bearer with `JwtOptions`; symmetric key HS256; `AddAuthorization()`; `OnMessageReceived` event for SignalR WebSocket JWT query-string support
+  - `AddCorsPolicy(CorsConfiguration)` — named policy `"StaccatoPolicy"` (`private const string`); `AllowCredentials()`, `AllowAnyHeader()`, `AllowAnyMethod()`, specific origins from `CorsConfiguration.AllowedOrigins`; empty array → no origins configured (all cross-origin requests rejected)
+  - `AddRateLimiting(RateLimitOptions)` — `AddRateLimiter` with `GlobalLimiter` using `PartitionedRateLimiter<HttpContext, IPAddress>`; partition key = IP; fixed-window limit on `/auth/` paths; `OnRejected` returns 429 + `Retry-After` header
+  - `AddAzureBlob(IConfiguration)` — registers `BlobServiceClient` as singleton
+  - `AddMappingProfiles()` — scans `Application`, `Api`, and `Repository` assemblies via `Assembly.Load`; named `AddMappingProfiles` (not `AddAutoMapper`) to avoid method-name collision with `AutoMapper.Extensions.Microsoft.DependencyInjection`
   - `AddFluentValidationPipeline()` — `AddFluentValidationAutoValidation()` + `AddValidatorsFromAssembly(typeof(ApiModelsAssemblyMarker).Assembly)`
   - `AddSignalRHub()` — `services.AddSignalR()`
-  - `AddBackgroundWorkers()` — registers `PdfExportBackgroundService`, `ExportCleanupService`, `AccountDeletionCleanupService` as `IHostedService`
-  - `AddDatabase(IConfiguration)` — stub, empty body, comment: "populated in a future feature"
-  - `AddRepositories()` — stub, empty body, comment: "populated in a future feature"
-  - `AddDomainServices()` — stub, empty body, comment: "populated in a future feature"
+  - `AddBackgroundWorkers()` — registers three `IHostedService` stubs
+  - `AddDatabase(IConfiguration)`, `AddRepositories()`, `AddDomainServices()` — stubs, populated in future features
 
 ### appsettings.json
 
-- [ ] T035 [US2] Rewrite `Application/appsettings.json` with the following top-level sections (all values are safe placeholders):
+- [x] T035 [US2] Rewrite `Application/appsettings.json` with the following top-level sections (all values are safe placeholders):
   ```json
   {
     "Logging": { "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" } },
@@ -149,7 +147,7 @@
 
 ### Program.cs
 
-- [ ] T036 [US2] Rewrite `Application/Program.cs` with the full pipeline (depends on T023–T035):
+- [x] T036 [US2] Rewrite `Application/Program.cs` with the full pipeline (depends on T023–T035):
   1. `QuestPDF.Settings.License = LicenseType.Community;` — before `WebApplication.CreateBuilder`
   2. Register options with `.ValidateDataAnnotations().ValidateOnStart()` for all four: `JwtOptions` (section `"Jwt"`), `AzureBlobOptions` (section `"AzureBlob"`), `CorsConfiguration` (section `"Cors"`), `RateLimitOptions` (section `"RateLimit"`)
   3. Read `CorsConfiguration` and `RateLimitOptions` directly from `builder.Configuration` before calling `builder.Build()` — use `builder.Configuration.GetSection("Cors").Get<CorsConfiguration>()!` and `builder.Configuration.GetSection("RateLimit").Get<RateLimitOptions>()!`; do **not** use `BuildServiceProvider()` — that triggers CS0618 and is an anti-pattern
