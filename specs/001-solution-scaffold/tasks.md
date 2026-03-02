@@ -189,8 +189,8 @@
 
 **Independent Test**: Temporarily set `Jwt:SecretKey` to a value shorter than 32 characters and restart; verify startup fails with a validation error that names the failing property. Restore the placeholder value.
 
-- [ ] T039 [US4] Confirm `JwtOptions`, `AzureBlobOptions`, `CorsConfiguration`, `RateLimitOptions` all have `[Required]` (and `[MinLength]`/`[Range]`/`IValidatableObject` where applicable) data annotations and are registered with `.ValidateDataAnnotations().ValidateOnStart()` in `Program.cs` (cross-check T023–T026 and T036)
-- [ ] T040 [US4] Confirm `appsettings.json` contains only safe placeholder values — no real connection strings, JWT secrets, or API keys that would be hazardous to commit
+- [x] T039 [US4] Confirm `JwtOptions`, `AzureBlobOptions`, `CorsConfiguration`, `RateLimitOptions` all have `[Required]` (and `[MinLength]`/`[Range]`/`IValidatableObject` where applicable) data annotations and are registered with `.ValidateDataAnnotations().ValidateOnStart()` in `Program.cs` (cross-check T023–T026 and T036)
+- [x] T040 [US4] Confirm `appsettings.json` contains only safe placeholder values — no real connection strings, JWT secrets, or API keys that would be hazardous to commit
 
 **Checkpoint**: US4 complete — misconfiguration caught at startup with descriptive error.
 
