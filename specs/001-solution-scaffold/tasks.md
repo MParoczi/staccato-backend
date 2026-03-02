@@ -176,8 +176,8 @@
 
 **Independent Test**: Run `dotnet test Tests/Tests.csproj --filter "FullyQualifiedName~Unit"` and `dotnet test Tests/Tests.csproj --filter "FullyQualifiedName~Integration"` — both complete without configuration errors (pass or skip is acceptable; fail is not).
 
-- [ ] T037 [US3] Verify `Tests/Tests.csproj` has `<ProjectReference>` entries for all 8 other projects (added in T019); confirm `.gitkeep` files exist in `Tests/Unit/` and `Tests/Integration/` (created in T020–T021); confirm `UnitTest1.cs` is absent (deleted in T008)
-- [ ] T038 [US3] Run `dotnet test Staccato.sln` and confirm the test runner starts, discovers zero test cases, and exits without configuration errors
+- [x] T037 [US3] Verify `Tests/Tests.csproj` has `<ProjectReference>` entries for all 8 other projects (added in T019); confirm `.gitkeep` files exist in `Tests/Unit/` and `Tests/Integration/` (created in T020–T021); confirm `UnitTest1.cs` is absent (deleted in T008)
+- [x] T038 [US3] Run `dotnet test Staccato.sln` and confirm the test runner starts, discovers zero test cases, and exits without configuration errors
 
 **Checkpoint**: US3 complete — test infrastructure scaffold verified.
 
