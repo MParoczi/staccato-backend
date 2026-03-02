@@ -1,4 +1,4 @@
-# Staccato Backend — Claude Code Instructions
+﻿# Staccato Backend — Claude Code Instructions
 
 Staccato is an ASP.NET Core 10 WebAPI for an instrument learning notebook
 application. Users create digital dotted-paper notebooks, place structured

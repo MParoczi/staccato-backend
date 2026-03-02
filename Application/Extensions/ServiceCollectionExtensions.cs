@@ -1,0 +1,184 @@
+using System.Globalization;
+using System.Net;
+using System.Reflection;
+using System.Text;
+using System.Threading.RateLimiting;
+using ApiModels;
+using Application.BackgroundServices;
+using Application.Options;
+using Azure.Storage.Blobs;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Application.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    private const string CorsPolicyName = "StaccatoPolicy";
+
+    public static IServiceCollection AddAuth(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()!;
+
+        services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+                };
+
+                // Support JWT from query string for SignalR WebSocket connections.
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                            context.Token = accessToken;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+        services.AddAuthorization();
+        return services;
+    }
+
+    public static IServiceCollection AddCorsPolicy(
+        this IServiceCollection services,
+        CorsConfiguration corsConfiguration)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy(CorsPolicyName, policy =>
+            {
+                if (corsConfiguration.AllowedOrigins.Length > 0)
+                    policy
+                        .WithOrigins(corsConfiguration.AllowedOrigins)
+                        .AllowCredentials()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                // Empty array → no origins configured → all cross-origin requests rejected.
+            });
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddRateLimiting(
+        this IServiceCollection services,
+        RateLimitOptions rateLimitOptions)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context =>
+            {
+                if (context.Request.Path.StartsWithSegments("/auth"))
+                {
+                    var remoteIp = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+                    return RateLimitPartition.GetFixedWindowLimiter(remoteIp, _ =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = rateLimitOptions.AuthMaxRequests,
+                            Window = TimeSpan.FromSeconds(rateLimitOptions.AuthWindowSeconds),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
+                        });
+                }
+
+                return RateLimitPartition.GetNoLimiter(IPAddress.Loopback);
+            });
+
+            options.OnRejected = (context, _) =>
+            {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                    context.HttpContext.Response.Headers.RetryAfter =
+                        ((int)retryAfter.TotalSeconds).ToString(
+                            CultureInfo.InvariantCulture);
+
+                return ValueTask.CompletedTask;
+            };
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddAzureBlob(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var blobOptions = configuration.GetSection("AzureBlob").Get<AzureBlobOptions>()!;
+        services.AddSingleton(new BlobServiceClient(blobOptions.ConnectionString));
+        return services;
+    }
+
+    /// <summary>
+    ///     Registers AutoMapper and scans the Application, Api, and Repository assemblies for profiles.
+    ///     Repository is included because EntityModel → DomainModel profiles live there.
+    /// </summary>
+    public static IServiceCollection AddMappingProfiles(this IServiceCollection services)
+    {
+        services.AddAutoMapper(
+            typeof(ServiceCollectionExtensions).Assembly,
+            Assembly.Load("Api"),
+            Assembly.Load("Repository"));
+        return services;
+    }
+
+    public static IServiceCollection AddFluentValidationPipeline(this IServiceCollection services)
+    {
+        services.AddFluentValidationAutoValidation();
+        services.AddValidatorsFromAssembly(typeof(ApiModelsAssemblyMarker).Assembly);
+        return services;
+    }
+
+    public static IServiceCollection AddSignalRHub(this IServiceCollection services)
+    {
+        services.AddSignalR();
+        return services;
+    }
+
+    public static IServiceCollection AddBackgroundWorkers(this IServiceCollection services)
+    {
+        services.AddHostedService<PdfExportBackgroundService>();
+        services.AddHostedService<ExportCleanupService>();
+        services.AddHostedService<AccountDeletionCleanupService>();
+        return services;
+    }
+
+    // Populated in a future feature.
+    public static IServiceCollection AddDatabase(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        return services;
+    }
+
+    // Populated in a future feature.
+    public static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        return services;
+    }
+
+    // Populated in a future feature.
+    public static IServiceCollection AddDomainServices(this IServiceCollection services)
+    {
+        return services;
+    }
+}

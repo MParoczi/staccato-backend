@@ -88,4 +88,4 @@ logs/
 # ==============================================================
 # Claude Code — keep .claude/ settings, ignore speckit commands
 # ==============================================================
-.claude/commands/speckit.*.md
+.claude/settings.local.json
