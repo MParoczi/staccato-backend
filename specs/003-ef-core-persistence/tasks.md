@@ -17,7 +17,7 @@
 
 **Purpose**: Pre-requisite changes outside the EntityModels/Persistence projects that must land before entity classes are written.
 
-- [ ] T001 Update `DomainModels/Models/PdfExport.cs` — add `public List<Guid>? LessonIds { get; set; }` property (null = entire notebook export) to keep domain model in sync with the forthcoming `PdfExportEntity.LessonIdsJson` field [FR-039]
+- [x] T001 Update `DomainModels/Models/PdfExport.cs` — add `public List<Guid>? LessonIds { get; set; }` property (null = entire notebook export) to keep domain model in sync with the forthcoming `PdfExportEntity.LessonIdsJson` field [FR-039]
 
 ---
 

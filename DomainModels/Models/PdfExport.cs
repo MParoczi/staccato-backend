@@ -11,4 +11,5 @@ public class PdfExport
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
     public string? BlobReference { get; set; }
+    public List<Guid>? LessonIds { get; set; }
 }
