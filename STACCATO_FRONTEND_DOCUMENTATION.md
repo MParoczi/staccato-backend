@@ -618,7 +618,6 @@ Five system-defined style presets are available. Each preset defines all 12 modu
 | Tip | Blue `#E3F2FD` | Blue dark `#1565C0` |
 | Homework | Purple `#F3E5F5` | Purple dark `#6A1B9A` |
 | Question | Pink `#FCE4EC` | Pink dark `#880E4F` |
-| Definition | Indigo `#E8EAF6` | Indigo dark `#283593` |
 | ChordTablature | Grey `#F5F5F5` | Grey dark `#424242` |
 | FreeText | White `#FFFFFF` | Grey `#9E9E9E` |
 
