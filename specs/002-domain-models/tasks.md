@@ -31,15 +31,15 @@
 
 **⚠️ CRITICAL**: No user story work can begin until all enums are in place.
 
-- [ ] T002 [P] Create `DomainModels/Enums/ModuleType.cs` — file-scoped namespace `DomainModels.Enums`; 12 values: `Title, Breadcrumb, Subtitle, Theory, Practice, Example, Important, Tip, Homework, Question, ChordTablature, FreeText`
-- [ ] T003 [P] Create `DomainModels/Enums/BuildingBlockType.cs` — file-scoped namespace `DomainModels.Enums`; 10 values: `SectionHeading, Date, Text, BulletList, NumberedList, CheckboxList, Table, MusicalNotes, ChordProgression, ChordTablatureGroup`
-- [ ] T004 [P] Create `DomainModels/Enums/BorderStyle.cs` — file-scoped namespace `DomainModels.Enums`; 4 values: `None, Solid, Dashed, Dotted`
-- [ ] T005 [P] Create `DomainModels/Enums/FontFamily.cs` — file-scoped namespace `DomainModels.Enums`; 3 values: `Default, Monospace, Serif`
-- [ ] T006 [P] Create `DomainModels/Enums/PageSize.cs` — file-scoped namespace `DomainModels.Enums`; 5 values: `A4, A5, A6, B5, B6`
-- [ ] T007 [P] Create `DomainModels/Enums/ExportStatus.cs` — file-scoped namespace `DomainModels.Enums`; 4 values: `Pending, Processing, Ready, Failed`
-- [ ] T008 [P] Create `DomainModels/Enums/InstrumentKey.cs` — file-scoped namespace `DomainModels.Enums`; 7 values: `Guitar6String, Guitar7String, Bass4String, Bass5String, Ukulele4String, Banjo4String, Banjo5String`
-- [ ] T009 [P] Create `DomainModels/Enums/ChordStringState.cs` — file-scoped namespace `DomainModels.Enums`; 3 values: `Open, Fretted, Muted`
-- [ ] T010 [P] Create `DomainModels/Enums/Language.cs` — file-scoped namespace `DomainModels.Enums`; 2 values: `English, Hungarian`
+- [x] T002 [P] Create `DomainModels/Enums/ModuleType.cs` — file-scoped namespace `DomainModels.Enums`; 12 values: `Title, Breadcrumb, Subtitle, Theory, Practice, Example, Important, Tip, Homework, Question, ChordTablature, FreeText`
+- [x] T003 [P] Create `DomainModels/Enums/BuildingBlockType.cs` — file-scoped namespace `DomainModels.Enums`; 10 values: `SectionHeading, Date, Text, BulletList, NumberedList, CheckboxList, Table, MusicalNotes, ChordProgression, ChordTablatureGroup`
+- [x] T004 [P] Create `DomainModels/Enums/BorderStyle.cs` — file-scoped namespace `DomainModels.Enums`; 4 values: `None, Solid, Dashed, Dotted`
+- [x] T005 [P] Create `DomainModels/Enums/FontFamily.cs` — file-scoped namespace `DomainModels.Enums`; 3 values: `Default, Monospace, Serif`
+- [x] T006 [P] Create `DomainModels/Enums/PageSize.cs` — file-scoped namespace `DomainModels.Enums`; 5 values: `A4, A5, A6, B5, B6`
+- [x] T007 [P] Create `DomainModels/Enums/ExportStatus.cs` — file-scoped namespace `DomainModels.Enums`; 4 values: `Pending, Processing, Ready, Failed`
+- [x] T008 [P] Create `DomainModels/Enums/InstrumentKey.cs` — file-scoped namespace `DomainModels.Enums`; 7 values: `Guitar6String, Guitar7String, Bass4String, Bass5String, Ukulele4String, Banjo4String, Banjo5String`
+- [x] T009 [P] Create `DomainModels/Enums/ChordStringState.cs` — file-scoped namespace `DomainModels.Enums`; 3 values: `Open, Fretted, Muted`
+- [x] T010 [P] Create `DomainModels/Enums/Language.cs` — file-scoped namespace `DomainModels.Enums`; 2 values: `English, Hungarian`
 
 **Checkpoint**: All 9 enums in place — user story implementation can now begin.
 
