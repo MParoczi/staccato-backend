@@ -19,7 +19,7 @@
 
 **Purpose**: Verify the existing project compiles clean before any files are added.
 
-- [ ] T001 Verify `DomainModels/DomainModels.csproj` baseline compiles with zero warnings via `dotnet build DomainModels/DomainModels.csproj`
+- [x] T001 Verify `DomainModels/DomainModels.csproj` baseline compiles with zero warnings via `dotnet build DomainModels/DomainModels.csproj`
 
 **Checkpoint**: Clean baseline confirmed — file authoring can begin.
 
