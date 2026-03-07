@@ -27,31 +27,31 @@
 
 **⚠️ CRITICAL**: No EF configuration, migration, or seeder can begin until all entity classes and `AppDbContext` are complete.
 
-- [ ] T002 [P] Create `EntityModels/Entities/UserEntity.cs` — mirror `User` domain model scalar properties (`Id`, `Email`, `PasswordHash?`, `GoogleId?`, `FirstName`, `LastName`, `AvatarUrl?`, `CreatedAt`, `ScheduledDeletionAt?`, `Language`); add navigation collections `ICollection<NotebookEntity> Notebooks`, `ICollection<RefreshTokenEntity> RefreshTokens`, `ICollection<UserSavedPresetEntity> UserSavedPresets`, `ICollection<PdfExportEntity> PdfExports`; namespace `EntityModels.Entities` [FR-001, FR-002]
+- [x] T002 [P] Create `EntityModels/Entities/UserEntity.cs` — mirror `User` domain model scalar properties (`Id`, `Email`, `PasswordHash?`, `GoogleId?`, `FirstName`, `LastName`, `AvatarUrl?`, `CreatedAt`, `ScheduledDeletionAt?`, `Language`); add navigation collections `ICollection<NotebookEntity> Notebooks`, `ICollection<RefreshTokenEntity> RefreshTokens`, `ICollection<UserSavedPresetEntity> UserSavedPresets`, `ICollection<PdfExportEntity> PdfExports`; namespace `EntityModels.Entities` [FR-001, FR-002]
 
-- [ ] T003 [P] Create `EntityModels/Entities/RefreshTokenEntity.cs` — mirror `RefreshToken` scalar properties (`Id`, `Token`, `UserId`, `ExpiresAt`, `CreatedAt`, `IsRevoked`); add navigation `UserEntity User` [FR-001, FR-002]
+- [x] T003 [P] Create `EntityModels/Entities/RefreshTokenEntity.cs` — mirror `RefreshToken` scalar properties (`Id`, `Token`, `UserId`, `ExpiresAt`, `CreatedAt`, `IsRevoked`); add navigation `UserEntity User` [FR-001, FR-002]
 
-- [ ] T004 [P] Create `EntityModels/Entities/UserSavedPresetEntity.cs` — mirror `UserSavedPreset` scalar properties (`Id`, `UserId`, `Name`, `StylesJson`); add navigation `UserEntity User` [FR-001, FR-002]
+- [x] T004 [P] Create `EntityModels/Entities/UserSavedPresetEntity.cs` — mirror `UserSavedPreset` scalar properties (`Id`, `UserId`, `Name`, `StylesJson`); add navigation `UserEntity User` [FR-001, FR-002]
 
-- [ ] T005 [P] Create `EntityModels/Entities/SystemStylePresetEntity.cs` — mirror `SystemStylePreset` scalar properties (`Id`, `Name`, `DisplayOrder`, `IsDefault`, `StylesJson`); no navigation properties [FR-001, FR-002]
+- [x] T005 [P] Create `EntityModels/Entities/SystemStylePresetEntity.cs` — mirror `SystemStylePreset` scalar properties (`Id`, `Name`, `DisplayOrder`, `IsDefault`, `StylesJson`); no navigation properties [FR-001, FR-002]
 
-- [ ] T006 [P] Create `EntityModels/Entities/InstrumentEntity.cs` — mirror `Instrument` scalar properties (`Id`, `Key`, `DisplayName`, `StringCount`); add navigation `ICollection<ChordEntity> Chords` [FR-001, FR-002]
+- [x] T006 [P] Create `EntityModels/Entities/InstrumentEntity.cs` — mirror `Instrument` scalar properties (`Id`, `Key`, `DisplayName`, `StringCount`); add navigation `ICollection<ChordEntity> Chords` [FR-001, FR-002]
 
-- [ ] T007 [P] Create `EntityModels/Entities/ChordEntity.cs` — mirror `Chord` scalar properties (`Id`, `InstrumentId`, `Name`, `Suffix`, `PositionsJson`); add navigation `InstrumentEntity Instrument` [FR-001, FR-002]
+- [x] T007 [P] Create `EntityModels/Entities/ChordEntity.cs` — mirror `Chord` scalar properties (`Id`, `InstrumentId`, `Name`, `Suffix`, `PositionsJson`); add navigation `InstrumentEntity Instrument` [FR-001, FR-002]
 
-- [ ] T008 [P] Create `EntityModels/Entities/NotebookEntity.cs` — mirror `Notebook` scalar properties (`Id`, `UserId`, `Title`, `InstrumentId`, `PageSize`, `CreatedAt`, `UpdatedAt`); add navigations `UserEntity User`, `InstrumentEntity Instrument`, `ICollection<LessonEntity> Lessons`, `ICollection<NotebookModuleStyleEntity> ModuleStyles`, `ICollection<PdfExportEntity> PdfExports` [FR-001, FR-002]
+- [x] T008 [P] Create `EntityModels/Entities/NotebookEntity.cs` — mirror `Notebook` scalar properties (`Id`, `UserId`, `Title`, `InstrumentId`, `PageSize`, `CreatedAt`, `UpdatedAt`); add navigations `UserEntity User`, `InstrumentEntity Instrument`, `ICollection<LessonEntity> Lessons`, `ICollection<NotebookModuleStyleEntity> ModuleStyles`, `ICollection<PdfExportEntity> PdfExports` [FR-001, FR-002]
 
-- [ ] T009 [P] Create `EntityModels/Entities/NotebookModuleStyleEntity.cs` — mirror `NotebookModuleStyle` scalar properties (`Id`, `NotebookId`, `ModuleType`, `StylesJson`); add navigation `NotebookEntity Notebook` [FR-001, FR-002]
+- [x] T009 [P] Create `EntityModels/Entities/NotebookModuleStyleEntity.cs` — mirror `NotebookModuleStyle` scalar properties (`Id`, `NotebookId`, `ModuleType`, `StylesJson`); add navigation `NotebookEntity Notebook` [FR-001, FR-002]
 
-- [ ] T010 [P] Create `EntityModels/Entities/LessonEntity.cs` — mirror `Lesson` scalar properties (`Id`, `NotebookId`, `Title`, `CreatedAt`, `UpdatedAt`); add navigations `NotebookEntity Notebook`, `ICollection<LessonPageEntity> LessonPages` [FR-001, FR-002]
+- [x] T010 [P] Create `EntityModels/Entities/LessonEntity.cs` — mirror `Lesson` scalar properties (`Id`, `NotebookId`, `Title`, `CreatedAt`, `UpdatedAt`); add navigations `NotebookEntity Notebook`, `ICollection<LessonPageEntity> LessonPages` [FR-001, FR-002]
 
-- [ ] T011 [P] Create `EntityModels/Entities/LessonPageEntity.cs` — mirror `LessonPage` scalar properties (`Id`, `LessonId`, `PageNumber`); add navigations `LessonEntity Lesson`, `ICollection<ModuleEntity> Modules` [FR-001, FR-002]
+- [x] T011 [P] Create `EntityModels/Entities/LessonPageEntity.cs` — mirror `LessonPage` scalar properties (`Id`, `LessonId`, `PageNumber`); add navigations `LessonEntity Lesson`, `ICollection<ModuleEntity> Modules` [FR-001, FR-002]
 
-- [ ] T012 [P] Create `EntityModels/Entities/ModuleEntity.cs` — mirror `Module` scalar properties (`Id`, `LessonPageId`, `ModuleType`, `GridX`, `GridY`, `GridWidth`, `GridHeight`, `ContentJson`); add navigation `LessonPageEntity LessonPage` [FR-001, FR-002]
+- [x] T012 [P] Create `EntityModels/Entities/ModuleEntity.cs` — mirror `Module` scalar properties (`Id`, `LessonPageId`, `ModuleType`, `GridX`, `GridY`, `GridWidth`, `GridHeight`, `ContentJson`); add navigation `LessonPageEntity LessonPage` [FR-001, FR-002]
 
-- [ ] T013 [P] Create `EntityModels/Entities/PdfExportEntity.cs` — mirror `PdfExport` scalar properties (`Id`, `NotebookId`, `UserId`, `Status`, `CreatedAt`, `CompletedAt?`, `BlobReference?`) plus additional `LessonIdsJson` (`string?`, nullable — SQL NULL = whole notebook); add navigations `NotebookEntity Notebook`, `UserEntity User` [FR-001, FR-002, FR-005]
+- [x] T013 [P] Create `EntityModels/Entities/PdfExportEntity.cs` — mirror `PdfExport` scalar properties (`Id`, `NotebookId`, `UserId`, `Status`, `CreatedAt`, `CompletedAt?`, `BlobReference?`) plus additional `LessonIdsJson` (`string?`, nullable — SQL NULL = whole notebook); add navigations `NotebookEntity Notebook`, `UserEntity User` [FR-001, FR-002, FR-005]
 
-- [ ] T014 Create `Persistence/Context/AppDbContext.cs` — inherit `DbContext`, primary constructor accepting `DbContextOptions<AppDbContext>`; add `DbSet<T>` expression-body property (`=> Set<T>()`) for all 12 entity types; override `OnModelCreating` to call `modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly)` [FR-007, FR-008]
+- [x] T014 Create `Persistence/Context/AppDbContext.cs` — inherit `DbContext`, primary constructor accepting `DbContextOptions<AppDbContext>`; add `DbSet<T>` expression-body property (`=> Set<T>()`) for all 12 entity types; override `OnModelCreating` to call `modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly)` [FR-007, FR-008]
 
 ---
 
