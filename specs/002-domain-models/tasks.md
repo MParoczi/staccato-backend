@@ -164,9 +164,9 @@
 
 **Purpose**: Confirm the full deliverable meets SC-001 (DomainModels compiles clean) and that the solution-wide build is unaffected.
 
-- [ ] T046 Run `dotnet build DomainModels/DomainModels.csproj` — must produce zero errors and zero warnings with nullable reference types enabled; covers SC-001
-- [ ] T047 Run `dotnet build Staccato.sln` — all 9 projects in the solution must compile successfully with the new DomainModels content in place
-- [ ] T048 Run `dotnet test Tests/Tests.csproj --filter "FullyQualifiedName~Unit.DomainModels"` — all 3 test classes (PageSizeDimensionsTests, ModuleTypeConstraintsTests, BuildingBlockTypeTests) must pass; covers SC-002, SC-003, SC-004, SC-006
+- [x] T046 Run `dotnet build DomainModels/DomainModels.csproj` — must produce zero errors and zero warnings with nullable reference types enabled; covers SC-001
+- [x] T047 Run `dotnet build Staccato.sln` — all 9 projects in the solution must compile successfully with the new DomainModels content in place
+- [x] T048 Run `dotnet test Tests/Tests.csproj --filter "FullyQualifiedName~Unit.DomainModels"` — all 3 test classes (PageSizeDimensionsTests, ModuleTypeConstraintsTests, BuildingBlockTypeTests) must pass; covers SC-002, SC-003, SC-004, SC-006
 
 ---
 
