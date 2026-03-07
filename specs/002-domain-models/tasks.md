@@ -93,40 +93,40 @@
 
 ### Group A — Base Types (both [P], no dependency on each other)
 
-- [ ] T025 [P] [US3] Create `DomainModels/BuildingBlocks/TextSpan.cs` — namespace `DomainModels.BuildingBlocks`; `public record TextSpan`; properties: `string Text`, `bool Bold`; no other properties; no attributes
-- [ ] T026 [P] [US3] Create `DomainModels/BuildingBlocks/BuildingBlock.cs` — namespace `DomainModels.BuildingBlocks`; `public abstract class BuildingBlock`; single property: `BuildingBlockType Type { get; }`; no setter; no serialization attributes
+- [x] T025 [P] [US3] Create `DomainModels/BuildingBlocks/TextSpan.cs` — namespace `DomainModels.BuildingBlocks`; `public record TextSpan`; properties: `string Text`, `bool Bold`; no other properties; no attributes
+- [x] T026 [P] [US3] Create `DomainModels/BuildingBlocks/BuildingBlock.cs` — namespace `DomainModels.BuildingBlocks`; `public abstract class BuildingBlock`; single property: `BuildingBlockType Type { get; }`; no setter; no serialization attributes
 
 ### Group B — Simple Block Types (all [P], depend on T025 + T026)
 
-- [ ] T027 [P] [US3] Create `DomainModels/BuildingBlocks/SectionHeadingBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.SectionHeading`; property: `List<TextSpan> Spans`
-- [ ] T028 [P] [US3] Create `DomainModels/BuildingBlocks/DateBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Date`; property: `List<TextSpan> Spans`
-- [ ] T029 [P] [US3] Create `DomainModels/BuildingBlocks/TextBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Text`; property: `List<TextSpan> Spans`
-- [ ] T030 [P] [US3] Create `DomainModels/BuildingBlocks/BulletListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.BulletList`; property: `List<List<TextSpan>> Items`
-- [ ] T031 [P] [US3] Create `DomainModels/BuildingBlocks/NumberedListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.NumberedList`; property: `List<List<TextSpan>> Items`
-- [ ] T032 [P] [US3] Create `DomainModels/BuildingBlocks/MusicalNotesBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.MusicalNotes`; property: `List<string> Notes`
+- [x] T027 [P] [US3] Create `DomainModels/BuildingBlocks/SectionHeadingBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.SectionHeading`; property: `List<TextSpan> Spans`
+- [x] T028 [P] [US3] Create `DomainModels/BuildingBlocks/DateBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Date`; property: `List<TextSpan> Spans`
+- [x] T029 [P] [US3] Create `DomainModels/BuildingBlocks/TextBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Text`; property: `List<TextSpan> Spans`
+- [x] T030 [P] [US3] Create `DomainModels/BuildingBlocks/BulletListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.BulletList`; property: `List<List<TextSpan>> Items`
+- [x] T031 [P] [US3] Create `DomainModels/BuildingBlocks/NumberedListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.NumberedList`; property: `List<List<TextSpan>> Items`
+- [x] T032 [P] [US3] Create `DomainModels/BuildingBlocks/MusicalNotesBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.MusicalNotes`; property: `List<string> Notes`
 
 ### Group C — Support Types (all [P], depend on T025)
 
-- [ ] T033 [P] [US3] Create `DomainModels/BuildingBlocks/CheckboxListItem.cs` — namespace `DomainModels.BuildingBlocks`; plain class (not BuildingBlock); properties: `List<TextSpan> Spans`, `bool IsChecked`; no attributes
-- [ ] T034 [P] [US3] Create `DomainModels/BuildingBlocks/TableColumn.cs` — namespace `DomainModels.BuildingBlocks`; plain class; property: `List<TextSpan> Header`; no attributes
-- [ ] T035 [P] [US3] Create `DomainModels/BuildingBlocks/ChordBeat.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `Guid ChordId`, `string DisplayName`, `int Beats`; no attributes
-- [ ] T036 [P] [US3] Create `DomainModels/BuildingBlocks/ChordTablatureItem.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `Guid ChordId`, `string Label`; no attributes
+- [x] T033 [P] [US3] Create `DomainModels/BuildingBlocks/CheckboxListItem.cs` — namespace `DomainModels.BuildingBlocks`; plain class (not BuildingBlock); properties: `List<TextSpan> Spans`, `bool IsChecked`; no attributes
+- [x] T034 [P] [US3] Create `DomainModels/BuildingBlocks/TableColumn.cs` — namespace `DomainModels.BuildingBlocks`; plain class; property: `List<TextSpan> Header`; no attributes
+- [x] T035 [P] [US3] Create `DomainModels/BuildingBlocks/ChordBeat.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `Guid ChordId`, `string DisplayName`, `int Beats`; no attributes
+- [x] T036 [P] [US3] Create `DomainModels/BuildingBlocks/ChordTablatureItem.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `Guid ChordId`, `string Label`; no attributes
 
 ### Group D — Composite Block Types (all [P], each depends on its own support type from Group C + T026)
 
-- [ ] T037 [P] [US3] Create `DomainModels/BuildingBlocks/CheckboxListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.CheckboxList`; property: `List<CheckboxListItem> Items`
-- [ ] T038 [P] [US3] Create `DomainModels/BuildingBlocks/TableBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Table`; properties: `List<TableColumn> Columns`, `List<List<List<TextSpan>>> Rows`
-- [ ] T039 [P] [US3] Create `DomainModels/BuildingBlocks/ChordMeasure.cs` — namespace `DomainModels.BuildingBlocks`; plain class; property: `List<ChordBeat> Chords`; no attributes
-- [ ] T040 [P] [US3] Create `DomainModels/BuildingBlocks/ChordTablatureGroupBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.ChordTablatureGroup`; property: `List<ChordTablatureItem> Items`
+- [x] T037 [P] [US3] Create `DomainModels/BuildingBlocks/CheckboxListBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.CheckboxList`; property: `List<CheckboxListItem> Items`
+- [x] T038 [P] [US3] Create `DomainModels/BuildingBlocks/TableBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.Table`; properties: `List<TableColumn> Columns`, `List<List<List<TextSpan>>> Rows`
+- [x] T039 [P] [US3] Create `DomainModels/BuildingBlocks/ChordMeasure.cs` — namespace `DomainModels.BuildingBlocks`; plain class; property: `List<ChordBeat> Chords`; no attributes
+- [x] T040 [P] [US3] Create `DomainModels/BuildingBlocks/ChordTablatureGroupBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.ChordTablatureGroup`; property: `List<ChordTablatureItem> Items`
 
 ### Group E — Deep Chord Hierarchy (sequential — each depends on the previous)
 
-- [ ] T041 [US3] Create `DomainModels/BuildingBlocks/ChordProgressionSection.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `string Label`, `int Repeat`, `List<ChordMeasure> Measures`; no attributes; depends on T039 (ChordMeasure)
-- [ ] T042 [US3] Create `DomainModels/BuildingBlocks/ChordProgressionBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.ChordProgression`; properties: `string TimeSignature`, `List<ChordProgressionSection> Sections`; depends on T041 (ChordProgressionSection)
+- [x] T041 [US3] Create `DomainModels/BuildingBlocks/ChordProgressionSection.cs` — namespace `DomainModels.BuildingBlocks`; plain class; properties: `string Label`, `int Repeat`, `List<ChordMeasure> Measures`; no attributes; depends on T039 (ChordMeasure)
+- [x] T042 [US3] Create `DomainModels/BuildingBlocks/ChordProgressionBlock.cs` — inherits `BuildingBlock`; constructor sets `Type = BuildingBlockType.ChordProgression`; properties: `string TimeSignature`, `List<ChordProgressionSection> Sections`; depends on T041 (ChordProgressionSection)
 
 ### Tests for User Story 3
 
-- [ ] T043 [US3] Create `Tests/Unit/DomainModels/BuildingBlockTypeTests.cs` — namespace `Tests.Unit.DomainModels`; xUnit; for each of the 10 concrete block types assert that a newly constructed instance has `Type` equal to the expected `BuildingBlockType` enum value; covers SC-004
+- [x] T043 [US3] Create `Tests/Unit/DomainModels/BuildingBlockTypeTests.cs` — namespace `Tests.Unit.DomainModels`; xUnit; for each of the 10 concrete block types assert that a newly constructed instance has `Type` equal to the expected `BuildingBlockType` enum value; covers SC-004
 
 **Checkpoint**: User Story 3 complete — entire building block hierarchy is in place and all 10 type discriminators verified.
 
