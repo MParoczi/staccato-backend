@@ -10,7 +10,9 @@ using Azure.Storage.Blobs;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Persistence.Context;
 
 namespace Application.Extensions;
 
@@ -162,11 +164,13 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    // Populated in a future feature.
     public static IServiceCollection AddDatabase(
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
         return services;
     }
 
