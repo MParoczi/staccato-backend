@@ -140,7 +140,7 @@
 
 ### Implementation for User Story 4
 
-- [ ] T044 [US4] Create `DomainModels/Models/Chord.cs` — namespace `DomainModels.Models`; properties: `Guid Id`, `Guid InstrumentId`, `string Name`, `string Suffix`, `string PositionsJson`; all strings non-nullable; no EF/validation attributes
+- [x] T044 [US4] Create `DomainModels/Models/Chord.cs` — namespace `DomainModels.Models`; properties: `Guid Id`, `Guid InstrumentId`, `string Name`, `string Suffix`, `string PositionsJson`; all strings non-nullable; no EF/validation attributes
 
 **Checkpoint**: User Story 4 complete — Chord model ready for seeder and repository layers.
 
