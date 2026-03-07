@@ -154,7 +154,7 @@
 
 ### Implementation for User Story 5
 
-- [ ] T045 [US5] Create `DomainModels/Models/PdfExport.cs` — namespace `DomainModels.Models`; properties: `Guid Id`, `Guid NotebookId`, `Guid UserId`, `ExportStatus Status`, `DateTime CreatedAt`, `DateTime? CompletedAt`, `string? BlobReference`; no EF/validation attributes
+- [x] T045 [US5] Create `DomainModels/Models/PdfExport.cs` — namespace `DomainModels.Models`; properties: `Guid Id`, `Guid NotebookId`, `Guid UserId`, `ExportStatus Status`, `DateTime CreatedAt`, `DateTime? CompletedAt`, `string? BlobReference`; no EF/validation attributes
 
 **Checkpoint**: User Story 5 complete — full domain model surface is now implemented.
 
