@@ -119,9 +119,9 @@ All 12 configuration files can be written in parallel (each is its own file with
 
 **Purpose**: Verification, documentation sync, and build validation.
 
-- [ ] T036 Build the full solution and confirm zero errors and zero warnings: `dotnet build Staccato.sln` — fix any nullable reference type warnings in the new entity classes or configurations [Constitution §IX]
+- [x] T036 Build the full solution and confirm zero errors and zero warnings: `dotnet build Staccato.sln` — fix any nullable reference type warnings in the new entity classes or configurations [Constitution §IX]
 
-- [ ] T037 Update `specs/003-ef-core-persistence/data-model.md` — mark `PdfExport.cs` domain model as updated (T001 complete), confirm FK delete behavior table reflects FR-040 (`NotebookEntity.InstrumentId → Restrict`) and FR-042 (`PdfExports.UserId → NoAction`), confirm constraint inventory matches SC-004 (17 constraints)
+- [x] T037 Update `specs/003-ef-core-persistence/data-model.md` — mark `PdfExport.cs` domain model as updated (T001 complete), confirm FK delete behavior table reflects FR-040 (`NotebookEntity.InstrumentId → Restrict`) and FR-042 (`PdfExports.UserId → NoAction`), confirm constraint inventory matches SC-004 (17 constraints)
 
 ---
 

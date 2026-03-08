@@ -256,13 +256,53 @@ No FKs. No navigation properties.
 
 ---
 
-## Domain Model Update Required
+## Domain Model Update — **Complete (T001)**
 
 ### PdfExport.cs (DomainModels/Models/PdfExport.cs)
-Add `List<Guid>? LessonIds` property (null = export entire notebook):
+`List<Guid>? LessonIds` property added (null = export entire notebook):
 ```csharp
 public List<Guid>? LessonIds { get; set; }
 ```
+Status: ✅ implemented in T001.
+
+---
+
+## FK Delete Behavior Table
+
+All 11 FK delete behaviors per SC-004. **Restrict** FKs enforce instrument immutability at the DB level (FR-040, FR-022). **ClientCascade** on `PdfExports.UserId` avoids SQL Server's multiple cascade paths error — EF Core deletes PdfExports in memory before deleting the User (FR-042, generates `ON DELETE NO ACTION`).
+
+| FK Column | References | Delete Behavior | Rationale |
+|---|---|---|---|
+| `Notebooks.UserId` | Users | Cascade | User owns notebooks |
+| `Notebooks.InstrumentId` | Instruments | **Restrict** (FR-040) | Instrument is immutable post-seed |
+| `Lessons.NotebookId` | Notebooks | Cascade | Notebook owns lessons |
+| `LessonPages.LessonId` | Lessons | Cascade | Lesson owns pages |
+| `Modules.LessonPageId` | LessonPages | Cascade | Page owns modules |
+| `NotebookModuleStyles.NotebookId` | Notebooks | Cascade | Notebook owns styles |
+| `RefreshTokens.UserId` | Users | Cascade | User owns tokens |
+| `UserSavedPresets.UserId` | Users | Cascade | User owns presets |
+| `PdfExports.NotebookId` | Notebooks | Cascade | Notebook owns exports |
+| `PdfExports.UserId` | Users | **ClientCascade** (FR-042) | Multiple cascade path avoidance |
+| `Chords.InstrumentId` | Instruments | **Restrict** (FR-022) | Chord data is immutable post-seed |
+
+---
+
+## Constraint Inventory — SC-004 (17 total)
+
+**5 unique indexes:**
+1. `IX_Users_Email` — unique
+2. `IX_Users_GoogleId` — unique, filtered `WHERE [GoogleId] IS NOT NULL`
+3. `IX_Instruments_Key` — unique
+4. `IX_NotebookModuleStyles_NotebookId_ModuleType` — composite unique
+5. `IX_RefreshTokens_Token` — unique
+
+**1 partial unique index:**
+6. `IX_PdfExports_NotebookId` — unique, filtered `WHERE [Status] = 0 OR [Status] = 1`
+
+**11 FK behaviors:**
+7–14. Cascade (8): Notebooks.UserId, Lessons.NotebookId, LessonPages.LessonId, Modules.LessonPageId, NotebookModuleStyles.NotebookId, RefreshTokens.UserId, UserSavedPresets.UserId, PdfExports.NotebookId
+15. ClientCascade: PdfExports.UserId (→ NO ACTION in SQL)
+16–17. Restrict (2): Chords.InstrumentId, Notebooks.InstrumentId
 
 ---
 
@@ -344,8 +384,8 @@ SQL NULL = export covers entire notebook. Never store `"null"` or `"[]"` for the
 
 ### Chords (loaded from guitar_chords.json)
 - Instrument: Guitar6String only
-- Coverage: 12 root notes × 17 qualities minimum = ~204 entries
-- 2–3 voicings (positions) per chord entry
+- Coverage: 12 root notes × 12 qualities = 144 entries (major, minor, 7, maj7, m7, dim, aug, sus2, sus4, m7b5, dim7, add9)
+- 2 voicings (positions) per chord entry (E-shape barre + A-shape barre)
 
 ### System Style Presets (5 rows)
 | Name | DisplayOrder | IsDefault |
