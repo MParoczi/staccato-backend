@@ -63,19 +63,19 @@
 
 All T012–T022 tasks are fully parallel (each touches a different pair of files).
 
-- [ ] T012 [P] [US2] Create `Domain/Interfaces/Repositories/IUserRepository.cs` (stub — extends `IRepository<User>`, no extra methods yet) and `Repository/Repositories/UserRepository.cs` (class `UserRepository(AppDbContext context, IMapper mapper) : RepositoryBase<UserEntity, User>(context, mapper), IUserRepository` — no method body needed; RepositoryBase provides all four IRepository<T> methods). File-scoped namespace `Domain.Interfaces.Repositories` / `Repository.Repositories`.
-- [ ] T013 [P] [US2] Create `Domain/Interfaces/Repositories/IRefreshTokenRepository.cs` (stub) and `Repository/Repositories/RefreshTokenRepository.cs` — same pattern as T012 with `RefreshTokenEntity` and `RefreshToken`.
-- [ ] T014 [P] [US2] Create `Domain/Interfaces/Repositories/IUserSavedPresetRepository.cs` (stub) and `Repository/Repositories/UserSavedPresetRepository.cs` — `UserSavedPresetEntity` and `UserSavedPreset`.
-- [ ] T015 [P] [US2] Create `Domain/Interfaces/Repositories/IInstrumentRepository.cs` (stub) and `Repository/Repositories/InstrumentRepository.cs` — `InstrumentEntity` and `Instrument`.
-- [ ] T016 [P] [US2] Create `Domain/Interfaces/Repositories/IChordRepository.cs` (stub) and `Repository/Repositories/ChordRepository.cs` — `ChordEntity` and `Chord`.
-- [ ] T017 [P] [US2] Create `Domain/Interfaces/Repositories/INotebookRepository.cs` (stub) and `Repository/Repositories/NotebookRepository.cs` — `NotebookEntity` and `Notebook`.
-- [ ] T018 [P] [US2] Create `Domain/Interfaces/Repositories/INotebookModuleStyleRepository.cs` (stub) and `Repository/Repositories/NotebookModuleStyleRepository.cs` — `NotebookModuleStyleEntity` and `NotebookModuleStyle`.
-- [ ] T019 [P] [US2] Create `Domain/Interfaces/Repositories/ILessonRepository.cs` (stub) and `Repository/Repositories/LessonRepository.cs` — `LessonEntity` and `Lesson`.
-- [ ] T020 [P] [US2] Create `Domain/Interfaces/Repositories/ILessonPageRepository.cs` (stub) and `Repository/Repositories/LessonPageRepository.cs` — `LessonPageEntity` and `LessonPage`.
-- [ ] T021 [P] [US2] Create `Domain/Interfaces/Repositories/IModuleRepository.cs` (stub) and `Repository/Repositories/ModuleRepository.cs` — `ModuleEntity` and `Module`.
-- [ ] T022 [P] [US2] Create `Domain/Interfaces/Repositories/IPdfExportRepository.cs` (stub) and `Repository/Repositories/PdfExportRepository.cs` — `PdfExportEntity` and `PdfExport`.
-- [ ] T023 [US2] Create `Application/Extensions/ServiceCollectionExtensions.cs` with `public static IServiceCollection AddRepositories(this IServiceCollection services)` — register all 11 repositories and `UnitOfWork` as `Scoped`: `services.AddScoped<IUserRepository, UserRepository>()` … (repeat for all 11) … `services.AddScoped<IUnitOfWork, UnitOfWork>()`. Return `services`.
-- [ ] T024 [US2] Register `AddRepositories()` in `Application/Program.cs` — add `builder.Services.AddRepositories()`. Also ensure `builder.Services.AddAutoMapper(...)` includes the `Repository` assembly so `EntityToDomainProfile` is auto-discovered (e.g., `AddAutoMapper(typeof(Program).Assembly, typeof(EntityToDomainProfile).Assembly)`).
+- [x] T012 [P] [US2] Create `Domain/Interfaces/Repositories/IUserRepository.cs` (stub — extends `IRepository<User>`, no extra methods yet) and `Repository/Repositories/UserRepository.cs` (class `UserRepository(AppDbContext context, IMapper mapper) : RepositoryBase<UserEntity, User>(context, mapper), IUserRepository` — no method body needed; RepositoryBase provides all four IRepository<T> methods). File-scoped namespace `Domain.Interfaces.Repositories` / `Repository.Repositories`.
+- [x] T013 [P] [US2] Create `Domain/Interfaces/Repositories/IRefreshTokenRepository.cs` (stub) and `Repository/Repositories/RefreshTokenRepository.cs` — same pattern as T012 with `RefreshTokenEntity` and `RefreshToken`.
+- [x] T014 [P] [US2] Create `Domain/Interfaces/Repositories/IUserSavedPresetRepository.cs` (stub) and `Repository/Repositories/UserSavedPresetRepository.cs` — `UserSavedPresetEntity` and `UserSavedPreset`.
+- [x] T015 [P] [US2] Create `Domain/Interfaces/Repositories/IInstrumentRepository.cs` (stub) and `Repository/Repositories/InstrumentRepository.cs` — `InstrumentEntity` and `Instrument`.
+- [x] T016 [P] [US2] Create `Domain/Interfaces/Repositories/IChordRepository.cs` (stub) and `Repository/Repositories/ChordRepository.cs` — `ChordEntity` and `Chord`.
+- [x] T017 [P] [US2] Create `Domain/Interfaces/Repositories/INotebookRepository.cs` (stub) and `Repository/Repositories/NotebookRepository.cs` — `NotebookEntity` and `Notebook`.
+- [x] T018 [P] [US2] Create `Domain/Interfaces/Repositories/INotebookModuleStyleRepository.cs` (stub) and `Repository/Repositories/NotebookModuleStyleRepository.cs` — `NotebookModuleStyleEntity` and `NotebookModuleStyle`.
+- [x] T019 [P] [US2] Create `Domain/Interfaces/Repositories/ILessonRepository.cs` (stub) and `Repository/Repositories/LessonRepository.cs` — `LessonEntity` and `Lesson`.
+- [x] T020 [P] [US2] Create `Domain/Interfaces/Repositories/ILessonPageRepository.cs` (stub) and `Repository/Repositories/LessonPageRepository.cs` — `LessonPageEntity` and `LessonPage`.
+- [x] T021 [P] [US2] Create `Domain/Interfaces/Repositories/IModuleRepository.cs` (stub) and `Repository/Repositories/ModuleRepository.cs` — `ModuleEntity` and `Module`.
+- [x] T022 [P] [US2] Create `Domain/Interfaces/Repositories/IPdfExportRepository.cs` (stub) and `Repository/Repositories/PdfExportRepository.cs` — `PdfExportEntity` and `PdfExport`.
+- [x] T023 [US2] Create `Application/Extensions/ServiceCollectionExtensions.cs` with `public static IServiceCollection AddRepositories(this IServiceCollection services)` — register all 11 repositories and `UnitOfWork` as `Scoped`: `services.AddScoped<IUserRepository, UserRepository>()` … (repeat for all 11) … `services.AddScoped<IUnitOfWork, UnitOfWork>()`. Return `services`.
+- [x] T024 [US2] Register `AddRepositories()` in `Application/Program.cs` — add `builder.Services.AddRepositories()`. Also ensure `builder.Services.AddAutoMapper(...)` includes the `Repository` assembly so `EntityToDomainProfile` is auto-discovered (e.g., `AddAutoMapper(typeof(Program).Assembly, typeof(EntityToDomainProfile).Assembly)`).
 
 **Checkpoint**: All 11 stub interfaces and concrete repositories compile. DI wiring compiles. `dotnet build Staccato.sln` — zero errors.
 
