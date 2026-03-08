@@ -8,5 +8,7 @@ public class ValidationException : BusinessException
         StatusCode = 422;
     }
 
-    public ValidationException() : this("A business rule was violated.") { }
+    public ValidationException() : this("A business rule was violated.")
+    {
+    }
 }

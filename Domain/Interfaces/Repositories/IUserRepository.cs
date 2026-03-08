@@ -8,8 +8,8 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByGoogleIdAsync(string googleId, CancellationToken ct = default);
 
     /// <summary>
-    /// Returns the user and their currently active (non-revoked, non-expired) refresh tokens.
-    /// Returns null if no user with the given ID exists.
+    ///     Returns the user and their currently active (non-revoked, non-expired) refresh tokens.
+    ///     Returns null if no user with the given ID exists.
     /// </summary>
     Task<(User User, IReadOnlyList<RefreshToken> Tokens)?> GetWithActiveTokensAsync(
         Guid userId, CancellationToken ct = default);

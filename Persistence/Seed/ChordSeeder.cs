@@ -64,9 +64,9 @@ public class ChordSeeder(AppDbContext context)
         }
 
         var guitar = await context.Instruments
-            .FirstOrDefaultAsync(i => i.Key == InstrumentKey.Guitar6String, ct)
-            ?? throw new InvalidOperationException(
-                "Guitar6String instrument not found — run InstrumentSeeder before ChordSeeder.");
+                         .FirstOrDefaultAsync(i => i.Key == InstrumentKey.Guitar6String, ct)
+                     ?? throw new InvalidOperationException(
+                         "Guitar6String instrument not found — run InstrumentSeeder before ChordSeeder.");
 
         var serialiserOptions = new JsonSerializerOptions
         {
@@ -75,10 +75,10 @@ public class ChordSeeder(AppDbContext context)
 
         var entities = records.Select(r => new ChordEntity
         {
-            Id           = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             InstrumentId = guitar.Id,
-            Name         = r.Name,
-            Suffix       = r.Suffix,
+            Name = r.Name,
+            Suffix = r.Suffix,
             PositionsJson = JsonSerializer.Serialize(r.Positions, serialiserOptions)
         }).ToList();
 
@@ -90,8 +90,8 @@ public class ChordSeeder(AppDbContext context)
 
     private sealed class ChordRecord
     {
-        public string Name { get; set; } = string.Empty;
-        public string Suffix { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
+        public string Suffix { get; } = string.Empty;
         public List<JsonElement>? Positions { get; set; }
     }
 }

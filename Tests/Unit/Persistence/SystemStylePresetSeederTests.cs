@@ -7,10 +7,12 @@ namespace Tests.Unit.Persistence;
 
 public class SystemStylePresetSeederTests
 {
-    private static AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private static AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
     // ── Happy path ────────────────────────────────────────────────────────────
 
@@ -66,11 +68,11 @@ public class SystemStylePresetSeederTests
     }
 
     [Theory]
-    [InlineData("Classic",  1)]
+    [InlineData("Classic", 1)]
     [InlineData("Colorful", 2)]
-    [InlineData("Dark",     3)]
-    [InlineData("Minimal",  4)]
-    [InlineData("Pastel",   5)]
+    [InlineData("Dark", 3)]
+    [InlineData("Minimal", 4)]
+    [InlineData("Pastel", 5)]
     public async Task SeedAsync_EmptyTable_EachPresetHasCorrectDisplayOrder(
         string name, int expectedOrder)
     {
@@ -107,25 +109,25 @@ public class SystemStylePresetSeederTests
     // ── Colorful exact hex values (FR-031) ────────────────────────────────────
 
     [Theory]
-    [InlineData("Theory",         "backgroundColor", "#E0F7FA")]
-    [InlineData("Theory",         "headerBgColor",   "#00838F")]
-    [InlineData("Theory",         "borderColor",     "#00838F")]
-    [InlineData("Practice",       "backgroundColor", "#FFF3E0")]
-    [InlineData("Practice",       "headerBgColor",   "#E65100")]
-    [InlineData("Example",        "backgroundColor", "#E8F5E9")]
-    [InlineData("Example",        "headerBgColor",   "#2E7D32")]
-    [InlineData("Important",      "backgroundColor", "#FFFDE7")]
-    [InlineData("Important",      "headerBgColor",   "#F57F17")]
-    [InlineData("Tip",            "backgroundColor", "#E3F2FD")]
-    [InlineData("Tip",            "headerBgColor",   "#1565C0")]
-    [InlineData("Homework",       "backgroundColor", "#F3E5F5")]
-    [InlineData("Homework",       "headerBgColor",   "#6A1B9A")]
-    [InlineData("Question",       "backgroundColor", "#FCE4EC")]
-    [InlineData("Question",       "headerBgColor",   "#880E4F")]
+    [InlineData("Theory", "backgroundColor", "#E0F7FA")]
+    [InlineData("Theory", "headerBgColor", "#00838F")]
+    [InlineData("Theory", "borderColor", "#00838F")]
+    [InlineData("Practice", "backgroundColor", "#FFF3E0")]
+    [InlineData("Practice", "headerBgColor", "#E65100")]
+    [InlineData("Example", "backgroundColor", "#E8F5E9")]
+    [InlineData("Example", "headerBgColor", "#2E7D32")]
+    [InlineData("Important", "backgroundColor", "#FFFDE7")]
+    [InlineData("Important", "headerBgColor", "#F57F17")]
+    [InlineData("Tip", "backgroundColor", "#E3F2FD")]
+    [InlineData("Tip", "headerBgColor", "#1565C0")]
+    [InlineData("Homework", "backgroundColor", "#F3E5F5")]
+    [InlineData("Homework", "headerBgColor", "#6A1B9A")]
+    [InlineData("Question", "backgroundColor", "#FCE4EC")]
+    [InlineData("Question", "headerBgColor", "#880E4F")]
     [InlineData("ChordTablature", "backgroundColor", "#F5F5F5")]
-    [InlineData("ChordTablature", "headerBgColor",   "#424242")]
-    [InlineData("FreeText",       "backgroundColor", "#FFFFFF")]
-    [InlineData("FreeText",       "borderColor",     "#9E9E9E")]
+    [InlineData("ChordTablature", "headerBgColor", "#424242")]
+    [InlineData("FreeText", "backgroundColor", "#FFFFFF")]
+    [InlineData("FreeText", "borderColor", "#9E9E9E")]
     public async Task SeedAsync_ColorfulPreset_HasExactFR031HexValues(
         string moduleType, string field, string expectedHex)
     {
@@ -175,10 +177,10 @@ public class SystemStylePresetSeederTests
         await using var ctx = CreateContext();
         var seeder = new SystemStylePresetSeeder(ctx);
 
-        await seeder.SeedAsync();          // first run
+        await seeder.SeedAsync(); // first run
         var countAfterFirst = await ctx.SystemStylePresets.CountAsync();
 
-        await seeder.SeedAsync();          // second run — no-op
+        await seeder.SeedAsync(); // second run — no-op
         Assert.Equal(countAfterFirst, await ctx.SystemStylePresets.CountAsync());
     }
 }

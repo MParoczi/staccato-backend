@@ -10,8 +10,8 @@ using Repository.Repositories;
 namespace Tests.Integration.Repositories;
 
 /// <summary>
-/// Uses SQLite in-memory (not EF InMemory) because RevokeAllForUserAsync uses
-/// ExecuteUpdateAsync which requires a relational provider.
+///     Uses SQLite in-memory (not EF InMemory) because RevokeAllForUserAsync uses
+///     ExecuteUpdateAsync which requires a relational provider.
 /// </summary>
 public class RefreshTokenRepositoryTests
 {
@@ -28,28 +28,28 @@ public class RefreshTokenRepositoryTests
         // HasColumnType("nvarchar(max)") which is SQL Server-only syntax.
         // We manually create only the two tables required by these tests.
         await ctx.Database.ExecuteSqlRawAsync("""
-            CREATE TABLE "Users" (
-                "Id"                  TEXT NOT NULL PRIMARY KEY,
-                "Email"               TEXT NOT NULL,
-                "PasswordHash"        TEXT,
-                "GoogleId"            TEXT,
-                "FirstName"           TEXT NOT NULL,
-                "LastName"            TEXT NOT NULL,
-                "AvatarUrl"           TEXT,
-                "CreatedAt"           TEXT NOT NULL,
-                "ScheduledDeletionAt" TEXT,
-                "Language"            INTEGER NOT NULL
-            );
+                                              CREATE TABLE "Users" (
+                                                  "Id"                  TEXT NOT NULL PRIMARY KEY,
+                                                  "Email"               TEXT NOT NULL,
+                                                  "PasswordHash"        TEXT,
+                                                  "GoogleId"            TEXT,
+                                                  "FirstName"           TEXT NOT NULL,
+                                                  "LastName"            TEXT NOT NULL,
+                                                  "AvatarUrl"           TEXT,
+                                                  "CreatedAt"           TEXT NOT NULL,
+                                                  "ScheduledDeletionAt" TEXT,
+                                                  "Language"            INTEGER NOT NULL
+                                              );
 
-            CREATE TABLE "RefreshTokens" (
-                "Id"        TEXT    NOT NULL PRIMARY KEY,
-                "Token"     TEXT    NOT NULL,
-                "UserId"    TEXT    NOT NULL REFERENCES "Users" ("Id") ON DELETE CASCADE,
-                "ExpiresAt" TEXT    NOT NULL,
-                "CreatedAt" TEXT    NOT NULL,
-                "IsRevoked" INTEGER NOT NULL
-            );
-            """);
+                                              CREATE TABLE "RefreshTokens" (
+                                                  "Id"        TEXT    NOT NULL PRIMARY KEY,
+                                                  "Token"     TEXT    NOT NULL,
+                                                  "UserId"    TEXT    NOT NULL REFERENCES "Users" ("Id") ON DELETE CASCADE,
+                                                  "ExpiresAt" TEXT    NOT NULL,
+                                                  "CreatedAt" TEXT    NOT NULL,
+                                                  "IsRevoked" INTEGER NOT NULL
+                                              );
+                                              """);
 
         var mapper = new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>())
             .CreateMapper();
@@ -57,25 +57,31 @@ public class RefreshTokenRepositoryTests
         return (ctx, mapper, conn);
     }
 
-    private static UserEntity MakeUser(Guid userId) => new()
+    private static UserEntity MakeUser(Guid userId)
     {
-        Id = userId,
-        Email = $"{userId}@test.com",
-        FirstName = "Test",
-        LastName = "User",
-        CreatedAt = DateTime.UtcNow,
-        Language = Language.English
-    };
+        return new UserEntity
+        {
+            Id = userId,
+            Email = $"{userId}@test.com",
+            FirstName = "Test",
+            LastName = "User",
+            CreatedAt = DateTime.UtcNow,
+            Language = Language.English
+        };
+    }
 
-    private static RefreshTokenEntity MakeToken(Guid userId, bool isRevoked) => new()
+    private static RefreshTokenEntity MakeToken(Guid userId, bool isRevoked)
     {
-        Id = Guid.NewGuid(),
-        Token = Guid.NewGuid().ToString(),
-        UserId = userId,
-        ExpiresAt = DateTime.UtcNow.AddDays(7),
-        CreatedAt = DateTime.UtcNow,
-        IsRevoked = isRevoked
-    };
+        return new RefreshTokenEntity
+        {
+            Id = Guid.NewGuid(),
+            Token = Guid.NewGuid().ToString(),
+            UserId = userId,
+            ExpiresAt = DateTime.UtcNow.AddDays(7),
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = isRevoked
+        };
+    }
 
     [Fact]
     public async Task RevokeAllForUserAsync_RevokesOnlyActiveTokens()
@@ -87,9 +93,9 @@ public class RefreshTokenRepositoryTests
             var userId = Guid.NewGuid();
             ctx.Users.Add(MakeUser(userId));
             ctx.RefreshTokens.AddRange(
-                MakeToken(userId, isRevoked: false),  // active → should be revoked
-                MakeToken(userId, isRevoked: false),  // active → should be revoked
-                MakeToken(userId, isRevoked: true)    // already revoked → unchanged
+                MakeToken(userId, false), // active → should be revoked
+                MakeToken(userId, false), // active → should be revoked
+                MakeToken(userId, true) // already revoked → unchanged
             );
             await ctx.SaveChangesAsync();
             ctx.ChangeTracker.Clear();
@@ -116,7 +122,7 @@ public class RefreshTokenRepositoryTests
         {
             var userId = Guid.NewGuid();
             ctx.Users.Add(MakeUser(userId));
-            ctx.RefreshTokens.Add(MakeToken(userId, isRevoked: false));
+            ctx.RefreshTokens.Add(MakeToken(userId, false));
             await ctx.SaveChangesAsync();
             ctx.ChangeTracker.Clear();
 

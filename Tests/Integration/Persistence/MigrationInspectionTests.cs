@@ -1,13 +1,12 @@
 using System.Text.RegularExpressions;
-using Persistence.Migrations;
 
 namespace Tests.Integration.Persistence;
 
 /// <summary>
-/// SC-004: Inspects the generated InitialCreate migration source to assert the
-/// presence of filtered indexes, Restrict FKs, and NO ACTION for PdfExports.UserId.
-/// Unique constraint violations cannot be tested against InMemory EF; this test
-/// verifies them via migration source inspection.
+///     SC-004: Inspects the generated InitialCreate migration source to assert the
+///     presence of filtered indexes, Restrict FKs, and NO ACTION for PdfExports.UserId.
+///     Unique constraint violations cannot be tested against InMemory EF; this test
+///     verifies them via migration source inspection.
 /// </summary>
 public class MigrationInspectionTests
 {
@@ -106,7 +105,7 @@ public class MigrationInspectionTests
         // Walk back 500 chars from each match to find "Instruments" nearby
         foreach (Match match in matches)
         {
-            var start   = Math.Max(0, match.Index - 500);
+            var start = Math.Max(0, match.Index - 500);
             var context = src.Substring(start, match.Index - start + match.Length);
             Assert.Contains("Instruments", context);
         }

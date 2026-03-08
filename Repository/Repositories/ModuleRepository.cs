@@ -30,8 +30,8 @@ public class ModuleRepository(AppDbContext context, IMapper mapper)
             .Where(m => m.LessonPageId == pageId)
             .Where(m => excludeModuleId == null || m.Id != excludeModuleId)
             .AnyAsync(m =>
-                m.GridX < gridX + gridWidth && m.GridX + m.GridWidth > gridX &&
-                m.GridY < gridY + gridHeight && m.GridY + m.GridHeight > gridY,
+                    m.GridX < gridX + gridWidth && m.GridX + m.GridWidth > gridX &&
+                    m.GridY < gridY + gridHeight && m.GridY + m.GridHeight > gridY,
                 ct);
     }
 }

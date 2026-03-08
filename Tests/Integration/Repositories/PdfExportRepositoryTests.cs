@@ -10,18 +10,23 @@ namespace Tests.Integration.Repositories;
 
 public class PdfExportRepositoryTests
 {
-    private static AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private static AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
-    private static IMapper CreateMapper() =>
-        new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>())
+    private static IMapper CreateMapper()
+    {
+        return new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>())
             .CreateMapper();
+    }
 
     private static PdfExportEntity MakeExport(
-        Guid notebookId, Guid userId, ExportStatus status, DateTime createdAt) =>
-        new()
+        Guid notebookId, Guid userId, ExportStatus status, DateTime createdAt)
+    {
+        return new PdfExportEntity
         {
             Id = Guid.NewGuid(),
             NotebookId = notebookId,
@@ -29,6 +34,7 @@ public class PdfExportRepositoryTests
             Status = status,
             CreatedAt = createdAt
         };
+    }
 
     // ── GetExpiredExportsAsync ─────────────────────────────────────────────────
 
@@ -41,9 +47,9 @@ public class PdfExportRepositoryTests
         var cutoff = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         ctx.PdfExports.AddRange(
-            MakeExport(notebookId, userId, ExportStatus.Ready,   cutoff.AddDays(-1)),  // older → included
-            MakeExport(notebookId, userId, ExportStatus.Pending, cutoff.AddDays(-2)),  // older → included
-            MakeExport(notebookId, userId, ExportStatus.Ready,   cutoff.AddDays(+1))   // newer → excluded
+            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-1)), // older → included
+            MakeExport(notebookId, userId, ExportStatus.Pending, cutoff.AddDays(-2)), // older → included
+            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(+1)) // newer → excluded
         );
         await ctx.SaveChangesAsync();
         ctx.ChangeTracker.Clear();
@@ -63,8 +69,8 @@ public class PdfExportRepositoryTests
         var cutoff = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         ctx.PdfExports.AddRange(
-            MakeExport(notebookId, userId, ExportStatus.Ready,  cutoff.AddDays(-1)),  // older, non-Failed → included
-            MakeExport(notebookId, userId, ExportStatus.Failed, cutoff.AddDays(-1))   // older but Failed → excluded
+            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-1)), // older, non-Failed → included
+            MakeExport(notebookId, userId, ExportStatus.Failed, cutoff.AddDays(-1)) // older but Failed → excluded
         );
         await ctx.SaveChangesAsync();
         ctx.ChangeTracker.Clear();

@@ -4,7 +4,9 @@ namespace DomainModels.BuildingBlocks;
 
 public class CheckboxListBlock : BuildingBlock
 {
-    public List<CheckboxListItem> Items { get; set; } = new();
+    public CheckboxListBlock() : base(BuildingBlockType.CheckboxList)
+    {
+    }
 
-    public CheckboxListBlock() : base(BuildingBlockType.CheckboxList) { }
+    public List<CheckboxListItem> Items { get; set; } = new();
 }

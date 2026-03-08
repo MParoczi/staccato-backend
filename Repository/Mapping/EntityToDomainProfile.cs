@@ -1,7 +1,7 @@
+using System.Text.Json;
 using AutoMapper;
 using DomainModels.Models;
 using EntityModels.Entities;
-using System.Text.Json;
 
 namespace Repository.Mapping;
 

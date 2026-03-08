@@ -8,5 +8,7 @@ public class ConflictException : BusinessException
         StatusCode = 409;
     }
 
-    public ConflictException() : this("A conflicting resource already exists.") { }
+    public ConflictException() : this("A conflicting resource already exists.")
+    {
+    }
 }

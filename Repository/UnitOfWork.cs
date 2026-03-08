@@ -6,5 +6,7 @@ namespace Repository;
 public class UnitOfWork(AppDbContext context) : IUnitOfWork
 {
     public Task<int> CommitAsync(CancellationToken ct = default)
-        => context.SaveChangesAsync(ct);
+    {
+        return context.SaveChangesAsync(ct);
+    }
 }

@@ -8,5 +8,7 @@ public class ForbiddenException : BusinessException
         StatusCode = 403;
     }
 
-    public ForbiddenException() : this("You do not have access to this resource.") { }
+    public ForbiddenException() : this("You do not have access to this resource.")
+    {
+    }
 }

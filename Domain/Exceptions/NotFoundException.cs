@@ -8,5 +8,7 @@ public class NotFoundException : BusinessException
         StatusCode = 404;
     }
 
-    public NotFoundException() : this("The requested resource was not found.") { }
+    public NotFoundException() : this("The requested resource was not found.")
+    {
+    }
 }
