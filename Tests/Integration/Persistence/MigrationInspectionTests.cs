@@ -47,7 +47,7 @@ public class MigrationInspectionTests
     public void Migration_Contains_PdfExports_ActiveExport_PartialUniqueIndex()
     {
         var src = GetMigrationSource();
-        Assert.Contains("[Status] = 0 OR [Status] = 1", src);
+        Assert.Contains("[Status] IN (0, 1)", src);
     }
 
     // ── (c) Restrict appears exactly twice ────────────────────────────────────

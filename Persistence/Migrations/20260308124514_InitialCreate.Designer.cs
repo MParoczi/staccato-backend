@@ -12,7 +12,7 @@ using Persistence.Context;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260307152233_InitialCreate")]
+    [Migration("20260308124514_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -249,7 +249,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("NotebookId")
                         .IsUnique()
-                        .HasFilter("[Status] = 0 OR [Status] = 1");
+                        .HasFilter("[Status] IN (0, 1)");
 
                     b.HasIndex("UserId");
 
@@ -273,7 +273,8 @@ namespace Persistence.Migrations
 
                     b.Property<string>("Token")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -337,7 +338,8 @@ namespace Persistence.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("GoogleId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("Language")
                         .HasColumnType("int");

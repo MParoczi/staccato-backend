@@ -33,6 +33,6 @@ public class PdfExportConfiguration : IEntityTypeConfiguration<PdfExportEntity>
         // Partial unique index: at most one active export (Pending=0 or Processing=1) per notebook.
         builder.HasIndex(e => e.NotebookId)
             .IsUnique()
-            .HasFilter("[Status] = 0 OR [Status] = 1");
+            .HasFilter("[Status] IN (0, 1)");
     }
 }

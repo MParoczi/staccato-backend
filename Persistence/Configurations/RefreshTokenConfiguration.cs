@@ -12,7 +12,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshTokenEn
 
         builder.HasKey(rt => rt.Id);
 
-        builder.Property(rt => rt.Token).IsRequired().HasColumnType("nvarchar(max)");
+        builder.Property(rt => rt.Token).IsRequired().HasMaxLength(500);
 
         builder.HasIndex(rt => rt.Token).IsUnique();
 

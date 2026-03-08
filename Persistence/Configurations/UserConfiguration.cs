@@ -16,7 +16,7 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
         builder.Property(u => u.LastName).IsRequired().HasMaxLength(100);
         builder.Property(u => u.AvatarUrl).HasColumnType("nvarchar(max)");
-        builder.Property(u => u.GoogleId).HasColumnType("nvarchar(max)");
+        builder.Property(u => u.GoogleId).HasMaxLength(255);
         builder.Property(u => u.PasswordHash).HasColumnType("nvarchar(max)");
 
         builder.HasIndex(u => u.Email).IsUnique();
