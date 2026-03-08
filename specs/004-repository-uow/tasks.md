@@ -48,8 +48,8 @@
 
 **Independent Test**: Instantiate a Moq-backed `IRepository<Notebook>` and `IUnitOfWork` in a test — verify the mock calls are forwarded correctly with no database involved.
 
-- [ ] T010 [P] [US1] Create `Domain/Interfaces/IUnitOfWork.cs` — interface `IUnitOfWork` with one method: `Task<int> CommitAsync(CancellationToken ct = default)`. XML doc: "Flushes all staged repository changes to the database as one atomic transaction. Returns the number of state entries written." See `contracts/domain-interfaces.md §IUnitOfWork`.
-- [ ] T011 [US1] Create `Repository/UnitOfWork.cs` — class `UnitOfWork(AppDbContext context) : IUnitOfWork`. Single method: `public Task<int> CommitAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct)`. File-scoped namespace `Repository`.
+- [x] T010 [P] [US1] Create `Domain/Interfaces/IUnitOfWork.cs` — interface `IUnitOfWork` with one method: `Task<int> CommitAsync(CancellationToken ct = default)`. XML doc: "Flushes all staged repository changes to the database as one atomic transaction. Returns the number of state entries written." See `contracts/domain-interfaces.md §IUnitOfWork`.
+- [x] T011 [US1] Create `Repository/UnitOfWork.cs` — class `UnitOfWork(AppDbContext context) : IUnitOfWork`. Single method: `public Task<int> CommitAsync(CancellationToken ct = default) => context.SaveChangesAsync(ct)`. File-scoped namespace `Repository`.
 
 **Checkpoint**: `IRepository<T>`, `IUnitOfWork`, and `UnitOfWork` compile. `dotnet build` — zero errors.
 

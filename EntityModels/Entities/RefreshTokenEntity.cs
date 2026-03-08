@@ -1,6 +1,8 @@
+using EntityModels;
+
 namespace EntityModels.Entities;
 
-public class RefreshTokenEntity
+public class RefreshTokenEntity : IEntity
 {
     public Guid Id { get; set; }
     public string Token { get; set; } = string.Empty;

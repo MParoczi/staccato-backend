@@ -1,8 +1,9 @@
 using DomainModels.Enums;
+using EntityModels;
 
 namespace EntityModels.Entities;
 
-public class UserEntity
+public class UserEntity : IEntity
 {
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;

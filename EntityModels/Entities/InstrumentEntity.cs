@@ -1,8 +1,9 @@
 using DomainModels.Enums;
+using EntityModels;
 
 namespace EntityModels.Entities;
 
-public class InstrumentEntity
+public class InstrumentEntity : IEntity
 {
     public Guid Id { get; set; }
     public InstrumentKey Key { get; set; }

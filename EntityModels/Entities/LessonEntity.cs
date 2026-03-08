@@ -1,6 +1,8 @@
+using EntityModels;
+
 namespace EntityModels.Entities;
 
-public class LessonEntity
+public class LessonEntity : IEntity
 {
     public Guid Id { get; set; }
     public Guid NotebookId { get; set; }

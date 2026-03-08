@@ -1,8 +1,9 @@
 using DomainModels.Enums;
+using EntityModels;
 
 namespace EntityModels.Entities;
 
-public class PdfExportEntity
+public class PdfExportEntity : IEntity
 {
     public Guid Id { get; set; }
     public Guid NotebookId { get; set; }

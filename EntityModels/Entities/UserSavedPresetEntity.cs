@@ -1,6 +1,8 @@
+using EntityModels;
+
 namespace EntityModels.Entities;
 
-public class UserSavedPresetEntity
+public class UserSavedPresetEntity : IEntity
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }

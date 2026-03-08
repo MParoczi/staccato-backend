@@ -1,8 +1,9 @@
 using DomainModels.Enums;
+using EntityModels;
 
 namespace EntityModels.Entities;
 
-public class ModuleEntity
+public class ModuleEntity : IEntity
 {
     public Guid Id { get; set; }
     public Guid LessonPageId { get; set; }

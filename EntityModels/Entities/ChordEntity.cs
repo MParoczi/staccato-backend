@@ -1,6 +1,8 @@
+using EntityModels;
+
 namespace EntityModels.Entities;
 
-public class ChordEntity
+public class ChordEntity : IEntity
 {
     public Guid Id { get; set; }
     public Guid InstrumentId { get; set; }
