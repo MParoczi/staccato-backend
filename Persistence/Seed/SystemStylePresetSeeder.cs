@@ -12,7 +12,7 @@ public class SystemStylePresetSeeder(AppDbContext context)
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public async Task SeedAsync(CancellationToken ct = default)
+    public virtual async Task SeedAsync(CancellationToken ct = default)
     {
         if (await context.SystemStylePresets.AnyAsync(ct)) return;
 

@@ -8,11 +8,14 @@ namespace Persistence.Seed;
 
 public class ChordSeeder(AppDbContext context)
 {
-    public async Task SeedAsync(CancellationToken ct = default)
+    protected virtual string ChordFilePath =>
+        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "guitar_chords.json");
+
+    public virtual async Task SeedAsync(CancellationToken ct = default)
     {
         if (await context.Chords.AnyAsync(ct)) return;
 
-        var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "guitar_chords.json");
+        var filePath = ChordFilePath;
 
         if (!File.Exists(filePath))
             throw new InvalidOperationException(

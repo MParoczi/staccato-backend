@@ -7,7 +7,7 @@ namespace Persistence.Seed;
 
 public class InstrumentSeeder(AppDbContext context)
 {
-    public async Task SeedAsync(CancellationToken ct = default)
+    public virtual async Task SeedAsync(CancellationToken ct = default)
     {
         if (await context.Instruments.AnyAsync(ct)) return;
 
