@@ -19,8 +19,8 @@
 
 **Purpose**: Verify project references are correct before writing any code. No files created here.
 
-- [ ] T001 Confirm `Domain/Domain.csproj` references only `DomainModels` — open the file and verify no reference to `Repository`, `Persistence`, or `EntityModels` exists
-- [ ] T002 Confirm `Repository/Repository.csproj` references `Domain`, `EntityModels`, and `Persistence` — open the file and verify all three `<ProjectReference>` entries are present; add any that are missing
+- [x] T001 Confirm `Domain/Domain.csproj` references only `DomainModels` — open the file and verify no reference to `Repository`, `Persistence`, or `EntityModels` exists
+- [x] T002 Confirm `Repository/Repository.csproj` references `Domain`, `EntityModels`, and `Persistence` — open the file and verify all three `<ProjectReference>` entries are present; add any that are missing
 
 ---
 
