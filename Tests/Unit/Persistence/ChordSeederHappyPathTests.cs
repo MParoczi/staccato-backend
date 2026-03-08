@@ -18,21 +18,26 @@ public class ChordSeederHappyPathTests : IDisposable
         _tempFile = Path.Combine(_tempDir, "guitar_chords.json");
     }
 
-    public void Dispose() => Directory.Delete(_tempDir, recursive: true);
+    public void Dispose()
+    {
+        Directory.Delete(_tempDir, true);
+    }
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
     private async Task<InstrumentEntity> SeedGuitarInstrumentAsync(AppDbContext ctx)
     {
         var guitar = new InstrumentEntity
         {
-            Id          = Guid.NewGuid(),
-            Key         = InstrumentKey.Guitar6String,
+            Id = Guid.NewGuid(),
+            Key = InstrumentKey.Guitar6String,
             DisplayName = "6-String Guitar",
             StringCount = 6
         };
@@ -41,10 +46,12 @@ public class ChordSeederHappyPathTests : IDisposable
         return guitar;
     }
 
-    private void WriteChordFile(object[] chords) =>
+    private void WriteChordFile(object[] chords)
+    {
         File.WriteAllText(_tempFile,
             JsonSerializer.Serialize(chords,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+    }
 
     private ChordSeeder CreateSeeder(AppDbContext ctx)
     {
@@ -64,7 +71,7 @@ public class ChordSeederHappyPathTests : IDisposable
         {
             new { name = "A", suffix = "major", positions = new[] { MakePosition() } },
             new { name = "A", suffix = "minor", positions = new[] { MakePosition() } },
-            new { name = "B", suffix = "major", positions = new[] { MakePosition() } },
+            new { name = "B", suffix = "major", positions = new[] { MakePosition() } }
         };
         WriteChordFile(chords);
 
@@ -89,8 +96,8 @@ public class ChordSeederHappyPathTests : IDisposable
         await seeder.SeedAsync();
 
         var chord = await ctx.Chords.SingleAsync();
-        Assert.Equal("C",     chord.Name);
-        Assert.Equal("maj7",  chord.Suffix);
+        Assert.Equal("C", chord.Name);
+        Assert.Equal("maj7", chord.Suffix);
         Assert.Equal(guitar.Id, chord.InstrumentId);
         Assert.False(string.IsNullOrWhiteSpace(chord.PositionsJson));
     }
@@ -130,30 +137,33 @@ public class ChordSeederHappyPathTests : IDisposable
         });
 
         var seeder = CreateSeeder(ctx);
-        await seeder.SeedAsync();          // first run
+        await seeder.SeedAsync(); // first run
         var countAfterFirst = await ctx.Chords.CountAsync();
 
-        await seeder.SeedAsync();          // second run — no-op
+        await seeder.SeedAsync(); // second run — no-op
         Assert.Equal(countAfterFirst, await ctx.Chords.CountAsync());
     }
 
     // ── position fixture ──────────────────────────────────────────────────────
 
-    private static object MakePosition() => new
+    private static object MakePosition()
     {
-        label    = "1",
-        baseFret = 1,
-        barre    = (object?)null,
-        strings  = new[]
+        return new
         {
-            new { @string = 6, state = "muted",   fret = (int?)null, finger = (int?)null },
-            new { @string = 5, state = "open",    fret = (int?)null, finger = (int?)null },
-            new { @string = 4, state = "fretted", fret = (int?)2,    finger = (int?)1   },
-            new { @string = 3, state = "fretted", fret = (int?)2,    finger = (int?)2   },
-            new { @string = 2, state = "fretted", fret = (int?)2,    finger = (int?)3   },
-            new { @string = 1, state = "open",    fret = (int?)null, finger = (int?)null },
-        }
-    };
+            label = "1",
+            baseFret = 1,
+            barre = (object?)null,
+            strings = new[]
+            {
+                new { @string = 6, state = "muted", fret = (int?)null, finger = (int?)null },
+                new { @string = 5, state = "open", fret = (int?)null, finger = (int?)null },
+                new { @string = 4, state = "fretted", fret = (int?)2, finger = (int?)1 },
+                new { @string = 3, state = "fretted", fret = (int?)2, finger = (int?)2 },
+                new { @string = 2, state = "fretted", fret = (int?)2, finger = (int?)3 },
+                new { @string = 1, state = "open", fret = (int?)null, finger = (int?)null }
+            }
+        };
+    }
 
     // ── testable subclass — overrides file path ───────────────────────────────
 

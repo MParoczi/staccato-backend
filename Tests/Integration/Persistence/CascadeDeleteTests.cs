@@ -6,15 +6,17 @@ using Persistence.Context;
 namespace Tests.Integration.Persistence;
 
 /// <summary>
-/// SC-006: Deleting a User cascades to all 7 dependent entity types without errors.
-/// Uses InMemory EF — cascade behaviour is handled by EF Core (not the DB engine).
+///     SC-006: Deleting a User cascades to all 7 dependent entity types without errors.
+///     Uses InMemory EF — cascade behaviour is handled by EF Core (not the DB engine).
 /// </summary>
 public class CascadeDeleteTests
 {
-    private static AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private static AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
     [Fact]
     public async Task DeleteUser_CascadesToAllSevenDependentEntityTypes()
@@ -31,10 +33,10 @@ public class CascadeDeleteTests
         await ctx.SaveChangesAsync();
 
         // ── build user with one of each dependent type ───────────────────────
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var lessonId   = Guid.NewGuid();
-        var pageId     = Guid.NewGuid();
+        var lessonId = Guid.NewGuid();
+        var pageId = Guid.NewGuid();
 
         var user = new UserEntity
         {
@@ -113,7 +115,7 @@ public class CascadeDeleteTests
 
         // ── delete the user ───────────────────────────────────────────────────
         ctx.Users.Remove(user);
-        await ctx.SaveChangesAsync();   // should not throw
+        await ctx.SaveChangesAsync(); // should not throw
 
         // ── verify all dependents are gone ────────────────────────────────────
         Assert.Equal(0, await ctx.Users.CountAsync());

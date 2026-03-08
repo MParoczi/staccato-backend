@@ -8,8 +8,8 @@ using Persistence.Seed;
 namespace Tests.Unit.Persistence;
 
 /// <summary>
-/// Six fail cases from FR-038: missing file, invalid JSON, null/empty array,
-/// missing fields, empty positions, duplicate name+suffix.
+///     Six fail cases from FR-038: missing file, invalid JSON, null/empty array,
+///     missing fields, empty positions, duplicate name+suffix.
 /// </summary>
 public class ChordSeederFailTests : IDisposable
 {
@@ -22,14 +22,19 @@ public class ChordSeederFailTests : IDisposable
         _tempFile = Path.Combine(_tempDir, "guitar_chords.json");
     }
 
-    public void Dispose() => Directory.Delete(_tempDir, recursive: true);
+    public void Dispose()
+    {
+        Directory.Delete(_tempDir, true);
+    }
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
     private async Task SeedGuitarAsync(AppDbContext ctx)
     {
@@ -41,7 +46,10 @@ public class ChordSeederFailTests : IDisposable
         await ctx.SaveChangesAsync();
     }
 
-    private ChordSeeder Seeder(AppDbContext ctx) => new TestableChordSeeder(ctx, _tempFile);
+    private ChordSeeder Seeder(AppDbContext ctx)
+    {
+        return new TestableChordSeeder(ctx, _tempFile);
+    }
 
     // FR-038 (a): file missing → InvalidOperationException containing the file path
     [Fact]
@@ -51,8 +59,7 @@ public class ChordSeederFailTests : IDisposable
         await SeedGuitarAsync(ctx);
         // Do NOT create the file
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
@@ -65,8 +72,7 @@ public class ChordSeederFailTests : IDisposable
         await SeedGuitarAsync(ctx);
         File.WriteAllText(_tempFile, "this is not json {{ [");
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
@@ -79,8 +85,7 @@ public class ChordSeederFailTests : IDisposable
         await SeedGuitarAsync(ctx);
         File.WriteAllText(_tempFile, "[]");
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
@@ -101,8 +106,7 @@ public class ChordSeederFailTests : IDisposable
             JsonSerializer.Serialize(chords,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
@@ -122,8 +126,7 @@ public class ChordSeederFailTests : IDisposable
             JsonSerializer.Serialize(chords,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
@@ -138,35 +141,37 @@ public class ChordSeederFailTests : IDisposable
         var chords = new[]
         {
             new { name = "A", suffix = "major", positions = new[] { MakePosition() } },
-            new { name = "A", suffix = "major", positions = new[] { MakePosition() } },  // duplicate
+            new { name = "A", suffix = "major", positions = new[] { MakePosition() } } // duplicate
         };
         File.WriteAllText(_tempFile,
             JsonSerializer.Serialize(chords,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx).SeedAsync());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
 
         Assert.Contains(_tempFile, ex.Message);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private static object MakePosition() => new
+    private static object MakePosition()
     {
-        label    = "1",
-        baseFret = 1,
-        barre    = (object?)null,
-        strings  = new[]
+        return new
         {
-            new { @string = 6, state = "muted",   fret = (int?)null, finger = (int?)null },
-            new { @string = 5, state = "open",    fret = (int?)null, finger = (int?)null },
-            new { @string = 4, state = "fretted", fret = (int?)2,    finger = (int?)1   },
-            new { @string = 3, state = "fretted", fret = (int?)2,    finger = (int?)2   },
-            new { @string = 2, state = "fretted", fret = (int?)2,    finger = (int?)3   },
-            new { @string = 1, state = "open",    fret = (int?)null, finger = (int?)null },
-        }
-    };
+            label = "1",
+            baseFret = 1,
+            barre = (object?)null,
+            strings = new[]
+            {
+                new { @string = 6, state = "muted", fret = (int?)null, finger = (int?)null },
+                new { @string = 5, state = "open", fret = (int?)null, finger = (int?)null },
+                new { @string = 4, state = "fretted", fret = (int?)2, finger = (int?)1 },
+                new { @string = 3, state = "fretted", fret = (int?)2, finger = (int?)2 },
+                new { @string = 2, state = "fretted", fret = (int?)2, finger = (int?)3 },
+                new { @string = 1, state = "open", fret = (int?)null, finger = (int?)null }
+            }
+        };
+    }
 
     private sealed class TestableChordSeeder(AppDbContext ctx, string filePath)
         : ChordSeeder(ctx)

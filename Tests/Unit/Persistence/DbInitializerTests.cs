@@ -30,21 +30,21 @@ public class DbInitializerTests
     }
 
     private static (Mock<InstrumentSeeder> Instrument,
-                    Mock<ChordSeeder> Chord,
-                    Mock<SystemStylePresetSeeder> Preset)
+        Mock<ChordSeeder> Chord,
+        Mock<SystemStylePresetSeeder> Preset)
         CreateSeederMocks(AppDbContext ctx)
     {
         var instrument = new Mock<InstrumentSeeder>(ctx);
         instrument.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-                  .Returns(Task.CompletedTask);
+            .Returns(Task.CompletedTask);
 
         var chord = new Mock<ChordSeeder>(ctx);
         chord.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-             .Returns(Task.CompletedTask);
+            .Returns(Task.CompletedTask);
 
         var preset = new Mock<SystemStylePresetSeeder>(ctx);
         preset.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-              .Returns(Task.CompletedTask);
+            .Returns(Task.CompletedTask);
 
         return (instrument, chord, preset);
     }
@@ -79,18 +79,18 @@ public class DbInitializerTests
 
         var instrument = new Mock<InstrumentSeeder>(ctx);
         instrument.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-                  .Callback(() => callOrder.Add("instrument"))
-                  .Returns(Task.CompletedTask);
+            .Callback(() => callOrder.Add("instrument"))
+            .Returns(Task.CompletedTask);
 
         var chord = new Mock<ChordSeeder>(ctx);
         chord.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-             .Callback(() => callOrder.Add("chord"))
-             .Returns(Task.CompletedTask);
+            .Callback(() => callOrder.Add("chord"))
+            .Returns(Task.CompletedTask);
 
         var preset = new Mock<SystemStylePresetSeeder>(ctx);
         preset.Setup(s => s.SeedAsync(It.IsAny<CancellationToken>()))
-              .Callback(() => callOrder.Add("preset"))
-              .Returns(Task.CompletedTask);
+            .Callback(() => callOrder.Add("preset"))
+            .Returns(Task.CompletedTask);
 
         var initializer = new DbInitializer(ctx, instrument.Object, chord.Object, preset.Object);
         await initializer.InitializeAsync();

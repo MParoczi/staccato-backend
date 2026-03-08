@@ -2,9 +2,8 @@ using DomainModels.Enums;
 
 namespace EntityModels.Entities;
 
-public class PdfExportEntity
+public class PdfExportEntity : IEntity
 {
-    public Guid Id { get; set; }
     public Guid NotebookId { get; set; }
     public Guid UserId { get; set; }
     public ExportStatus Status { get; set; }
@@ -15,4 +14,5 @@ public class PdfExportEntity
 
     public NotebookEntity Notebook { get; set; } = null!;
     public UserEntity User { get; set; } = null!;
+    public Guid Id { get; set; }
 }

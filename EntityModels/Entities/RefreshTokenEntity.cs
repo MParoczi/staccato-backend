@@ -1,8 +1,7 @@
 namespace EntityModels.Entities;
 
-public class RefreshTokenEntity
+public class RefreshTokenEntity : IEntity
 {
-    public Guid Id { get; set; }
     public string Token { get; set; } = string.Empty;
     public Guid UserId { get; set; }
     public DateTime ExpiresAt { get; set; }
@@ -10,4 +9,5 @@ public class RefreshTokenEntity
     public bool IsRevoked { get; set; }
 
     public UserEntity User { get; set; } = null!;
+    public Guid Id { get; set; }
 }

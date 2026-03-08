@@ -6,15 +6,17 @@ using Persistence.Context;
 namespace Tests.Integration.Persistence;
 
 /// <summary>
-/// Round-trip persistence tests for all 12 entity types.
-/// Each test inserts one row, detaches it, queries it back, and verifies all scalar properties.
+///     Round-trip persistence tests for all 12 entity types.
+///     Each test inserts one row, detaches it, queries it back, and verifies all scalar properties.
 /// </summary>
 public class EntityPersistenceTests
 {
-    private static AppDbContext CreateContext() =>
-        new(new DbContextOptionsBuilder<AppDbContext>()
+    private static AppDbContext CreateContext()
+    {
+        return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+    }
 
     // ── UserEntity ────────────────────────────────────────────────────────────
 
@@ -39,13 +41,13 @@ public class EntityPersistenceTests
         var entity = await ctx.Users.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("test@example.com", entity.Email);
-        Assert.Equal("hash",             entity.PasswordHash);
-        Assert.Equal("gid123",           entity.GoogleId);
-        Assert.Equal("Alice",            entity.FirstName);
-        Assert.Equal("Smith",            entity.LastName);
+        Assert.Equal("hash", entity.PasswordHash);
+        Assert.Equal("gid123", entity.GoogleId);
+        Assert.Equal("Alice", entity.FirstName);
+        Assert.Equal("Smith", entity.LastName);
         Assert.Equal("https://example.com/avatar.png", entity.AvatarUrl);
-        Assert.Equal(now,                entity.CreatedAt);
-        Assert.Equal(Language.English,   entity.Language);
+        Assert.Equal(now, entity.CreatedAt);
+        Assert.Equal(Language.English, entity.Language);
         Assert.NotNull(entity.ScheduledDeletionAt);
     }
 
@@ -72,8 +74,8 @@ public class EntityPersistenceTests
         var entity = await ctx.RefreshTokens.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("tok-abc", entity.Token);
-        Assert.Equal(userId,    entity.UserId);
-        Assert.Equal(exp,       entity.ExpiresAt);
+        Assert.Equal(userId, entity.UserId);
+        Assert.Equal(exp, entity.ExpiresAt);
         Assert.False(entity.IsRevoked);
     }
 
@@ -99,8 +101,8 @@ public class EntityPersistenceTests
         var entity = await ctx.UserSavedPresets.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("My Preset", entity.Name);
-        Assert.Equal(json,        entity.StylesJson);
-        Assert.Equal(userId,      entity.UserId);
+        Assert.Equal(json, entity.StylesJson);
+        Assert.Equal(userId, entity.UserId);
     }
 
     // ── SystemStylePresetEntity ───────────────────────────────────────────────
@@ -122,9 +124,9 @@ public class EntityPersistenceTests
         var entity = await ctx.SystemStylePresets.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("Classic", entity.Name);
-        Assert.Equal(1,         entity.DisplayOrder);
+        Assert.Equal(1, entity.DisplayOrder);
         Assert.True(entity.IsDefault);
-        Assert.Equal(json,      entity.StylesJson);
+        Assert.Equal(json, entity.StylesJson);
     }
 
     // ── InstrumentEntity ──────────────────────────────────────────────────────
@@ -146,8 +148,8 @@ public class EntityPersistenceTests
         var entity = await ctx.Instruments.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal(InstrumentKey.Guitar6String, entity.Key);
-        Assert.Equal("6-String Guitar",           entity.DisplayName);
-        Assert.Equal(6,                           entity.StringCount);
+        Assert.Equal("6-String Guitar", entity.DisplayName);
+        Assert.Equal(6, entity.StringCount);
     }
 
     // ── ChordEntity ───────────────────────────────────────────────────────────
@@ -176,10 +178,10 @@ public class EntityPersistenceTests
 
         var entity = await ctx.Chords.FindAsync(id);
         Assert.NotNull(entity);
-        Assert.Equal("A",       entity.Name);
-        Assert.Equal("major",   entity.Suffix);
-        Assert.Equal(instrId,   entity.InstrumentId);
-        Assert.Equal(posJson,   entity.PositionsJson);
+        Assert.Equal("A", entity.Name);
+        Assert.Equal("major", entity.Suffix);
+        Assert.Equal(instrId, entity.InstrumentId);
+        Assert.Equal(posJson, entity.PositionsJson);
     }
 
     // ── NotebookEntity ────────────────────────────────────────────────────────
@@ -208,9 +210,9 @@ public class EntityPersistenceTests
         var entity = await ctx.Notebooks.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("My Notebook", entity.Title);
-        Assert.Equal(PageSize.A4,   entity.PageSize);
-        Assert.Equal(userId,        entity.UserId);
-        Assert.Equal(instrId,       entity.InstrumentId);
+        Assert.Equal(PageSize.A4, entity.PageSize);
+        Assert.Equal(userId, entity.UserId);
+        Assert.Equal(instrId, entity.InstrumentId);
     }
 
     // ── NotebookModuleStyleEntity ─────────────────────────────────────────────
@@ -224,7 +226,11 @@ public class EntityPersistenceTests
         var notebookId = Guid.NewGuid();
         ctx.Users.Add(new UserEntity { Id = userId, Email = "u@u.com", FirstName = "U", LastName = "U", CreatedAt = DateTime.UtcNow });
         ctx.Instruments.Add(new InstrumentEntity { Id = instrId, Key = InstrumentKey.Guitar6String, DisplayName = "Guitar", StringCount = 6 });
-        ctx.Notebooks.Add(new NotebookEntity { Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+        ctx.Notebooks.Add(new NotebookEntity
+        {
+            Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
         await ctx.SaveChangesAsync();
 
         var id = Guid.NewGuid();
@@ -239,9 +245,9 @@ public class EntityPersistenceTests
 
         var entity = await ctx.NotebookModuleStyles.FindAsync(id);
         Assert.NotNull(entity);
-        Assert.Equal(notebookId,       entity.NotebookId);
+        Assert.Equal(notebookId, entity.NotebookId);
         Assert.Equal(ModuleType.Theory, entity.ModuleType);
-        Assert.Equal(styleJson,        entity.StylesJson);
+        Assert.Equal(styleJson, entity.StylesJson);
     }
 
     // ── LessonEntity ──────────────────────────────────────────────────────────
@@ -255,7 +261,11 @@ public class EntityPersistenceTests
         var notebookId = Guid.NewGuid();
         ctx.Users.Add(new UserEntity { Id = userId, Email = "u@u.com", FirstName = "U", LastName = "U", CreatedAt = DateTime.UtcNow });
         ctx.Instruments.Add(new InstrumentEntity { Id = instrId, Key = InstrumentKey.Guitar6String, DisplayName = "Guitar", StringCount = 6 });
-        ctx.Notebooks.Add(new NotebookEntity { Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+        ctx.Notebooks.Add(new NotebookEntity
+        {
+            Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
         await ctx.SaveChangesAsync();
 
         var id = Guid.NewGuid();
@@ -270,9 +280,9 @@ public class EntityPersistenceTests
 
         var entity = await ctx.Lessons.FindAsync(id);
         Assert.NotNull(entity);
-        Assert.Equal("Lesson 1",  entity.Title);
-        Assert.Equal(notebookId,  entity.NotebookId);
-        Assert.Equal(now,         entity.CreatedAt);
+        Assert.Equal("Lesson 1", entity.Title);
+        Assert.Equal(notebookId, entity.NotebookId);
+        Assert.Equal(now, entity.CreatedAt);
     }
 
     // ── LessonPageEntity ──────────────────────────────────────────────────────
@@ -291,7 +301,7 @@ public class EntityPersistenceTests
         var entity = await ctx.LessonPages.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal(lessonId, entity.LessonId);
-        Assert.Equal(1,        entity.PageNumber);
+        Assert.Equal(1, entity.PageNumber);
     }
 
     // ── ModuleEntity ──────────────────────────────────────────────────────────
@@ -319,10 +329,10 @@ public class EntityPersistenceTests
         var entity = await ctx.Modules.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal(ModuleType.Theory, entity.ModuleType);
-        Assert.Equal(0,           entity.GridX);
-        Assert.Equal(0,           entity.GridY);
-        Assert.Equal(10,          entity.GridWidth);
-        Assert.Equal(5,           entity.GridHeight);
+        Assert.Equal(0, entity.GridX);
+        Assert.Equal(0, entity.GridY);
+        Assert.Equal(10, entity.GridWidth);
+        Assert.Equal(5, entity.GridHeight);
         Assert.Equal(contentJson, entity.ContentJson);
     }
 
@@ -337,7 +347,11 @@ public class EntityPersistenceTests
         var notebookId = Guid.NewGuid();
         ctx.Users.Add(new UserEntity { Id = userId, Email = "u@u.com", FirstName = "U", LastName = "U", CreatedAt = DateTime.UtcNow });
         ctx.Instruments.Add(new InstrumentEntity { Id = instrId, Key = InstrumentKey.Guitar6String, DisplayName = "Guitar", StringCount = 6 });
-        ctx.Notebooks.Add(new NotebookEntity { Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+        ctx.Notebooks.Add(new NotebookEntity
+        {
+            Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
         await ctx.SaveChangesAsync();
 
         var id = Guid.NewGuid();
@@ -356,9 +370,9 @@ public class EntityPersistenceTests
         var entity = await ctx.PdfExports.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal(ExportStatus.Pending, entity.Status);
-        Assert.Equal(notebookId,           entity.NotebookId);
-        Assert.Equal(userId,               entity.UserId);
-        Assert.Equal(lessonIdsJson,        entity.LessonIdsJson);
+        Assert.Equal(notebookId, entity.NotebookId);
+        Assert.Equal(userId, entity.UserId);
+        Assert.Equal(lessonIdsJson, entity.LessonIdsJson);
         Assert.Null(entity.CompletedAt);
         Assert.Null(entity.BlobReference);
     }
@@ -367,13 +381,17 @@ public class EntityPersistenceTests
 
     private static async Task<(Guid LessonId, Guid NotebookId)> SeedLessonAsync(AppDbContext ctx)
     {
-        var userId     = Guid.NewGuid();
-        var instrId    = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var instrId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var lessonId   = Guid.NewGuid();
+        var lessonId = Guid.NewGuid();
         ctx.Users.Add(new UserEntity { Id = userId, Email = "u@u.com", FirstName = "U", LastName = "U", CreatedAt = DateTime.UtcNow });
         ctx.Instruments.Add(new InstrumentEntity { Id = instrId, Key = InstrumentKey.Guitar6String, DisplayName = "Guitar", StringCount = 6 });
-        ctx.Notebooks.Add(new NotebookEntity { Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
+        ctx.Notebooks.Add(new NotebookEntity
+        {
+            Id = notebookId, UserId = userId, Title = "NB", InstrumentId = instrId, PageSize = PageSize.A4, CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        });
         ctx.Lessons.Add(new LessonEntity { Id = lessonId, NotebookId = notebookId, Title = "L1", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow });
         await ctx.SaveChangesAsync();
         return (lessonId, notebookId);

@@ -2,9 +2,8 @@ using DomainModels.Enums;
 
 namespace EntityModels.Entities;
 
-public class ModuleEntity
+public class ModuleEntity : IEntity
 {
-    public Guid Id { get; set; }
     public Guid LessonPageId { get; set; }
     public ModuleType ModuleType { get; set; }
     public int GridX { get; set; }
@@ -14,4 +13,5 @@ public class ModuleEntity
     public string ContentJson { get; set; } = "[]";
 
     public LessonPageEntity LessonPage { get; set; } = null!;
+    public Guid Id { get; set; }
 }

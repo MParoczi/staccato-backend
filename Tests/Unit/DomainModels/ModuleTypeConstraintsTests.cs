@@ -45,18 +45,18 @@ public class ModuleTypeConstraintsTests
     }
 
     [Theory]
-    [InlineData(ModuleType.Title,         20, 4)]
-    [InlineData(ModuleType.Breadcrumb,    20, 3)]
-    [InlineData(ModuleType.Subtitle,      10, 3)]
-    [InlineData(ModuleType.Theory,         8, 5)]
-    [InlineData(ModuleType.Practice,       8, 5)]
-    [InlineData(ModuleType.Example,        8, 5)]
-    [InlineData(ModuleType.Important,      8, 4)]
-    [InlineData(ModuleType.Tip,            8, 4)]
-    [InlineData(ModuleType.Homework,       8, 5)]
-    [InlineData(ModuleType.Question,       8, 4)]
+    [InlineData(ModuleType.Title, 20, 4)]
+    [InlineData(ModuleType.Breadcrumb, 20, 3)]
+    [InlineData(ModuleType.Subtitle, 10, 3)]
+    [InlineData(ModuleType.Theory, 8, 5)]
+    [InlineData(ModuleType.Practice, 8, 5)]
+    [InlineData(ModuleType.Example, 8, 5)]
+    [InlineData(ModuleType.Important, 8, 4)]
+    [InlineData(ModuleType.Tip, 8, 4)]
+    [InlineData(ModuleType.Homework, 8, 5)]
+    [InlineData(ModuleType.Question, 8, 4)]
     [InlineData(ModuleType.ChordTablature, 8, 10)]
-    [InlineData(ModuleType.FreeText,       4, 4)]
+    [InlineData(ModuleType.FreeText, 4, 4)]
     public void MinimumSizes_ReturnsCorrectValues(ModuleType type, int minWidth, int minHeight)
     {
         var sizes = ModuleTypeConstraints.MinimumSizes[type];

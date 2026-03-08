@@ -7,6 +7,8 @@ using ApiModels;
 using Application.BackgroundServices;
 using Application.Options;
 using Azure.Storage.Blobs;
+using Domain.Interfaces;
+using Domain.Interfaces.Repositories;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,6 +17,8 @@ using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Context;
 using Persistence.Seed;
+using Repository;
+using Repository.Repositories;
 
 namespace Application.Extensions;
 
@@ -181,9 +185,20 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    // Populated in a future feature.
     public static IServiceCollection AddRepositories(this IServiceCollection services)
     {
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IUserSavedPresetRepository, UserSavedPresetRepository>();
+        services.AddScoped<IInstrumentRepository, InstrumentRepository>();
+        services.AddScoped<IChordRepository, ChordRepository>();
+        services.AddScoped<INotebookRepository, NotebookRepository>();
+        services.AddScoped<INotebookModuleStyleRepository, NotebookModuleStyleRepository>();
+        services.AddScoped<ILessonRepository, LessonRepository>();
+        services.AddScoped<ILessonPageRepository, LessonPageRepository>();
+        services.AddScoped<IModuleRepository, ModuleRepository>();
+        services.AddScoped<IPdfExportRepository, PdfExportRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 

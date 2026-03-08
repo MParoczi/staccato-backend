@@ -2,9 +2,8 @@ using DomainModels.Enums;
 
 namespace EntityModels.Entities;
 
-public class UserEntity
+public class UserEntity : IEntity
 {
-    public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string? PasswordHash { get; set; }
     public string? GoogleId { get; set; }
@@ -19,4 +18,5 @@ public class UserEntity
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = new List<RefreshTokenEntity>();
     public ICollection<UserSavedPresetEntity> UserSavedPresets { get; set; } = new List<UserSavedPresetEntity>();
     public ICollection<PdfExportEntity> PdfExports { get; set; } = new List<PdfExportEntity>();
+    public Guid Id { get; set; }
 }

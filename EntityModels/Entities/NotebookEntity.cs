@@ -2,9 +2,8 @@ using DomainModels.Enums;
 
 namespace EntityModels.Entities;
 
-public class NotebookEntity
+public class NotebookEntity : IEntity
 {
-    public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public string Title { get; set; } = string.Empty;
     public Guid InstrumentId { get; set; }
@@ -17,4 +16,5 @@ public class NotebookEntity
     public ICollection<LessonEntity> Lessons { get; set; } = new List<LessonEntity>();
     public ICollection<NotebookModuleStyleEntity> ModuleStyles { get; set; } = new List<NotebookModuleStyleEntity>();
     public ICollection<PdfExportEntity> PdfExports { get; set; } = new List<PdfExportEntity>();
+    public Guid Id { get; set; }
 }
