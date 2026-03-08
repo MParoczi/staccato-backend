@@ -12,7 +12,9 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Persistence;
 using Persistence.Context;
+using Persistence.Seed;
 
 namespace Application.Extensions;
 
@@ -170,6 +172,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<InstrumentSeeder>();
+        services.AddScoped<ChordSeeder>();
+        services.AddScoped<SystemStylePresetSeeder>();
+        services.AddScoped<DbInitializer>();
 
         return services;
     }

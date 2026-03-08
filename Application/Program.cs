@@ -2,6 +2,7 @@ using Application.Extensions;
 using Application.Hubs;
 using Application.Middleware;
 using Application.Options;
+using Persistence;
 using QuestPDF;
 using QuestPDF.Infrastructure;
 
@@ -55,6 +56,12 @@ builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    await initializer.InitializeAsync();
+}
 
 // Middleware pipeline — exact order per FR-024.
 app.UseMiddleware<BusinessExceptionMiddleware>();
