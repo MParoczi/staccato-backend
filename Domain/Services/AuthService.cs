@@ -12,7 +12,8 @@ public class AuthService(
     IRefreshTokenRepository refreshTokenRepository,
     IUnitOfWork uow,
     IPasswordHasher passwordHasher,
-    IJwtService jwtService) : IAuthService
+    IJwtService jwtService,
+    IGoogleTokenValidator googleTokenValidator) : IAuthService
 {
     public async Task<AuthTokens> RegisterAsync(string email, string displayName, string password,
         CancellationToken ct = default)
@@ -100,8 +101,65 @@ public class AuthService(
             refreshToken.ExpiresAt);
     }
 
-    public Task<AuthTokens> GoogleLoginAsync(string idToken, CancellationToken ct = default) =>
-        throw new NotImplementedException();
+    public async Task<AuthTokens> GoogleLoginAsync(string idToken, CancellationToken ct = default)
+    {
+        var googleUserInfo = await googleTokenValidator.ValidateAsync(idToken, ct);
+
+        var user = await userRepository.GetByGoogleIdAsync(googleUserInfo.GoogleId, ct);
+
+        if (user is null)
+        {
+            user = await userRepository.GetByEmailAsync(googleUserInfo.Email, ct);
+            if (user is not null)
+            {
+                user.GoogleId = googleUserInfo.GoogleId;
+                if (user.AvatarUrl is null)
+                    user.AvatarUrl = googleUserInfo.PictureUrl;
+                userRepository.Update(user);
+            }
+        }
+
+        if (user is null)
+        {
+            var parts     = googleUserInfo.Name?.Split(' ', 2) ?? [];
+            var firstName = parts.Length > 0 ? parts[0] : string.Empty;
+            var lastName  = parts.Length > 1 ? parts[1] : string.Empty;
+
+            user = new User
+            {
+                Id        = Guid.NewGuid(),
+                Email     = googleUserInfo.Email,
+                FirstName = firstName,
+                LastName  = lastName,
+                GoogleId  = googleUserInfo.GoogleId,
+                AvatarUrl = googleUserInfo.PictureUrl,
+                CreatedAt = DateTime.UtcNow,
+                Language  = Language.English
+            };
+
+            await userRepository.AddAsync(user, ct);
+        }
+
+        var tokenValue = jwtService.GenerateRefreshToken();
+        var refreshToken = new RefreshToken
+        {
+            Id        = Guid.NewGuid(),
+            Token     = tokenValue,
+            UserId    = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(jwtService.RefreshTokenExpiryDays),
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = false
+        };
+
+        await refreshTokenRepository.AddAsync(refreshToken, ct);
+        await uow.CommitAsync(ct);
+
+        return new AuthTokens(
+            jwtService.GenerateAccessToken(user),
+            jwtService.AccessTokenExpirySeconds,
+            tokenValue,
+            refreshToken.ExpiresAt);
+    }
 
     public async Task<AuthTokens> RefreshAsync(string refreshToken, CancellationToken ct = default)
     {

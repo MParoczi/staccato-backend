@@ -41,6 +41,14 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
         return Ok(new AuthResponse(result.AccessToken, result.ExpiresIn));
     }
 
+    [HttpPost("google")]
+    public async Task<IActionResult> Google(GoogleAuthRequest request, CancellationToken ct)
+    {
+        var result = await authService.GoogleLoginAsync(request.IdToken, ct);
+        SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry);
+        return Ok(new AuthResponse(result.AccessToken, result.ExpiresIn));
+    }
+
     [HttpDelete("logout")]
     public async Task<IActionResult> Logout(CancellationToken ct)
     {

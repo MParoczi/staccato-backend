@@ -229,6 +229,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddSingleton<IGoogleTokenValidator, GoogleTokenValidator>();
         return services;
     }
 }
