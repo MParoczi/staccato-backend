@@ -19,6 +19,14 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
         return StatusCode(StatusCodes.Status201Created, new AuthResponse(result.AccessToken, result.ExpiresIn));
     }
 
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct)
+    {
+        var result = await authService.LoginAsync(request.Email, request.Password, request.RememberMe, ct);
+        SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry);
+        return Ok(new AuthResponse(result.AccessToken, result.ExpiresIn));
+    }
+
     private void SetRefreshCookie(string token, DateTime expiry)
     {
         Response.Cookies.Append("staccato_refresh", token, new CookieOptions

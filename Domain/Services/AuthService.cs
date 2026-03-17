@@ -62,9 +62,43 @@ public class AuthService(
             refreshToken.ExpiresAt);
     }
 
-    public Task<AuthTokens> LoginAsync(string email, string password, bool rememberMe = false,
-        CancellationToken ct = default) =>
-        throw new NotImplementedException();
+    public async Task<AuthTokens> LoginAsync(string email, string password, bool rememberMe = false,
+        CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByEmailAsync(email, ct);
+        if (user is null)
+            throw new UnauthorizedException(AuthErrorCodes.InvalidCredentials,
+                "Invalid email address or password.");
+
+        if (user.PasswordHash is null)
+            throw new UnauthorizedException(AuthErrorCodes.NoPasswordSet,
+                "This account uses Google Sign-In. Please log in with Google.");
+
+        if (!passwordHasher.Verify(password, user.PasswordHash))
+            throw new UnauthorizedException(AuthErrorCodes.InvalidCredentials,
+                "Invalid email address or password.");
+
+        var expiryDays  = rememberMe ? jwtService.RememberMeExpiryDays : jwtService.RefreshTokenExpiryDays;
+        var tokenValue  = jwtService.GenerateRefreshToken();
+        var refreshToken = new RefreshToken
+        {
+            Id        = Guid.NewGuid(),
+            Token     = tokenValue,
+            UserId    = user.Id,
+            ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = false
+        };
+
+        await refreshTokenRepository.AddAsync(refreshToken, ct);
+        await uow.CommitAsync(ct);
+
+        return new AuthTokens(
+            jwtService.GenerateAccessToken(user),
+            jwtService.AccessTokenExpirySeconds,
+            tokenValue,
+            refreshToken.ExpiresAt);
+    }
 
     public Task<AuthTokens> GoogleLoginAsync(string idToken, CancellationToken ct = default) =>
         throw new NotImplementedException();

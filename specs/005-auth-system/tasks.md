@@ -214,14 +214,14 @@
 
 **Independent Test**: Register a user, then `POST /auth/login` with correct credentials returns 200 with tokens and cookie. Wrong password returns 401 `INVALID_CREDENTIALS`. With `rememberMe: true` the cookie `Expires` is ~30 days out.
 
-- [ ] T029 [P] [US2] Create `ApiModels/Auth/LoginRequest.cs` — record with `string Email`, `string Password`, `bool RememberMe`. `RememberMe` defaults to `false`. Namespace `ApiModels.Auth`
+- [x] T029 [P] [US2] Create `ApiModels/Auth/LoginRequest.cs` — record with `string Email`, `string Password`, `bool RememberMe`. `RememberMe` defaults to `false`. Namespace `ApiModels.Auth`
 
-- [ ] T030 [P] [US2] Create `ApiModels/Auth/LoginRequestValidator.cs` — `AbstractValidator<LoginRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules:
+- [x] T030 [P] [US2] Create `ApiModels/Auth/LoginRequestValidator.cs` — `AbstractValidator<LoginRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules:
   - `Email`: `NotEmpty` (key `EmailRequired`), `EmailAddress` (key `EmailInvalid`)
   - `Password`: `NotEmpty` (key `PasswordRequired`)
   - No rule on `RememberMe` — absent field treated as `false` (not a validation error)
 
-- [ ] T031 [US2] Implement `AuthService.LoginAsync` — replace `NotImplementedException`:
+- [x] T031 [US2] Implement `AuthService.LoginAsync` — replace `NotImplementedException`:
   1. `await _userRepository.GetByEmailAsync(email, ct)` → if null → throw `new UnauthorizedException(AuthErrorCodes.InvalidCredentials, "Invalid email address or password.")`
   2. If `user.PasswordHash == null` → throw `new UnauthorizedException(AuthErrorCodes.NoPasswordSet, "This account uses Google Sign-In.")`
   3. If `!_passwordHasher.Verify(password, user.PasswordHash)` → throw `new UnauthorizedException(AuthErrorCodes.InvalidCredentials, "Invalid email address or password.")`
@@ -230,7 +230,7 @@
   6. `await _uow.CommitAsync(ct)`
   7. Return `new AuthTokens(_jwtService.GenerateAccessToken(user), _jwtService.AccessTokenExpirySeconds, tokenValue, refreshToken.ExpiresAt)`
 
-- [ ] T032 [US2] Add `POST /auth/login` action to `AuthController` — `[HttpPost("login")]`, accepts `LoginRequest`, calls `_authService.LoginAsync(request.Email, request.Password, request.RememberMe, ct)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
+- [x] T032 [US2] Add `POST /auth/login` action to `AuthController` — `[HttpPost("login")]`, accepts `LoginRequest`, calls `_authService.LoginAsync(request.Email, request.Password, request.RememberMe, ct)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
 
 **Checkpoint**: `POST /auth/login` is fully functional. Both standard and rememberMe login flows work.
 
