@@ -41,6 +41,17 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
         return Ok(new AuthResponse(result.AccessToken, result.ExpiresIn));
     }
 
+    [HttpDelete("logout")]
+    public async Task<IActionResult> Logout(CancellationToken ct)
+    {
+        var tokenValue = Request.Cookies["staccato_refresh"];
+        if (!string.IsNullOrWhiteSpace(tokenValue))
+            await authService.LogoutAsync(tokenValue, ct);
+
+        ClearRefreshCookie();
+        return NoContent();
+    }
+
     private void SetRefreshCookie(string token, DateTime expiry)
     {
         Response.Cookies.Append("staccato_refresh", token, new CookieOptions

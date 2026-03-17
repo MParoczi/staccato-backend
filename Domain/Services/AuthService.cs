@@ -149,6 +149,14 @@ public class AuthService(
             token.ExpiresAt);
     }
 
-    public Task LogoutAsync(string refreshToken, CancellationToken ct = default) =>
-        throw new NotImplementedException();
+    public async Task LogoutAsync(string refreshToken, CancellationToken ct = default)
+    {
+        var token = await refreshTokenRepository.GetByTokenAsync(refreshToken, ct);
+        if (token is null)
+            return;
+
+        token.IsRevoked = true;
+        refreshTokenRepository.Update(token);
+        await uow.CommitAsync(ct);
+    }
 }

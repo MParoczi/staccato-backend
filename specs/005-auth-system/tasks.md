@@ -265,12 +265,12 @@
 
 **Independent Test**: Register, then `DELETE /auth/logout` returns 204 and cookie is cleared. Subsequent `POST /auth/refresh` with the old token returns 401. Calling logout with no cookie still returns 204.
 
-- [ ] T035 [US4] Implement `AuthService.LogoutAsync` — replace `NotImplementedException`:
+- [x] T035 [US4] Implement `AuthService.LogoutAsync` — replace `NotImplementedException`:
   1. `await _refreshTokenRepository.GetByTokenAsync(tokenValue, ct)` → if null → return (idempotent, no exception)
   2. `_refreshTokenRepository.Update(token with { IsRevoked = true })`
   3. `await _uow.CommitAsync(ct)`
 
-- [ ] T036 [US4] Add `DELETE /auth/logout` action to `AuthController` — `[HttpDelete("logout")]`. Read `Request.Cookies["staccato_refresh"]`. If cookie is present and non-empty, call `await _authService.LogoutAsync(tokenValue, ct)`. Always call `ClearRefreshCookie()`. Always return `NoContent()` (204) — never return an error, including for missing or unknown tokens
+- [x] T036 [US4] Add `DELETE /auth/logout` action to `AuthController` — `[HttpDelete("logout")]`. Read `Request.Cookies["staccato_refresh"]`. If cookie is present and non-empty, call `await _authService.LogoutAsync(tokenValue, ct)`. Always call `ClearRefreshCookie()`. Always return `NoContent()` (204) — never return an error, including for missing or unknown tokens
 
 **Checkpoint**: Logout is idempotent. Session is fully revoked server-side.
 
