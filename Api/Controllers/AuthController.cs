@@ -1,3 +1,4 @@
+using ApiModels.Auth;
 using Domain.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,14 @@ namespace Api.Controllers;
 [Route("auth")]
 public class AuthController(IAuthService authService, IWebHostEnvironment env) : ControllerBase
 {
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
+    {
+        var result = await authService.RegisterAsync(request.Email, request.DisplayName, request.Password, ct);
+        SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry);
+        return StatusCode(StatusCodes.Status201Created, new AuthResponse(result.AccessToken, result.ExpiresIn));
+    }
+
     private void SetRefreshCookie(string token, DateTime expiry)
     {
         Response.Cookies.Append("staccato_refresh", token, new CookieOptions

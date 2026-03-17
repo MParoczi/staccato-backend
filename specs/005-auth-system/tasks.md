@@ -182,16 +182,16 @@
 
 **Independent Test**: `POST /auth/register` with a new email returns 201 with `{ accessToken, expiresIn }` body and `staccato_refresh` cookie. Repeating with the same email returns 409 `EMAIL_ALREADY_REGISTERED`. Submitting missing fields returns 400 with field-level errors.
 
-- [ ] T024 [P] [US1] Create `ApiModels/Auth/RegisterRequest.cs` — record or class with `string Email`, `string DisplayName`, `string Password`. Namespace `ApiModels.Auth`
+- [x] T024 [P] [US1] Create `ApiModels/Auth/RegisterRequest.cs` — record or class with `string Email`, `string DisplayName`, `string Password`. Namespace `ApiModels.Auth`
 
-- [ ] T025 [P] [US1] Create `ApiModels/Auth/AuthResponse.cs` — record with `string AccessToken`, `int ExpiresIn`. Used as the response body for all auth endpoints that issue tokens. Namespace `ApiModels.Auth`
+- [x] T025 [P] [US1] Create `ApiModels/Auth/AuthResponse.cs` — record with `string AccessToken`, `int ExpiresIn`. Used as the response body for all auth endpoints that issue tokens. Namespace `ApiModels.Auth`
 
-- [ ] T026 [P] [US1] Create `ApiModels/Auth/RegisterRequestValidator.cs` — `AbstractValidator<RegisterRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules:
+- [x] T026 [P] [US1] Create `ApiModels/Auth/RegisterRequestValidator.cs` — `AbstractValidator<RegisterRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules:
   - `Email`: `NotEmpty` (key `EmailRequired`), `EmailAddress` (key `EmailInvalid`), `MaximumLength(256)` (key `EmailTooLong`)
   - `DisplayName`: `NotEmpty` (key `DisplayNameRequired`), `MaximumLength(100)` (key `DisplayNameTooLong`)
   - `Password`: `NotEmpty` (key `PasswordRequired`), `MinimumLength(8)` (key `PasswordTooShort`)
 
-- [ ] T027 [US1] Implement `AuthService.RegisterAsync` — replace `NotImplementedException`:
+- [x] T027 [US1] Implement `AuthService.RegisterAsync` — replace `NotImplementedException`:
   1. `await _userRepository.GetByEmailAsync(email, ct)` → if not null → throw `new ConflictException(AuthErrorCodes.EmailAlreadyRegistered, "An account with this email address already exists.")`
   2. Split `displayName` at first space: `firstName = parts[0]`, `lastName = parts.Length > 1 ? string.Join(" ", parts[1..]) : ""`
   3. `passwordHash = _passwordHasher.Hash(password)`
@@ -202,7 +202,7 @@
   8. `await _uow.CommitAsync(ct)`
   9. Return `new AuthTokens(_jwtService.GenerateAccessToken(user), _jwtService.AccessTokenExpirySeconds, tokenValue, refreshToken.ExpiresAt)`
 
-- [ ] T028 [US1] Add `POST /auth/register` action to `AuthController` — `[HttpPost("register")]`, accepts `RegisterRequest`, calls `_authService.RegisterAsync(...)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `CreatedAtAction` (or `StatusCode(201)`) with `new AuthResponse(result.AccessToken, result.ExpiresIn)`
+- [x] T028 [US1] Add `POST /auth/register` action to `AuthController` — `[HttpPost("register")]`, accepts `RegisterRequest`, calls `_authService.RegisterAsync(...)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `CreatedAtAction` (or `StatusCode(201)`) with `new AuthResponse(result.AccessToken, result.ExpiresIn)`
 
 **Checkpoint**: `POST /auth/register` is fully functional. New user can register and receive tokens.
 
