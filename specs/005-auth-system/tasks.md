@@ -282,7 +282,7 @@
 
 **Independent Test**: Submit a valid Google ID token → 200 with tokens and cookie. Submit the same token again → same user returned (no duplicate). Submit a token whose email matches an existing local account → existing account returned. Submit an invalid token → 401 `GOOGLE_AUTH_FAILED`. Simulate Google service down → 503 `SERVICE_UNAVAILABLE`.
 
-- [ ] T037 [P] [US5] Create `Domain/Services/IGoogleTokenValidator.cs`:
+- [x] T037 [P] [US5] Create `Domain/Services/IGoogleTokenValidator.cs`:
   ```csharp
   public interface IGoogleTokenValidator
   {
@@ -290,11 +290,11 @@
   }
   ```
 
-- [ ] T038 [P] [US5] Create `ApiModels/Auth/GoogleAuthRequest.cs` — record with `string IdToken`. Namespace `ApiModels.Auth`
+- [x] T038 [P] [US5] Create `ApiModels/Auth/GoogleAuthRequest.cs` — record with `string IdToken`. Namespace `ApiModels.Auth`
 
-- [ ] T039 [P] [US5] Create `ApiModels/Auth/GoogleAuthRequestValidator.cs` — `AbstractValidator<GoogleAuthRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules: `IdToken`: `NotEmpty` (key `IdTokenRequired`)
+- [x] T039 [P] [US5] Create `ApiModels/Auth/GoogleAuthRequestValidator.cs` — `AbstractValidator<GoogleAuthRequest>`, injects `IStringLocalizer<ValidationMessages>`. Rules: `IdToken`: `NotEmpty` (key `IdTokenRequired`)
 
-- [ ] T040 [US5] Create `Application/Services/GoogleTokenValidator.cs` — implements `IGoogleTokenValidator`, injects `IOptions<GoogleOptions>`. In `ValidateAsync`:
+- [x] T040 [US5] Create `Application/Services/GoogleTokenValidator.cs` — implements `IGoogleTokenValidator`, injects `IOptions<GoogleOptions>`. In `ValidateAsync`:
   - Build `GoogleJsonWebSignature.ValidationSettings { Audience = new[] { _googleOptions.ClientId } }`
   - Call `await GoogleJsonWebSignature.ValidateAsync(idToken, settings)`
   - Map payload to `new GoogleUserInfo(payload.Subject, payload.Email, payload.Name, payload.Picture)`
@@ -302,7 +302,7 @@
   - Catch `HttpRequestException` or any other unexpected exception → throw `new ServiceUnavailableException()`
   Namespace `Application.Services`
 
-- [ ] T041 [US5] Implement `AuthService.GoogleLoginAsync` — replace `NotImplementedException`. Constructor must also inject `IGoogleTokenValidator`:
+- [x] T041 [US5] Implement `AuthService.GoogleLoginAsync` — replace `NotImplementedException`. Constructor must also inject `IGoogleTokenValidator`:
   1. `googleUserInfo = await _googleTokenValidator.ValidateAsync(idToken, ct)` (let exceptions propagate)
   2. `user = await _userRepository.GetByGoogleIdAsync(googleUserInfo.GoogleId, ct)` → if found → skip to step 5
   3. `user = await _userRepository.GetByEmailAsync(googleUserInfo.Email, ct)` → if found → link: `user.GoogleId = googleUserInfo.GoogleId`; if `user.AvatarUrl == null` → `user.AvatarUrl = googleUserInfo.PictureUrl`; `_userRepository.Update(user)`; skip to step 5
@@ -312,9 +312,9 @@
   7. `await _uow.CommitAsync(ct)`
   8. Return `AuthTokens`
 
-- [ ] T042 [US5] Add `POST /auth/google` action to `AuthController` — `[HttpPost("google")]`, accepts `GoogleAuthRequest`, calls `_authService.GoogleLoginAsync(request.IdToken, ct)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
+- [x] T042 [US5] Add `POST /auth/google` action to `AuthController` — `[HttpPost("google")]`, accepts `GoogleAuthRequest`, calls `_authService.GoogleLoginAsync(request.IdToken, ct)`, calls `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`, returns `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
 
-- [ ] T043 [US5] Modify `Application/Extensions/ServiceCollectionExtensions.cs` — add `IGoogleTokenValidator` → `GoogleTokenValidator` (singleton) to the `AddDomainServices()` registrations added in T023
+- [x] T043 [US5] Modify `Application/Extensions/ServiceCollectionExtensions.cs` — add `IGoogleTokenValidator` → `GoogleTokenValidator` (singleton) to the `AddDomainServices()` registrations added in T023
 
 **Checkpoint**: All 5 auth endpoints are functional. Google sign-in creates, links, or returns existing accounts correctly.
 
