@@ -35,6 +35,12 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<GoogleOptions>()
+    .BindConfiguration("Google")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Read values needed as parameters before Build() — do NOT use BuildServiceProvider().
 var corsConfiguration = builder.Configuration.GetSection("Cors").Get<CorsConfiguration>()!;
 var rateLimitOptions = builder.Configuration.GetSection("RateLimit").Get<RateLimitOptions>()!;
@@ -50,6 +56,7 @@ builder.Services.AddSignalRHub();
 builder.Services.AddBackgroundWorkers();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddRepositories();
+builder.Services.AddLocalizationSupport();
 builder.Services.AddDomainServices();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
@@ -64,6 +71,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline — exact order per FR-024.
+app.UseRequestLocalization();
 app.UseMiddleware<BusinessExceptionMiddleware>();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();

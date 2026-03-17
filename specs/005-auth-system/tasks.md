@@ -15,13 +15,13 @@
 
 **Purpose**: Cross-cutting packages, resource scaffolding, startup wiring — must be complete before any user story work.
 
-- [ ] T001 Add NuGet packages: `Google.Apis.Auth` and `BCrypt.Net-Next` to `Application/Application.csproj`; `Microsoft.Extensions.Localization.Abstractions` to `ApiModels/ApiModels.csproj`
+- [x] T001 Add NuGet packages: `Google.Apis.Auth` and `BCrypt.Net-Next` to `Application/Application.csproj`; `Microsoft.Extensions.Localization.Abstractions` to `ApiModels/ApiModels.csproj`
 
-- [ ] T002 [P] Create `Application/Resources/BusinessErrors.cs` — empty marker class `public sealed class BusinessErrors {}` in namespace `Application.Resources`, used as the type parameter for `IStringLocalizer<BusinessErrors>`
+- [x] T002 [P] Create `Application/Resources/BusinessErrors.cs` — empty marker class `public sealed class BusinessErrors {}` in namespace `Application.Resources`, used as the type parameter for `IStringLocalizer<BusinessErrors>`
 
-- [ ] T003 [P] Create `ApiModels/Resources/ValidationMessages.cs` — empty marker class `public sealed class ValidationMessages {}` in namespace `ApiModels.Resources`, used as the type parameter for `IStringLocalizer<ValidationMessages>`
+- [x] T003 [P] Create `ApiModels/Resources/ValidationMessages.cs` — empty marker class `public sealed class ValidationMessages {}` in namespace `ApiModels.Resources`, used as the type parameter for `IStringLocalizer<ValidationMessages>`
 
-- [ ] T004 [P] Create `Application/Resources/BusinessErrors.en.resx` — XML .resx with all 7 business error code keys (string data entries):
+- [x] T004 [P] Create `Application/Resources/BusinessErrors.en.resx` — XML .resx with all 7 business error code keys (string data entries):
   - `EMAIL_ALREADY_REGISTERED` → `"An account with this email address already exists."`
   - `INVALID_CREDENTIALS` → `"Invalid email address or password."`
   - `NO_PASSWORD_SET` → `"This account uses Google Sign-In. Please log in with Google."`
@@ -30,7 +30,7 @@
   - `GOOGLE_AUTH_FAILED` → `"Google Sign-In failed. Please try again."`
   - `SERVICE_UNAVAILABLE` → `"An external service is temporarily unavailable. Please try again later."`
 
-- [ ] T005 [P] Create `Application/Resources/BusinessErrors.hu.resx` — same 7 keys in Hungarian:
+- [x] T005 [P] Create `Application/Resources/BusinessErrors.hu.resx` — same 7 keys in Hungarian:
   - `EMAIL_ALREADY_REGISTERED` → `"Ezzel az e-mail címmel már létezik fiók."`
   - `INVALID_CREDENTIALS` → `"Érvénytelen e-mail cím vagy jelszó."`
   - `NO_PASSWORD_SET` → `"Ez a fiók Google bejelentkezést használ. Kérem, lépjen be a Google-lal."`
@@ -39,7 +39,7 @@
   - `GOOGLE_AUTH_FAILED` → `"A Google bejelentkezés sikertelen volt. Kérem, próbálja újra."`
   - `SERVICE_UNAVAILABLE` → `"Egy külső szolgáltatás átmenetileg nem érhető el. Kérem, próbálja újra."`
 
-- [ ] T006 [P] Create `ApiModels/Resources/ValidationMessages.en.resx` — English validation messages:
+- [x] T006 [P] Create `ApiModels/Resources/ValidationMessages.en.resx` — English validation messages:
   - `EmailRequired` → `"Email address is required."`
   - `EmailInvalid` → `"Please enter a valid email address."`
   - `EmailTooLong` → `"Email address must not exceed 256 characters."`
@@ -49,7 +49,7 @@
   - `PasswordTooShort` → `"Password must be at least 8 characters."`
   - `IdTokenRequired` → `"Google ID token is required."`
 
-- [ ] T007 [P] Create `ApiModels/Resources/ValidationMessages.hu.resx` — Hungarian validation messages:
+- [x] T007 [P] Create `ApiModels/Resources/ValidationMessages.hu.resx` — Hungarian validation messages:
   - `EmailRequired` → `"Az e-mail cím megadása kötelező."`
   - `EmailInvalid` → `"Kérem érvényes e-mail címet adjon meg."`
   - `EmailTooLong` → `"Az e-mail cím legfeljebb 256 karakter lehet."`
@@ -59,13 +59,13 @@
   - `PasswordTooShort` → `"A jelszónak legalább 8 karakter hosszúnak kell lennie."`
   - `IdTokenRequired` → `"A Google azonosító token megadása kötelező."`
 
-- [ ] T008 Create `Application/Options/GoogleOptions.cs` — sealed class with `[Required] public string ClientId { get; init; } = string.Empty;`, namespace `Application.Options`
+- [x] T008 Create `Application/Options/GoogleOptions.cs` — sealed class with `[Required] public string ClientId { get; init; } = string.Empty;`, namespace `Application.Options`
 
-- [ ] T009 Modify `Application/Extensions/ServiceCollectionExtensions.cs` — in the existing extension method class, add:
+- [x] T009 Modify `Application/Extensions/ServiceCollectionExtensions.cs` — in the existing extension method class, add:
   1. `AddLocalization(options => options.ResourcesPath = "Resources")` call
   2. `AddRequestLocalization()` configured with supported cultures `"en"` and `"hu"`, default culture `"en"`, with `AcceptLanguageHeaderRequestCultureProvider` as the only provider; match primary subtag only (strip region suffix)
 
-- [ ] T010 Modify `Application/Program.cs` — add two startup changes:
+- [x] T010 Modify `Application/Program.cs` — add two startup changes:
   1. Before `app.UseAuthentication()`: call `app.UseRequestLocalization()`
   2. In the services section: bind and validate `GoogleOptions` from `appsettings.json` section `"Google"` using `services.AddOptions<GoogleOptions>().BindConfiguration("Google").ValidateDataAnnotations().ValidateOnStart()`
 

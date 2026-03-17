@@ -202,6 +202,26 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    public static IServiceCollection AddLocalizationSupport(this IServiceCollection services)
+    {
+        services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        services.AddRequestLocalization(options =>
+        {
+            var supportedCultures = new[] { "en", "hu" };
+            options.SetDefaultCulture("en")
+                   .AddSupportedCultures(supportedCultures)
+                   .AddSupportedUICultures(supportedCultures);
+
+            // Only use Accept-Language header; strip region suffix (e.g. en-US → en).
+            options.RequestCultureProviders.Clear();
+            options.RequestCultureProviders.Add(
+                new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
+        });
+
+        return services;
+    }
+
     // Populated in a future feature.
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
