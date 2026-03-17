@@ -77,11 +77,11 @@
 
 **Purpose**: Shared types and infrastructure that every user story depends on. Must be complete before Phase 3+.
 
-- [ ] T011 [P] Create `DomainModels/Models/AuthTokens.cs` — sealed record: `public sealed record AuthTokens(string AccessToken, int ExpiresIn, string RefreshToken, DateTime RefreshTokenExpiry);`, namespace `DomainModels.Models`
+- [x] T011 [P] Create `DomainModels/Models/AuthTokens.cs` — sealed record: `public sealed record AuthTokens(string AccessToken, int ExpiresIn, string RefreshToken, DateTime RefreshTokenExpiry);`, namespace `DomainModels.Models`
 
-- [ ] T012 [P] Create `DomainModels/Models/GoogleUserInfo.cs` — sealed record: `public sealed record GoogleUserInfo(string GoogleId, string Email, string? Name, string? PictureUrl);`, namespace `DomainModels.Models`
+- [x] T012 [P] Create `DomainModels/Models/GoogleUserInfo.cs` — sealed record: `public sealed record GoogleUserInfo(string GoogleId, string Email, string? Name, string? PictureUrl);`, namespace `DomainModels.Models`
 
-- [ ] T013 [P] Create `Domain/Exceptions/UnauthorizedException.cs` — extends `BusinessException` with two constructors (constitution IX: no magic strings, all callers pass an explicit code):
+- [x] T013 [P] Create `Domain/Exceptions/UnauthorizedException.cs` — extends `BusinessException` with two constructors (constitution IX: no magic strings, all callers pass an explicit code):
   ```csharp
   public class UnauthorizedException : BusinessException
   {
@@ -113,9 +113,9 @@
   ```
   All subsequent tasks that reference error code string literals MUST use these constants instead.
 
-- [ ] T014 [P] Create `Domain/Exceptions/ServiceUnavailableException.cs` — extends `BusinessException`: constructor sets `Code = "SERVICE_UNAVAILABLE"`, `StatusCode = 503`. Follow same pattern as T013
+- [x] T014 [P] Create `Domain/Exceptions/ServiceUnavailableException.cs` — extends `BusinessException`: constructor sets `Code = "SERVICE_UNAVAILABLE"`, `StatusCode = 503`. Follow same pattern as T013
 
-- [ ] T015 [P] Create `Domain/Services/IPasswordHasher.cs`:
+- [x] T015 [P] Create `Domain/Services/IPasswordHasher.cs`:
   ```csharp
   public interface IPasswordHasher
   {
@@ -124,7 +124,7 @@
   }
   ```
 
-- [ ] T016 [P] Create `Domain/Services/IJwtService.cs`:
+- [x] T016 [P] Create `Domain/Services/IJwtService.cs`:
   ```csharp
   public interface IJwtService
   {
@@ -136,7 +136,7 @@
   }
   ```
 
-- [ ] T017 [P] Create `Domain/Services/IAuthService.cs`:
+- [x] T017 [P] Create `Domain/Services/IAuthService.cs`:
   ```csharp
   public interface IAuthService
   {
@@ -148,25 +148,25 @@
   }
   ```
 
-- [ ] T018 Modify `Application/Middleware/BusinessExceptionMiddleware.cs` — inject `IStringLocalizer<BusinessErrors>` alongside the existing `RequestDelegate next`. In the catch block, before writing the JSON payload, look up `localizer[ex.Code]`; if `ResourceNotFound` is false use the localized string, otherwise fall back to `ex.Message`. Import `Application.Resources` namespace
+- [x] T018 Modify `Application/Middleware/BusinessExceptionMiddleware.cs` — inject `IStringLocalizer<BusinessErrors>` alongside the existing `RequestDelegate next`. In the catch block, before writing the JSON payload, look up `localizer[ex.Code]`; if `ResourceNotFound` is false use the localized string, otherwise fall back to `ex.Message`. Import `Application.Resources` namespace
 
-- [ ] T019 Create `Application/Services/BcryptPasswordHasher.cs` — implements `IPasswordHasher`. `Hash`: `BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12)`. `Verify`: `BCrypt.Net.BCrypt.Verify(password, hash)`. Namespace `Application.Services`
+- [x] T019 Create `Application/Services/BcryptPasswordHasher.cs` — implements `IPasswordHasher`. `Hash`: `BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12)`. `Verify`: `BCrypt.Net.BCrypt.Verify(password, hash)`. Namespace `Application.Services`
 
-- [ ] T020 Create `Application/Services/JwtService.cs` — implements `IJwtService`, injects `IOptions<JwtOptions>`. Implement:
+- [x] T020 Create `Application/Services/JwtService.cs` — implements `IJwtService`, injects `IOptions<JwtOptions>`. Implement:
   - `GenerateAccessToken`: builds `SecurityTokenDescriptor` with claims `sub = user.Id.ToString()`, `email = user.Email`, `displayName = (user.FirstName + " " + user.LastName).Trim()`, issuer/audience from `JwtOptions`, expiry `UtcNow + AccessTokenExpiryMinutes`, signs with `HmacSha256` using `Encoding.UTF8.GetBytes(SecretKey)`
   - `GenerateRefreshToken`: `RandomNumberGenerator.GetBytes(64)` returned as `Convert.ToBase64String`
   - `AccessTokenExpirySeconds`: `_options.Value.AccessTokenExpiryMinutes * 60`
   - `RefreshTokenExpiryDays`: `_options.Value.RefreshTokenExpiryDays` ← exposes JwtOptions to Domain via interface
   - `RememberMeExpiryDays`: `_options.Value.RememberMeExpiryDays` ← exposes JwtOptions to Domain via interface
 
-- [ ] T021 Create `Domain/Services/AuthService.cs` — implements `IAuthService`. Constructor injects: `IUserRepository`, `IRefreshTokenRepository`, `IUnitOfWork`, `IPasswordHasher`, `IJwtService` (no `IOptions<JwtOptions>` — Domain cannot reference Application.Options; token expiry values are read via `_jwtService.RefreshTokenExpiryDays` and `_jwtService.RememberMeExpiryDays`). Stub all 5 interface methods with `throw new NotImplementedException()` — implementations follow per user story. Namespace `Domain.Services`
+- [x] T021 Create `Domain/Services/AuthService.cs` — implements `IAuthService`. Constructor injects: `IUserRepository`, `IRefreshTokenRepository`, `IUnitOfWork`, `IPasswordHasher`, `IJwtService` (no `IOptions<JwtOptions>` — Domain cannot reference Application.Options; token expiry values are read via `_jwtService.RefreshTokenExpiryDays` and `_jwtService.RememberMeExpiryDays`). Stub all 5 interface methods with `throw new NotImplementedException()` — implementations follow per user story. Namespace `Domain.Services`
 
-- [ ] T022 Create `Api/Controllers/AuthController.cs` — `[ApiController]`, `[Route("auth")]`. Constructor injects `IAuthService`. Add two private helpers:
+- [x] T022 Create `Api/Controllers/AuthController.cs` — `[ApiController]`, `[Route("auth")]`. Constructor injects `IAuthService`. Add two private helpers:
   - `SetRefreshCookie(string token, DateTime expiry)`: appends cookie `"staccato_refresh"` with `HttpOnly=true`, `SameSite=Strict`, `Secure = !env.IsDevelopment()`, `Expires = expiry`
   - `ClearRefreshCookie()`: calls `Response.Cookies.Delete("staccato_refresh")`
   No action methods yet — added per user story. `IWebHostEnvironment` must also be injected for the `Secure` flag
 
-- [ ] T023 Modify `Application/Extensions/ServiceCollectionExtensions.cs` — in `AddDomainServices()` (or equivalent registration method), register:
+- [x] T023 Modify `Application/Extensions/ServiceCollectionExtensions.cs` — in `AddDomainServices()` (or equivalent registration method), register:
   - `IAuthService` → `AuthService` (scoped)
   - `IJwtService` → `JwtService` (singleton)
   - `IPasswordHasher` → `BcryptPasswordHasher` (singleton)

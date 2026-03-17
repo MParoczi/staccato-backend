@@ -2,6 +2,12 @@ namespace Domain.Exceptions;
 
 public class ConflictException : BusinessException
 {
+    public ConflictException(string code, string message, object? details = null)
+        : base(code, message, details)
+    {
+        StatusCode = 409;
+    }
+
     public ConflictException(string message, object? details = null)
         : base("CONFLICT", message, details)
     {

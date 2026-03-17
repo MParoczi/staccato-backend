@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\ApiModels\ApiModels.csproj"/>
         <ProjectReference Include="..\Domain\Domain.csproj"/>
         <ProjectReference Include="..\DomainModels\DomainModels.csproj"/>

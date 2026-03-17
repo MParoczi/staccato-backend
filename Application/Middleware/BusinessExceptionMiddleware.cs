@@ -1,9 +1,13 @@
 using System.Text.Json;
+using Application.Resources;
 using Domain.Exceptions;
+using Microsoft.Extensions.Localization;
 
 namespace Application.Middleware;
 
-public sealed class BusinessExceptionMiddleware(RequestDelegate next)
+public sealed class BusinessExceptionMiddleware(
+    RequestDelegate next,
+    IStringLocalizer<BusinessErrors> localizer)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -16,7 +20,10 @@ public sealed class BusinessExceptionMiddleware(RequestDelegate next)
             context.Response.StatusCode = ex.StatusCode;
             context.Response.ContentType = "application/json";
 
-            var payload = new { code = ex.Code, message = ex.Message, details = ex.Details };
+            var localizedString = localizer[ex.Code];
+            var message = localizedString.ResourceNotFound ? ex.Message : localizedString.Value;
+
+            var payload = new { code = ex.Code, message, details = ex.Details };
             await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
         }
     }

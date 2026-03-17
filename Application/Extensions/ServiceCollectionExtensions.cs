@@ -7,8 +7,10 @@ using ApiModels;
 using Application.BackgroundServices;
 using Application.Options;
 using Azure.Storage.Blobs;
+using Application.Services;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
+using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -222,9 +224,11 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    // Populated in a future feature.
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         return services;
     }
 }
