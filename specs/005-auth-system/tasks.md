@@ -242,7 +242,7 @@
 
 **Independent Test**: Register, extract cookie, call `POST /auth/refresh` → 200 with new access token and new cookie. Present the old cookie again → 401 `INVALID_TOKEN` (theft detection fires, all user tokens revoked).
 
-- [ ] T033 [US3] Implement `AuthService.RefreshAsync` — replace `NotImplementedException`:
+- [x] T033 [US3] Implement `AuthService.RefreshAsync` — replace `NotImplementedException`:
   1. `await _refreshTokenRepository.GetByTokenAsync(tokenValue, ct)` → if null → throw `new UnauthorizedException(AuthErrorCodes.InvalidToken, "Your session is no longer valid.")`
   2. If `token.IsRevoked`: call `await _refreshTokenRepository.RevokeAllForUserAsync(token.UserId, ct)` (commits immediately — do NOT call `CommitAsync` after this), then throw `new UnauthorizedException(AuthErrorCodes.InvalidToken, "Your session is no longer valid.")`
   3. If `token.ExpiresAt <= DateTime.UtcNow` → throw `new UnauthorizedException(AuthErrorCodes.TokenExpired, "Your session has expired.")`
@@ -253,7 +253,7 @@
   8. `await _uow.CommitAsync(ct)`
   9. Return `new AuthTokens(_jwtService.GenerateAccessToken(user), _jwtService.AccessTokenExpirySeconds, newTokenValue, token.ExpiresAt)`
 
-- [ ] T034 [US3] Add `POST /auth/refresh` action to `AuthController` — `[HttpPost("refresh")]`. Read `Request.Cookies["staccato_refresh"]`; if null, empty, or whitespace → throw `new UnauthorizedException(AuthErrorCodes.InvalidToken, "Your session is no longer valid.")` (MUST throw — never `return Unauthorized(...)` directly, as that bypasses `BusinessExceptionMiddleware` and breaks the `{ code, message, details }` contract). Call `_authService.RefreshAsync(tokenValue, ct)`. Call `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`. Return `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
+- [x] T034 [US3] Add `POST /auth/refresh` action to `AuthController` — `[HttpPost("refresh")]`. Read `Request.Cookies["staccato_refresh"]`; if null, empty, or whitespace → throw `new UnauthorizedException(AuthErrorCodes.InvalidToken, "Your session is no longer valid.")` (MUST throw — never `return Unauthorized(...)` directly, as that bypasses `BusinessExceptionMiddleware` and breaks the `{ code, message, details }` contract). Call `_authService.RefreshAsync(tokenValue, ct)`. Call `SetRefreshCookie(result.RefreshToken, result.RefreshTokenExpiry)`. Return `Ok(new AuthResponse(result.AccessToken, result.ExpiresIn))`
 
 **Checkpoint**: Token rotation works. Theft detection revokes all sessions on stale-token replay.
 

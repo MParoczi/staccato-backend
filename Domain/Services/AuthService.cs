@@ -103,8 +103,51 @@ public class AuthService(
     public Task<AuthTokens> GoogleLoginAsync(string idToken, CancellationToken ct = default) =>
         throw new NotImplementedException();
 
-    public Task<AuthTokens> RefreshAsync(string refreshToken, CancellationToken ct = default) =>
-        throw new NotImplementedException();
+    public async Task<AuthTokens> RefreshAsync(string refreshToken, CancellationToken ct = default)
+    {
+        var token = await refreshTokenRepository.GetByTokenAsync(refreshToken, ct);
+        if (token is null)
+            throw new UnauthorizedException(AuthErrorCodes.InvalidToken,
+                "The refresh token is invalid.");
+
+        if (token.IsRevoked)
+        {
+            await refreshTokenRepository.RevokeAllForUserAsync(token.UserId, ct);
+            throw new UnauthorizedException(AuthErrorCodes.InvalidToken,
+                "The refresh token is invalid.");
+        }
+
+        if (token.ExpiresAt <= DateTime.UtcNow)
+            throw new UnauthorizedException(AuthErrorCodes.TokenExpired,
+                "The refresh token has expired. Please log in again.");
+
+        var user = await userRepository.GetByIdAsync(token.UserId, ct);
+        if (user is null)
+            throw new NotFoundException("User not found.");
+
+        token.IsRevoked = true;
+        refreshTokenRepository.Update(token);
+
+        var newTokenValue = jwtService.GenerateRefreshToken();
+        var newRefreshToken = new RefreshToken
+        {
+            Id        = Guid.NewGuid(),
+            Token     = newTokenValue,
+            UserId    = user.Id,
+            ExpiresAt = token.ExpiresAt,
+            CreatedAt = DateTime.UtcNow,
+            IsRevoked = false
+        };
+
+        await refreshTokenRepository.AddAsync(newRefreshToken, ct);
+        await uow.CommitAsync(ct);
+
+        return new AuthTokens(
+            jwtService.GenerateAccessToken(user),
+            jwtService.AccessTokenExpirySeconds,
+            newTokenValue,
+            token.ExpiresAt);
+    }
 
     public Task LogoutAsync(string refreshToken, CancellationToken ct = default) =>
         throw new NotImplementedException();
