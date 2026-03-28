@@ -28,10 +28,10 @@ public sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
 
         var descriptor = new SecurityTokenDescriptor
         {
-            Subject            = new ClaimsIdentity(claims),
-            Issuer             = _options.Issuer,
-            Audience           = _options.Audience,
-            Expires            = DateTime.UtcNow.AddMinutes(_options.AccessTokenExpiryMinutes),
+            Subject = new ClaimsIdentity(claims),
+            Issuer = _options.Issuer,
+            Audience = _options.Audience,
+            Expires = DateTime.UtcNow.AddMinutes(_options.AccessTokenExpiryMinutes),
             SigningCredentials = credentials
         };
 
@@ -47,6 +47,6 @@ public sealed class JwtService(IOptions<JwtOptions> options) : IJwtService
     }
 
     public int AccessTokenExpirySeconds => _options.AccessTokenExpiryMinutes * 60;
-    public int RefreshTokenExpiryDays   => _options.RefreshTokenExpiryDays;
-    public int RememberMeExpiryDays     => _options.RememberMeExpiryDays;
+    public int RefreshTokenExpiryDays => _options.RefreshTokenExpiryDays;
+    public int RememberMeExpiryDays => _options.RememberMeExpiryDays;
 }

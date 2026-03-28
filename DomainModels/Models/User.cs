@@ -14,4 +14,6 @@ public class User
     public DateTime CreatedAt { get; set; }
     public DateTime? ScheduledDeletionAt { get; set; }
     public Language Language { get; set; }
+    public PageSize? DefaultPageSize { get; set; }
+    public Guid? DefaultInstrumentId { get; set; }
 }

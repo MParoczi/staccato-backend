@@ -324,6 +324,12 @@ namespace Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("DefaultInstrumentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DefaultPageSize")
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -353,6 +359,8 @@ namespace Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DefaultInstrumentId");
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -491,6 +499,16 @@ namespace Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EntityModels.Entities.UserEntity", b =>
+                {
+                    b.HasOne("EntityModels.Entities.InstrumentEntity", "DefaultInstrument")
+                        .WithMany()
+                        .HasForeignKey("DefaultInstrumentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DefaultInstrument");
                 });
 
             modelBuilder.Entity("EntityModels.Entities.UserSavedPresetEntity", b =>

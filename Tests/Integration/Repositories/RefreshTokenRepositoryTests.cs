@@ -38,7 +38,9 @@ public class RefreshTokenRepositoryTests
                                                   "AvatarUrl"           TEXT,
                                                   "CreatedAt"           TEXT NOT NULL,
                                                   "ScheduledDeletionAt" TEXT,
-                                                  "Language"            INTEGER NOT NULL
+                                                  "Language"            INTEGER NOT NULL,
+                                                  "DefaultPageSize"     TEXT,
+                                                  "DefaultInstrumentId" TEXT
                                               );
 
                                               CREATE TABLE "RefreshTokens" (

@@ -13,4 +13,9 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     Task<(User User, IReadOnlyList<RefreshToken> Tokens)?> GetWithActiveTokensAsync(
         Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns all users whose scheduled deletion date is in the past (grace period expired).
+    /// </summary>
+    Task<IReadOnlyList<User>> GetExpiredForDeletionAsync(CancellationToken ct = default);
 }

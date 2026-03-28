@@ -1,14 +1,65 @@
+using Domain.Interfaces;
+using Domain.Interfaces.Repositories;
+using Domain.Services;
+using DomainModels.Models;
+
 namespace Application.BackgroundServices;
 
-public sealed class AccountDeletionCleanupService : IHostedService
+public sealed class AccountDeletionCleanupService(
+    IServiceScopeFactory scopeFactory,
+    IAzureBlobService blobService,
+    ILogger<AccountDeletionCleanupService> logger) : BackgroundService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        return Task.CompletedTask;
+        using var timer = new PeriodicTimer(TimeSpan.FromHours(24));
+
+        while (await timer.WaitForNextTickAsync(stoppingToken)) await RunCleanupAsync(stoppingToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    private async Task RunCleanupAsync(CancellationToken ct)
     {
-        return Task.CompletedTask;
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+        var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        IReadOnlyList<User> expiredUsers;
+        try
+        {
+            expiredUsers = await userRepo.GetExpiredForDeletionAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to query expired users for deletion.");
+            return;
+        }
+
+        if (expiredUsers.Count == 0)
+            return;
+
+        foreach (var user in expiredUsers)
+        {
+            if (user.AvatarUrl is not null)
+                try
+                {
+                    await blobService.DeleteAsync($"avatars/{user.Id}", ct);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Failed to delete avatar blob for user {UserId}. Continuing.", user.Id);
+                }
+
+            userRepo.Remove(user);
+        }
+
+        try
+        {
+            await uow.CommitAsync(ct);
+            logger.LogInformation("Deleted {Count} expired user account(s).", expiredUsers.Count);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to commit user deletion batch. Accounts will be retried on the next run.");
+        }
     }
 }

@@ -19,6 +19,16 @@ public class UserConfiguration : IEntityTypeConfiguration<UserEntity>
         builder.Property(u => u.GoogleId).HasMaxLength(255);
         builder.Property(u => u.PasswordHash).HasColumnType("nvarchar(max)");
 
+        builder.Property(u => u.DefaultPageSize)
+            .HasConversion<string>()
+            .HasColumnType("nvarchar(50)");
+
+        builder.HasOne(u => u.DefaultInstrument)
+            .WithMany()
+            .HasForeignKey(u => u.DefaultInstrumentId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(u => u.Email).IsUnique();
         builder.HasIndex(u => u.GoogleId).IsUnique().HasFilter("[GoogleId] IS NOT NULL");
     }

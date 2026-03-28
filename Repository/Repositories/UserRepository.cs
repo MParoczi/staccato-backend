@@ -40,4 +40,13 @@ public class UserRepository(AppDbContext context, IMapper mapper)
         var tokens = _mapper.Map<IReadOnlyList<RefreshToken>>(entity.RefreshTokens);
         return (user, tokens);
     }
+
+    public async Task<IReadOnlyList<User>> GetExpiredForDeletionAsync(CancellationToken ct = default)
+    {
+        var entities = await _context.Users
+            .AsNoTracking()
+            .Where(u => u.ScheduledDeletionAt != null && u.ScheduledDeletionAt <= DateTime.UtcNow)
+            .ToListAsync(ct);
+        return _mapper.Map<List<User>>(entities);
+    }
 }

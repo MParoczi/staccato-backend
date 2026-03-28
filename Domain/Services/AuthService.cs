@@ -25,19 +25,19 @@ public class AuthService(
 
         var parts = displayName.Split(' ', 2);
         var firstName = parts[0];
-        var lastName  = parts.Length > 1 ? parts[1] : string.Empty;
+        var lastName = parts.Length > 1 ? parts[1] : string.Empty;
 
         var passwordHash = passwordHasher.Hash(password);
 
         var user = new User
         {
-            Id           = Guid.NewGuid(),
-            Email        = email,
-            FirstName    = firstName,
-            LastName     = lastName,
+            Id = Guid.NewGuid(),
+            Email = email,
+            FirstName = firstName,
+            LastName = lastName,
             PasswordHash = passwordHash,
-            CreatedAt    = DateTime.UtcNow,
-            Language     = Language.English
+            CreatedAt = DateTime.UtcNow,
+            Language = Language.English
         };
 
         await userRepository.AddAsync(user, ct);
@@ -45,9 +45,9 @@ public class AuthService(
         var tokenValue = jwtService.GenerateRefreshToken();
         var refreshToken = new RefreshToken
         {
-            Id        = Guid.NewGuid(),
-            Token     = tokenValue,
-            UserId    = user.Id,
+            Id = Guid.NewGuid(),
+            Token = tokenValue,
+            UserId = user.Id,
             ExpiresAt = DateTime.UtcNow.AddDays(jwtService.RefreshTokenExpiryDays),
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false
@@ -79,13 +79,13 @@ public class AuthService(
             throw new UnauthorizedException(AuthErrorCodes.InvalidCredentials,
                 "Invalid email address or password.");
 
-        var expiryDays  = rememberMe ? jwtService.RememberMeExpiryDays : jwtService.RefreshTokenExpiryDays;
-        var tokenValue  = jwtService.GenerateRefreshToken();
+        var expiryDays = rememberMe ? jwtService.RememberMeExpiryDays : jwtService.RefreshTokenExpiryDays;
+        var tokenValue = jwtService.GenerateRefreshToken();
         var refreshToken = new RefreshToken
         {
-            Id        = Guid.NewGuid(),
-            Token     = tokenValue,
-            UserId    = user.Id,
+            Id = Guid.NewGuid(),
+            Token = tokenValue,
+            UserId = user.Id,
             ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false
@@ -121,20 +121,20 @@ public class AuthService(
 
         if (user is null)
         {
-            var parts     = googleUserInfo.Name?.Split(' ', 2) ?? [];
+            var parts = googleUserInfo.Name?.Split(' ', 2) ?? [];
             var firstName = parts.Length > 0 ? parts[0] : string.Empty;
-            var lastName  = parts.Length > 1 ? parts[1] : string.Empty;
+            var lastName = parts.Length > 1 ? parts[1] : string.Empty;
 
             user = new User
             {
-                Id        = Guid.NewGuid(),
-                Email     = googleUserInfo.Email,
+                Id = Guid.NewGuid(),
+                Email = googleUserInfo.Email,
                 FirstName = firstName,
-                LastName  = lastName,
-                GoogleId  = googleUserInfo.GoogleId,
+                LastName = lastName,
+                GoogleId = googleUserInfo.GoogleId,
                 AvatarUrl = googleUserInfo.PictureUrl,
                 CreatedAt = DateTime.UtcNow,
-                Language  = Language.English
+                Language = Language.English
             };
 
             await userRepository.AddAsync(user, ct);
@@ -143,9 +143,9 @@ public class AuthService(
         var tokenValue = jwtService.GenerateRefreshToken();
         var refreshToken = new RefreshToken
         {
-            Id        = Guid.NewGuid(),
-            Token     = tokenValue,
-            UserId    = user.Id,
+            Id = Guid.NewGuid(),
+            Token = tokenValue,
+            UserId = user.Id,
             ExpiresAt = DateTime.UtcNow.AddDays(jwtService.RefreshTokenExpiryDays),
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false
@@ -189,9 +189,9 @@ public class AuthService(
         var newTokenValue = jwtService.GenerateRefreshToken();
         var newRefreshToken = new RefreshToken
         {
-            Id        = Guid.NewGuid(),
-            Token     = newTokenValue,
-            UserId    = user.Id,
+            Id = Guid.NewGuid(),
+            Token = newTokenValue,
+            UserId = user.Id,
             ExpiresAt = token.ExpiresAt,
             CreatedAt = DateTime.UtcNow,
             IsRevoked = false
