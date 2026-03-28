@@ -4,7 +4,7 @@ namespace Domain.Interfaces.Repositories;
 
 public interface INotebookRepository : IRepository<Notebook>
 {
-    Task<IReadOnlyList<Notebook>> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
+    Task<IReadOnlyList<NotebookSummary>> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
     ///     Returns the notebook and all 12 of its module styles.

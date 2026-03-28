@@ -1,6 +1,8 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ApiModels.Chords;
 using ApiModels.Instruments;
+using ApiModels.Notebooks;
 using ApiModels.Users;
 using AutoMapper;
 using DomainModels.Enums;
@@ -10,6 +12,23 @@ namespace Api.Mapping;
 
 public class DomainToResponseProfile : Profile
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
+
+    private record StyleProperties(
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
+
     public DomainToResponseProfile()
     {
         CreateMap<User, UserResponse>()
@@ -78,5 +97,35 @@ public class DomainToResponseProfile : Profile
                 s.Extension,
                 s.Alternation,
                 ctx.Mapper.Map<IReadOnlyList<ChordPositionResponse>>(s.Positions)));
+
+        CreateMap<NotebookModuleStyle, ModuleStyleResponse>()
+            .ConvertUsing((src, _, _) =>
+            {
+                var props = JsonSerializer.Deserialize<StyleProperties>(src.StylesJson, JsonOptions)!;
+                return new ModuleStyleResponse(
+                    src.Id,
+                    src.NotebookId,
+                    src.ModuleType.ToString(),
+                    props.BackgroundColor,
+                    props.BorderColor,
+                    props.BorderStyle,
+                    props.BorderWidth,
+                    props.BorderRadius,
+                    props.HeaderBgColor,
+                    props.HeaderTextColor,
+                    props.BodyTextColor,
+                    props.FontFamily);
+            });
+
+        CreateMap<NotebookSummary, NotebookSummaryResponse>()
+            .ConstructUsing((s, _) => new NotebookSummaryResponse(
+                s.Id,
+                s.Title,
+                s.InstrumentName,
+                s.PageSize.ToString(),
+                s.CoverColor,
+                s.LessonCount,
+                s.CreatedAt.ToString("o"),
+                s.UpdatedAt.ToString("o")));
     }
 }

@@ -38,4 +38,12 @@ public class PdfExportRepository(AppDbContext context, IMapper mapper)
             .ToListAsync(ct);
         return _mapper.Map<IReadOnlyList<PdfExport>>(entities);
     }
+
+    public Task<bool> HasActiveExportForNotebookAsync(Guid notebookId, CancellationToken ct = default)
+    {
+        return _context.PdfExports.AnyAsync(
+            e => e.NotebookId == notebookId &&
+                 (e.Status == ExportStatus.Pending || e.Status == ExportStatus.Processing),
+            ct);
+    }
 }

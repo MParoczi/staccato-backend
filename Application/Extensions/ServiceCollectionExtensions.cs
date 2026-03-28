@@ -204,6 +204,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonPageRepository, LessonPageRepository>();
         services.AddScoped<IModuleRepository, ModuleRepository>();
         services.AddScoped<IPdfExportRepository, PdfExportRepository>();
+        services.AddScoped<ISystemStylePresetRepository, SystemStylePresetRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
@@ -238,6 +239,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IChordService, ChordService>();
         services.AddScoped<IInstrumentService, InstrumentService>();
+        services.AddScoped<INotebookService, NotebookService>();
         services.AddResponseCaching();
         return services;
     }

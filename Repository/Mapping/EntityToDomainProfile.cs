@@ -27,6 +27,7 @@ public class EntityToDomainProfile : Profile
                 ?? new List<ChordPosition>()));
         CreateMap<NotebookEntity, Notebook>().ReverseMap();
         CreateMap<NotebookModuleStyleEntity, NotebookModuleStyle>().ReverseMap();
+        CreateMap<SystemStylePresetEntity, SystemStylePreset>().ReverseMap();
         CreateMap<LessonEntity, Lesson>().ReverseMap();
         CreateMap<LessonPageEntity, LessonPage>().ReverseMap();
         CreateMap<ModuleEntity, Module>().ReverseMap();

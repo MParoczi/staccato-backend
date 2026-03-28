@@ -20,4 +20,10 @@ public interface IPdfExportRepository : IRepository<PdfExport>
     ///     Returns all exports for the user ordered by CreatedAt descending.
     /// </summary>
     Task<IReadOnlyList<PdfExport>> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns true if the notebook has an active (Pending or Processing) PDF export.
+    ///     Used by NotebookService.DeleteAsync to block deletion with 409 ACTIVE_EXPORT_EXISTS.
+    /// </summary>
+    Task<bool> HasActiveExportForNotebookAsync(Guid notebookId, CancellationToken ct = default);
 }
