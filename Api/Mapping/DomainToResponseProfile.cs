@@ -44,7 +44,11 @@ public class DomainToResponseProfile : Profile
                 s.StringNumber,
                 s.State.ToString().ToLower(),
                 s.Fret,
-                s.Finger));
+                s.Finger))
+            .ForMember(dest => dest.State, opt => opt.Ignore())
+            .ForMember(dest => dest.String, opt => opt.Ignore())
+            .ForMember(dest => dest.Fret, opt => opt.Ignore())
+            .ForMember(dest => dest.Finger, opt => opt.Ignore());
 
         CreateMap<ChordPosition, ChordPositionResponse>()
             .ConstructUsing((s, ctx) => new ChordPositionResponse(
