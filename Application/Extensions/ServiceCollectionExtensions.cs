@@ -15,6 +15,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Context;
@@ -89,9 +90,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddRateLimiting(
-        this IServiceCollection services,
-        RateLimitOptions rateLimitOptions)
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
         {
@@ -100,6 +99,8 @@ public static class ServiceCollectionExtensions
                 if (context.Request.Path.StartsWithSegments("/auth"))
                 {
                     var remoteIp = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+                    var rateLimitOptions = context.RequestServices
+                        .GetRequiredService<IOptions<RateLimitOptions>>().Value;
                     return RateLimitPartition.GetFixedWindowLimiter(remoteIp, _ =>
                         new FixedWindowRateLimiterOptions
                         {
@@ -206,7 +207,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddLocalizationSupport(this IServiceCollection services)
     {
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
+        services.AddLocalization();
 
         services.AddRequestLocalization(options =>
         {

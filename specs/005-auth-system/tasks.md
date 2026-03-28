@@ -324,7 +324,7 @@
 
 **Purpose**: Full test coverage, compilation validation, cross-cutting verification.
 
-- [ ] T044 [P] Write `Tests/Unit/AuthServiceTests.cs` — xUnit test class, Moq for all `AuthService` dependencies. Cover all 18 cases from plan.md:
+- [x] T044 [P] Write `Tests/Unit/AuthServiceTests.cs` — xUnit test class, Moq for all `AuthService` dependencies. Cover all 18 cases from plan.md:
   - `RegisterAsync_NewUser_ReturnsAuthTokens` (happy path)
   - `RegisterAsync_DuplicateEmail_ThrowsConflict`
   - `LoginAsync_ValidCredentials_ReturnsAuthTokens`
@@ -344,7 +344,7 @@
   - `LogoutAsync_ValidToken_RevokesToken`
   - `LogoutAsync_UnknownToken_IsIdempotent` (no exception thrown)
 
-- [ ] T045 [P] Write `Tests/Integration/Controllers/AuthControllerTests.cs` — xUnit test class, `WebApplicationFactory<Program>` with InMemory EF. Cover all 13 cases from plan.md:
+- [x] T045 [P] Write `Tests/Integration/Controllers/AuthControllerTests.cs` — xUnit test class, `WebApplicationFactory<Program>` with InMemory EF. Cover all 13 cases from plan.md:
   - `Register_ValidRequest_Returns201WithCookie` (body has `accessToken`, `expiresIn`; cookie `staccato_refresh` is set)
   - `Register_DuplicateEmail_Returns409` (code = `EMAIL_ALREADY_REGISTERED`)
   - `Register_InvalidInput_Returns400` (FluentValidation format — `errors` object)
@@ -359,9 +359,9 @@
   - `RateLimit_ExceedsLimit_Returns429` (send 11 requests to `/auth/login`; 11th returns 429)
   - `Localization_HungarianHeader_ReturnsHuMessage` (`Accept-Language: hu` on duplicate-email register → message is Hungarian)
 
-- [ ] T046 Build and verify — run `dotnet build Staccato.sln` and confirm zero errors and zero warnings related to new code. Fix any namespace, reference, or using-directive issues
+- [x] T046 Build and verify — run `dotnet build Staccato.sln` and confirm zero errors and zero warnings related to new code. Fix any namespace, reference, or using-directive issues
 
-- [ ] T047 Run full test suite — `dotnet test Staccato.sln` and confirm all existing tests still pass alongside the new unit and integration tests
+- [x] T047 Run full test suite — `dotnet test Staccato.sln` and confirm all existing tests still pass alongside the new unit and integration tests
 
 ---
 

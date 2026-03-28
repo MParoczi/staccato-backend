@@ -13,6 +13,7 @@ public class RefreshTokenRepository(AppDbContext context, IMapper mapper)
     public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct = default)
     {
         var entity = await _context.RefreshTokens
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Token == token, ct);
         return _mapper.Map<RefreshToken?>(entity);
     }
@@ -21,6 +22,7 @@ public class RefreshTokenRepository(AppDbContext context, IMapper mapper)
         Guid userId, CancellationToken ct = default)
     {
         var entities = await _context.RefreshTokens
+            .AsNoTracking()
             .Where(t => t.UserId == userId && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow)
             .ToListAsync(ct);
         return _mapper.Map<IReadOnlyList<RefreshToken>>(entities);
@@ -28,8 +30,11 @@ public class RefreshTokenRepository(AppDbContext context, IMapper mapper)
 
     public async Task RevokeAllForUserAsync(Guid userId, CancellationToken ct = default)
     {
-        await _context.RefreshTokens
+        var tokens = await _context.RefreshTokens
             .Where(t => t.UserId == userId && !t.IsRevoked)
-            .ExecuteUpdateAsync(s => s.SetProperty(t => t.IsRevoked, true), ct);
+            .ToListAsync(ct);
+        foreach (var token in tokens)
+            token.IsRevoked = true;
+        await _context.SaveChangesAsync(ct);
     }
 }

@@ -43,12 +43,11 @@ builder.Services
 
 // Read values needed as parameters before Build() — do NOT use BuildServiceProvider().
 var corsConfiguration = builder.Configuration.GetSection("Cors").Get<CorsConfiguration>()!;
-var rateLimitOptions = builder.Configuration.GetSection("RateLimit").Get<RateLimitOptions>()!;
 
 // Service registrations.
 builder.Services.AddAuth(builder.Configuration);
 builder.Services.AddCorsPolicy(corsConfiguration);
-builder.Services.AddRateLimiting(rateLimitOptions);
+builder.Services.AddRateLimiting();
 builder.Services.AddAzureBlob(builder.Configuration);
 builder.Services.AddMappingProfiles();
 builder.Services.AddFluentValidationPipeline();
@@ -72,8 +71,8 @@ using (var scope = app.Services.CreateScope())
 
 // Middleware pipeline — exact order per FR-024.
 app.UseRequestLocalization();
-app.UseMiddleware<BusinessExceptionMiddleware>();
 app.UseExceptionHandler();
+app.UseMiddleware<BusinessExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("StaccatoPolicy"); // must match ServiceCollectionExtensions.CorsPolicyName
 app.UseRateLimiter();
@@ -83,3 +82,6 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllers();
 
 app.Run();
+
+// Expose Program to the Tests project for WebApplicationFactory<Program>.
+public partial class Program { }

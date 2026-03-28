@@ -13,6 +13,7 @@ public class UserRepository(AppDbContext context, IMapper mapper)
     public async Task<User?> GetByEmailAsync(string email, CancellationToken ct = default)
     {
         var entity = await _context.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == email, ct);
         return _mapper.Map<User?>(entity);
     }
@@ -20,6 +21,7 @@ public class UserRepository(AppDbContext context, IMapper mapper)
     public async Task<User?> GetByGoogleIdAsync(string googleId, CancellationToken ct = default)
     {
         var entity = await _context.Users
+            .AsNoTracking()
             .FirstOrDefaultAsync(u => u.GoogleId == googleId, ct);
         return _mapper.Map<User?>(entity);
     }
@@ -28,6 +30,7 @@ public class UserRepository(AppDbContext context, IMapper mapper)
         Guid userId, CancellationToken ct = default)
     {
         var entity = await _context.Users
+            .AsNoTracking()
             .Include(u => u.RefreshTokens.Where(t => !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow))
             .FirstOrDefaultAsync(u => u.Id == userId, ct);
 
