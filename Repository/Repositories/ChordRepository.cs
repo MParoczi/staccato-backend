@@ -16,15 +16,30 @@ public class ChordRepository(AppDbContext context, IMapper mapper)
         string? quality,
         CancellationToken ct = default)
     {
-        var query = _context.Chords.Where(c => c.InstrumentId == instrumentId);
+        var query = _context.Chords
+            .Include(c => c.Instrument)
+            .Where(c => c.InstrumentId == instrumentId);
 
         if (root is not null)
-            query = query.Where(c => c.Name == root);
+            query = query.Where(c => c.Root.ToLower() == root.ToLower());
 
         if (quality is not null)
             query = query.Where(c => c.Quality.ToLower() == quality.ToLower());
 
-        var entities = await query.ToListAsync(ct);
+        var entities = await query
+            .OrderBy(c => c.Root)
+            .ThenBy(c => c.Quality)
+            .ToListAsync(ct);
+
         return _mapper.Map<IReadOnlyList<Chord>>(entities);
+    }
+
+    async Task<Chord?> IRepository<Chord>.GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        var entity = await _context.Chords
+            .Include(c => c.Instrument)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+        return _mapper.Map<Chord?>(entity);
     }
 }
