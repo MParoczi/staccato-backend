@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using ApiModels.Users;
 using AutoMapper;
 using Domain.Services;
@@ -78,6 +79,36 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
     public async Task<IActionResult> DeleteAvatar(CancellationToken ct)
     {
         await userService.DeleteAvatarAsync(GetUserId(), ct);
+        return NoContent();
+    }
+
+    [HttpGet("me/presets")]
+    public async Task<IActionResult> GetPresets(CancellationToken ct)
+    {
+        var presets = await userService.GetPresetsAsync(GetUserId(), ct);
+        return Ok(mapper.Map<List<PresetResponse>>(presets));
+    }
+
+    [HttpPost("me/presets")]
+    public async Task<IActionResult> CreatePreset(SavePresetRequest request, CancellationToken ct)
+    {
+        var stylesJson = JsonSerializer.Serialize(request.Styles);
+        var preset = await userService.CreatePresetAsync(GetUserId(), request.Name, stylesJson, ct);
+        return StatusCode(StatusCodes.Status201Created, mapper.Map<PresetResponse>(preset));
+    }
+
+    [HttpPut("me/presets/{id:guid}")]
+    public async Task<IActionResult> UpdatePreset(Guid id, UpdatePresetRequest request, CancellationToken ct)
+    {
+        var stylesJson = request.Styles != null ? JsonSerializer.Serialize(request.Styles) : null;
+        var preset = await userService.UpdatePresetAsync(GetUserId(), id, request.Name, stylesJson, ct);
+        return Ok(mapper.Map<PresetResponse>(preset));
+    }
+
+    [HttpDelete("me/presets/{id:guid}")]
+    public async Task<IActionResult> DeletePreset(Guid id, CancellationToken ct)
+    {
+        await userService.DeletePresetAsync(GetUserId(), id, ct);
         return NoContent();
     }
 }

@@ -121,14 +121,60 @@ public class UserService(
     }
 
     public Task<IReadOnlyList<UserSavedPreset>> GetPresetsAsync(Guid userId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        => presetRepository.GetByUserIdAsync(userId, ct);
 
-    public Task<UserSavedPreset> CreatePresetAsync(Guid userId, string name, string stylesJson, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<UserSavedPreset> CreatePresetAsync(Guid userId, string name, string stylesJson, CancellationToken ct = default)
+    {
+        if (await presetRepository.ExistsByNameAsync(userId, name, ct: ct))
+            throw new ConflictException("DUPLICATE_PRESET_NAME",
+                "A preset with this name already exists.");
 
-    public Task<UserSavedPreset> UpdatePresetAsync(Guid userId, Guid presetId, string? name, string? stylesJson, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        var preset = new UserSavedPreset
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Name = name,
+            StylesJson = stylesJson
+        };
 
-    public Task DeletePresetAsync(Guid userId, Guid presetId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        await presetRepository.AddAsync(preset, ct);
+        await unitOfWork.CommitAsync(ct);
+        return preset;
+    }
+
+    public async Task<UserSavedPreset> UpdatePresetAsync(Guid userId, Guid presetId, string? name, string? stylesJson, CancellationToken ct = default)
+    {
+        var preset = await presetRepository.GetByIdAsync(presetId, ct)
+                     ?? throw new NotFoundException("Preset not found.");
+
+        if (preset.UserId != userId)
+            throw new ForbiddenException();
+
+        if (name is not null && name != preset.Name)
+        {
+            if (await presetRepository.ExistsByNameAsync(userId, name, excludePresetId: presetId, ct: ct))
+                throw new ConflictException("DUPLICATE_PRESET_NAME",
+                    "A preset with this name already exists.");
+            preset.Name = name;
+        }
+
+        if (stylesJson is not null)
+            preset.StylesJson = stylesJson;
+
+        presetRepository.Update(preset);
+        await unitOfWork.CommitAsync(ct);
+        return preset;
+    }
+
+    public async Task DeletePresetAsync(Guid userId, Guid presetId, CancellationToken ct = default)
+    {
+        var preset = await presetRepository.GetByIdAsync(presetId, ct)
+                     ?? throw new NotFoundException("Preset not found.");
+
+        if (preset.UserId != userId)
+            throw new ForbiddenException();
+
+        presetRepository.Remove(preset);
+        await unitOfWork.CommitAsync(ct);
+    }
 }
