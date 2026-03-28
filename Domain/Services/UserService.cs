@@ -1,3 +1,4 @@
+using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
 using DomainModels.Enums;
@@ -12,11 +13,36 @@ public class UserService(
     IAzureBlobService blobService,
     IUnitOfWork unitOfWork) : IUserService
 {
-    public Task<User> GetProfileAsync(Guid userId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<User> GetProfileAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct);
+        if (user is null)
+            throw new NotFoundException("User not found.");
+        return user;
+    }
 
-    public Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize, Guid? defaultInstrumentId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize, Guid? defaultInstrumentId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct)
+                   ?? throw new NotFoundException("User not found.");
+
+        if (defaultInstrumentId is not null)
+        {
+            var instrument = await instrumentRepository.GetByIdAsync(defaultInstrumentId.Value, ct);
+            if (instrument is null)
+                throw new NotFoundException("INSTRUMENT_NOT_FOUND", "The specified instrument was not found.");
+        }
+
+        user.FirstName = firstName;
+        user.LastName = lastName;
+        user.Language = language;
+        user.DefaultPageSize = defaultPageSize;
+        user.DefaultInstrumentId = defaultInstrumentId;
+
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(ct);
+        return user;
+    }
 
     public Task ScheduleDeletionAsync(Guid userId, CancellationToken ct = default)
         => throw new NotImplementedException();
