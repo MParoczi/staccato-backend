@@ -5,7 +5,7 @@
 
 ## Summary
 
-Expose three public read-only endpoints — `GET /instruments`, `GET /chords`, `GET /chords/{id}` — backed by seeded, immutable data. Requires adding `Root` and `Quality` columns to `ChordEntity` (with a composite index), replacing the file-path-based seeder with an embedded-resource differential seeder, wiring a new `ChordService` and `InstrumentService` through the standard Service / Repository / UoW stack, and adding response DTOs + AutoMapper profiles. No new libraries.
+Expose three public read-only endpoints — `GET /instruments`, `GET /chords`, `GET /chords/{id}` — backed by seeded, immutable data. Requires adding `Root`, `Quality`, `Extension`, and `Alternation` columns to `ChordEntity`, dropping the `Suffix` column, using a 13-value quality taxonomy, replacing the file-path-based seeder with an embedded-resource differential seeder that reads `name`/`root`/`quality`/`extension`/`alternation` directly from the transformed JSON, wiring a new `ChordService` and `InstrumentService` through the standard Service / Repository / UoW stack, and adding response DTOs + AutoMapper profiles. No new libraries.
 
 ---
 
@@ -154,22 +154,27 @@ The tasks below are ordered by dependency. Each task is independently committabl
 ### Group B — Persistence (depends on A1)
 
 **B1** — Update `ChordConfiguration`
+- Remove `Suffix` column config
 - Add `Root` column config (`IsRequired().HasMaxLength(50)`)
-- Add `Quality` column config (`IsRequired().HasMaxLength(100)`)
+- Add `Quality` column config (`IsRequired().HasMaxLength(50)`)
+- Add `Extension` column config (`.HasMaxLength(50)` — nullable, no `IsRequired()`)
+- Add `Alternation` column config (`.HasMaxLength(50)` — nullable, no `IsRequired()`)
 - Add composite index on `(InstrumentId, Root, Quality)`
 
-**B2** — Add EF Core migration `AddChordRootAndQuality`
-- `dotnet ef migrations add AddChordRootAndQuality`
+**B2** — Add EF Core migration `RestructureChordSchema`
+- `dotnet ef migrations add RestructureChordSchema`
 - Edit generated migration: add `migrationBuilder.Sql(...)` for data population
-- See data-model.md for exact SQL
+- See data-model.md §EF Core Migration for the full SQL: adds Root/Quality/Extension/Alternation columns, populates from old Suffix values via CASE-WHEN, updates Name to display name, then drops the Suffix column
 
-**B3** — Update `ChordSeeder` — embedded resource + differential + Root/Quality
+**B3** — Update `ChordSeeder` — embedded resource + differential + new schema
 - Change `Persistence.csproj`: `<Content>` → `<EmbeddedResource>` for `guitar_chords.json`
 - Change access from file path to `Assembly.GetManifestResourceStream`
 - Change `virtual string ChordFilePath` → `virtual Stream? GetChordStream()` override pattern
-- Add `Root` and `Quality` to `ChordRecord` private DTO (map from JSON `name` and `suffix`)
-- Set `Name = $"{r.Root} {r.Quality}"` (display name), `Root = r.Root`, `Quality = r.Quality`
-- Replace skip-if-any with differential: load existing `(InstrumentId, Root, Quality, Suffix)` tuples, insert only those absent
+- Update `ChordRecord` private DTO: fields `Name`, `Root`, `Quality`, `Extension?`, `Alternation?` (all read directly from JSON; no derivation)
+- Map JSON directly: `Name = r.Name`, `Root = r.Root`, `Quality = r.Quality`, `Extension = r.Extension`, `Alternation = r.Alternation`
+- Remove `Suffix` from `ChordRecord` and `ChordEntity` assignment — it no longer exists
+- Replace skip-if-any with differential: load existing `(InstrumentId, Root, Quality, Extension ?? "")` tuples as HashSet, insert only those absent
+- Note: for Major chords `Extension` is null and `Name` equals the root note letter (e.g. `"C"` for C major)
 
 **B4** — Update `InstrumentSeeder` — differential (optional improvement)
 - Currently uses skip-if-any; update to per-record differential to match spec
@@ -196,8 +201,8 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **D1** — Create response DTOs in `ApiModels`
 - `ApiModels/Instruments/InstrumentResponse.cs` — record with `Id, Key, Name, StringCount`
-- `ApiModels/Chords/ChordSummaryResponse.cs` — record with all summary fields + `PreviewPosition`
-- `ApiModels/Chords/ChordDetailResponse.cs` — record with all detail fields + `Positions`
+- `ApiModels/Chords/ChordSummaryResponse.cs` — record with `Id, InstrumentKey, Name, Root, Quality, Extension?, Alternation?, PreviewPosition` (no `Suffix`)
+- `ApiModels/Chords/ChordDetailResponse.cs` — record with `Id, InstrumentKey, Name, Root, Quality, Extension?, Alternation?, Positions` (no `Suffix`)
 - `ApiModels/Chords/ChordPositionResponse.cs` — record with `Label, BaseFret, Barre?, Strings`
 - `ApiModels/Chords/ChordBarreResponse.cs` — record with `Fret, FromString, ToString`
 - `ApiModels/Chords/ChordStringResponse.cs` — record with `String, State, Fret?, Finger?`
@@ -222,11 +227,12 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **F1** — Update `DomainToResponseProfile`
 - `Instrument → InstrumentResponse`: map `DisplayName → Name`, `Key.ToString() → Key`
-- `Chord → ChordSummaryResponse`: map `InstrumentKey.ToString() → InstrumentKey`, `Positions.First() → PreviewPosition`
-- `Chord → ChordDetailResponse`: map `InstrumentKey.ToString() → InstrumentKey`, `Positions → Positions`
+- `Chord → ChordSummaryResponse`: map `InstrumentKey.ToString() → InstrumentKey`, `Positions[0] → PreviewPosition`, `Extension → Extension` (nullable pass-through), `Alternation → Alternation` (nullable pass-through)
+- `Chord → ChordDetailResponse`: map `InstrumentKey.ToString() → InstrumentKey`, `Positions → Positions`, same nullable pass-throughs
 - `ChordPosition → ChordPositionResponse`: straightforward; `Barre?` mapped if not null
 - `ChordBarre → ChordBarreResponse`: straightforward
 - `ChordString → ChordStringResponse`: map `StringNumber → String`, `State.ToString().ToLower() → State`
+- No `Suffix` mapping — not present in domain model or response DTOs
 
 ### Group G — Controllers (depends on D1, E1, E2, F1)
 
@@ -255,7 +261,8 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **I1** — Update `ChordSeederHappyPathTests`
 - Update `TestableChordSeeder` — override `GetChordStream()` instead of `ChordFilePath`
-- Update assertions: `chord.Name == "C major"` (display name) instead of `chord.Name == "C"` (root only)
+- Update test JSON payloads to use new format (`name`, `root`, `quality`, `suffix` fields)
+- Existing `chord.Name == "C"` assertion remains correct for C major (suffix is `""`, so name = root = "C")
 - Add test: `SeedAsync_PartiallySeeded_InsertsOnlyNewChords` — seeds 2 chords, calls again with 3, verifies total = 3
 
 **I2** — Update `ChordSeederFailTests`
@@ -292,7 +299,8 @@ The tasks below are ordered by dependency. Each task is independently committabl
 |---|---|---|
 | BOM in guitar_chords.json causes JSON parse failure | **High** — file has UTF-8 BOM | Use `new StreamReader(stream)` which strips BOM automatically, not `Stream.Read` directly |
 | Existing seeder tests break after embedded-resource change | **High** | Override mechanism changes from file path to stream; tests updated in I1/I2 |
-| `Name` semantic change breaks existing assertions | **High** | All `chord.Name == "C"` assertions must become `chord.Name == "C major"` |
+| `Name` semantic change breaks existing assertions | **Medium** | For `Major` quality chords `chord.Name` is still the root letter (e.g. `"C"`), so the existing `chord.Name == "C"` assertion in `ChordSeederHappyPathTests` remains correct if the test uses a Major chord. All other quality assertions are affected (e.g. minor chord name is now `"Cm"` not `"C"`). |
+| `Suffix` column removed — any code referencing `ChordEntity.Suffix` fails to compile | **High** | Search for all `Suffix` references across EntityModels, DomainModels, Repository, and ApiModels before applying the migration. Seeder tests using JSON payloads must switch to the new JSON format (no `suffix` field). |
 | Response caching caches error responses | Low | ASP.NET Core only caches successful (200) responses by default |
 | AutoMapper `Positions.First()` throws if chord has no positions | Low | Seeder validates `Positions.Count > 0` before inserting; all seeded chords guaranteed to have at least one position |
 | Migration data-population step fails on empty Chords table | Low — not an error | `WHERE Root = ''` will match zero rows on fresh DB; safe no-op |

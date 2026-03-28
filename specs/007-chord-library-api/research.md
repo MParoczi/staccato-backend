@@ -55,14 +55,17 @@
 
 **Location**: `Persistence/Data/guitar_chords.json`
 **Encoding**: UTF-8 with BOM — seeder must strip BOM when reading via `StreamReader`
-**Size**: 144 entries
+**Size**: 144 entries (12 roots × 12 chord types)
 
 **Top-level JSON structure** (flat array):
 ```json
 [
   {
     "name": "A",
-    "suffix": "major",
+    "root": "A",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -75,29 +78,67 @@
       }
     ]
   },
-  ...
+  {
+    "name": "Am7",
+    "root": "A",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
+    "positions": [...]
+  },
+  {
+    "name": "Aadd9",
+    "root": "A",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
+    "positions": [...]
+  }
 ]
 ```
+
+> `extension` and `alternation` are `null` when absent — never omitted from the JSON object.
 
 **Field mapping to entity**:
 | JSON field | Maps to `ChordEntity` | Notes |
 |---|---|---|
-| `name` | `Root` | Root note letter ("A", "F#", "Bb") |
-| `suffix` | `Quality` | Quality string ("major", "minor", "maj7", "dim", etc.) |
-| derived `name + " " + suffix` | `Name` | Display name ("A major") |
-| `suffix` | `Suffix` | Same as Quality (kept for API response `suffix` field) |
+| `name` | `Name` | Full display name ("A", "Am7", "Gadd9", "Gsus2") |
+| `root` | `Root` | Root note letter ("A", "F#", "Bb") |
+| `quality` | `Quality` | One of 13 named quality values (see taxonomy) |
+| `extension` | `Extension` | Optional extension string ("add9") or null |
+| `alternation` | `Alternation` | Optional alteration string ("#9", "b5") or null |
 | serialized `positions` | `PositionsJson` | Stored as camelCase JSON array |
 
-**Distinct suffixes** (qualities): major, minor, 7, maj7, m7, dim, aug, sus2, sus4, m7b5, and 2 more
+> `Suffix` column no longer exists — removed in migration `RestructureChordSchema`.
+
+**Quality taxonomy** (13 named qualities, mapping from 12 original suffixes):
+
+| Original suffix | quality | extension | alternation | Example name (root=G) |
+|---|---|---|---|---|
+| `major` | `Major` | null | null | `G` |
+| `minor` | `Minor` | null | null | `Gm` |
+| `7` | `Seventh` | null | null | `G7` |
+| `maj7` | `Major 7` | null | null | `Gmaj7` |
+| `add9` | `Major` | `add9` | null | `Gadd9` |
+| `m7` | `Minor 7` | null | null | `Gm7` |
+| `m7b5` | `Half-Diminished` | null | null | `Gm7b5` |
+| `dim` | `Diminished` | null | null | `Gdim` |
+| `dim7` | `Diminished 7th` | null | null | `Gdim7` |
+| `aug` | `Augmented` | null | null | `Gaug` |
+| `sus2` | `Suspended 2nd` | null | null | `Gsus2` |
+| `sus4` | `Suspended 4th` | null | null | `Gsus4` |
+
+**Example with alternation** (future data, not in current seed):
+- `C7(#9)` → name: `"C7(#9)"`, root: `"C"`, quality: `"Seventh"`, extension: null, alternation: `"#9"`
 
 ---
 
 ## 3. Key Design Decisions
 
 ### D1 — `ChordEntity.Name` semantic change
-- **Before**: stored the root note letter ("A", "F#")
-- **After**: stores the human-readable display name ("A major", "F# dim")
-- **Impact**: existing `ChordSeederHappyPathTests` asserts `chord.Name == "C"` — must be updated to assert `chord.Name == "C major"` (or whatever the quality is)
+- **Before**: stored the root note letter ("A", "F#") — sourced from JSON `name` field
+- **After**: stores the full display name ("A", "Am7", "Gadd9", "Gsus2") — sourced from JSON `name` field (no runtime derivation)
+- **Impact**: For basic Major chords the `Name` value is still just the root letter (e.g. "C" for C major), so the existing `ChordSeederHappyPathTests` assertion `chord.Name == "C"` remains correct. For all other qualities the name changes (e.g. C minor is now "Cm", C minor seventh is "Cm7"). Any assertion that assumed `chord.Name` was a bare root letter for non-major chords must be updated.
 
 ### D2 — Embedded resource, not file copy
 - `guitar_chords.json` must be `<EmbeddedResource>` in `Persistence.csproj`
@@ -107,8 +148,10 @@
 
 ### D3 — Differential additive seeding (per spec clarification)
 - Natural key for `Instrument`: `Key` enum value
-- Natural key for `Chord`: `(InstrumentId, Root, Quality, Suffix)`
+- Natural key for `Chord`: `(InstrumentId, Root, Quality, Extension)` — Extension is treated as `""` when null for comparison purposes; Alternation is not part of the natural key (two differently-altered chords with the same root+quality+extension are considered the same chord for deduplication)
 - Both seeders query existing records once, build a HashSet of existing keys, insert only missing ones
+- Seeder reads `name`, `root`, `quality`, `extension`, `alternation` directly from JSON — no derivation at runtime
+- `Suffix` column no longer exists; the seeder never writes it
 
 ### D4 — `InstrumentKey` on `Chord` domain model (denormalized)
 - Required because `ChordSummary` and `ChordDetail` responses include `instrumentKey`

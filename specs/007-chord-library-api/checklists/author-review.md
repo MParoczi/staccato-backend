@@ -12,7 +12,7 @@
 
 - [ ] CHK001 — Are HTTP status codes documented for every scenario on `GET /instruments` (200, and the absence of 401 for unauthenticated callers)? [Completeness, Spec §User Story 3]
 - [ ] CHK002 — Is response caching scope explicitly specified for all three endpoints — not just `GET /chords`? (`GET /chords/{id}` has it per plan; `GET /instruments` does not — is the omission intentional and stated?) [Completeness, plan.md §G2]
-- [ ] CHK003 — Are all fields of `ChordSummaryResponse` documented with their data types and nullable status (especially `suffix` when a chord is "basic")? [Completeness, data-model.md §Response DTOs]
+- [ ] CHK003 — Are all fields of `ChordSummaryResponse` documented with their data types and nullable status (especially `extension` and `alternation`, which are `null` when absent — not omitted)? [Completeness, data-model.md §Response DTOs]
 - [ ] CHK004 — Are all fields of `ChordDetailResponse` and nested types (`ChordPositionResponse`, `ChordBarreResponse`, `ChordStringResponse`) documented with types and nullability? [Completeness, data-model.md §Response DTOs]
 - [ ] CHK005 — Is the error response body format for a missing `instrument` param (400 via FluentValidation) specified and distinguished from an unknown instrument key (400 via model binding)? Both return 400 but through different mechanisms. [Completeness, Spec §FR-003/FR-004, contracts/endpoints.md]
 - [ ] CHK006 — Is the `INSTRUMENT_NOT_FOUND` error (404) trigger condition — valid `InstrumentKey` enum value, but no matching row in the database — clearly distinguished from the model-binding 400 in the spec? [Completeness, Spec §FR-003/FR-004, contracts/endpoints.md]
@@ -34,7 +34,8 @@
 
 ## API Contract Consistency
 
-- [ ] CHK015 — Are `quality` and `suffix` field semantics in `ChordSummaryResponse` clearly distinguished? Both currently carry the same value (e.g., "major") — does the spec explain why both fields exist and when they would differ? [Consistency/Ambiguity, Spec §Key Entities, data-model.md]
+- [x] CHK015 — Are `quality` and `suffix` field semantics in `ChordSummaryResponse` clearly distinguished? Both currently carry the same value (e.g., "major") — does the spec explain why both fields exist and when they would differ? [Consistency/Ambiguity, Spec §Key Entities, data-model.md]
+  - **Resolved**: `suffix` no longer exists. The schema uses `quality` (one of 13 named chord types), `extension` (optional symbolic extension, e.g. "add9"; null for most chords), and `alternation` (optional chromatic alteration, e.g. "#9"; null for all seeded chords). All three are documented in Spec §Key Entities, Spec §Clarifications, data-model.md §Entity Changes, and contracts/endpoints.md.
 - [ ] CHK016 — Is the `string` field name in `ChordStringResponse` documented to match the JSON key name `"string"` (a C# reserved keyword)? Is the `[JsonPropertyName("string")]` requirement stated in the spec or data model? [Consistency, data-model.md §Response DTOs]
 - [ ] CHK017 — Is `ChordBarre.fromString` / `toString` field directionality (1 = highest-pitched string) consistent between the spec, the frontend documentation, and the contracts file? [Consistency, contracts/endpoints.md, Spec §Key Entities]
 
@@ -47,7 +48,7 @@
 - [ ] CHK020 — Is the required execution order between `InstrumentSeeder` and `ChordSeeder` documented as a functional requirement? (Chords require the instrument row to exist.) [Completeness, Spec §FR-009]
 - [ ] CHK021 — Is the natural key for chord deduplication in differential seeding fully specified with all four fields `(InstrumentId, Root, Quality, Suffix)`? Are all four needed, or could `(InstrumentId, Root, Quality)` be sufficient? [Completeness/Clarity, Spec §FR-009]
 - [ ] CHK022 — Is the `InstrumentSeeder`'s migration to differential seeding (per-record) documented as a requirement in the spec? Currently the spec's FR-009 only describes the chord seeder. [Completeness, Spec §FR-009, plan.md §B4]
-- [ ] CHK023 — Is the `ChordEntity.Name` semantic change (from root note letter to display name) documented as a breaking change with an explicit migration requirement? [Completeness, research.md §D1, data-model.md §EF Core Migration]
+- [ ] CHK023 — Is the `ChordEntity.Name` semantic change (from root note letter to full display name) and the `Suffix` column removal both documented with explicit migration requirements? The migration `RestructureChordSchema` covers both. Is the order of steps (add, populate, drop) correctly specified? [Completeness, research.md §D1, data-model.md §EF Core Migration]
 - [ ] CHK024 — Are the database migration steps specified in a safe dependency order — specifically: add columns with default, populate data, drop default, add index? [Completeness, data-model.md §EF Core Migration]
 - [ ] CHK025 — Is it specified what happens at startup if the embedded resource name is wrong or the stream returns null? (The spec covers the missing-file case for the old file-path approach, but not the embedded-resource equivalent.) [Coverage/Gap, Spec §Edge Cases]
 
@@ -55,7 +56,7 @@
 
 ## Data Model Schema Requirements
 
-- [ ] CHK026 — Are the max-length constraints for `Root` (50) and `Quality` (100) justified in the spec or data model? Do the actual values in `guitar_chords.json` fit within these bounds? [Completeness, data-model.md §Entity Changes]
+- [ ] CHK026 — Are the max-length constraints for `Root` (50), `Quality` (50), `Extension` (50), and `Alternation` (50) justified? Do the actual values fit within these bounds? (Longest quality value is "Half-Diminished" = 15 chars; longest root is "Bb"/"F#" = 2 chars; longest extension in seed data is "add9" = 4 chars.) [Completeness, data-model.md §Entity Changes]
 - [ ] CHK027 — Is the removal of `PositionsJson` from the `Chord` domain model documented with a note that callers previously accessing `Chord.PositionsJson` must migrate to `Chord.Positions`? [Completeness, data-model.md §Domain Model Changes]
 - [ ] CHK028 — Is the `ChordString.StringNumber` C# property name to JSON `string` key name mapping documented as an explicit requirement? [Clarity, data-model.md §New Domain Models]
 - [ ] CHK029 — Is `ChordStringState` enum serialization format (lowercase strings `"open"`, `"fretted"`, `"muted"` in JSON) specified as a requirement? Or could an implementer serialize as PascalCase `"Open"` without violating the spec? [Clarity, data-model.md §Response DTOs]

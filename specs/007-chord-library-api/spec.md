@@ -147,10 +147,12 @@ containing `id`, `key`, `name`, and `stringCount`.
   database. Existing records are never modified or deleted; their `Guid` IDs remain stable
   across restarts and re-deploys. The natural key for `Instrument` deduplication is the
   `Key` enum value; the natural key for `Chord` deduplication is
-  `(InstrumentId, Root, Quality, Suffix)`.
+  `(InstrumentId, Root, Quality, Extension)` where `null` Extension is treated as `""`
+  for comparison.
 
-- **FR-010**: The chord entity MUST store `Root` and `Quality` as dedicated indexed columns
-  (not buried in JSON) to support efficient server-side filtering.
+- **FR-010**: The chord entity MUST store `Root`, `Quality`, `Extension`, and `Alternation`
+  as dedicated columns (not buried in JSON) to support efficient server-side filtering and
+  structured chord identity. `Suffix` is not stored — it has been superseded by this schema.
 
 - **FR-011**: The chord entity configuration MUST define a composite index on
   `(InstrumentId, Root, Quality)` to support fast filtered list queries.
@@ -171,9 +173,13 @@ containing `id`, `key`, `name`, and `stringCount`.
   created or modified by users.
 
 - **Chord**: A seeded, read-only chord record. Belongs to one `Instrument`. Has a `Name`
-  (e.g. "F Major"), a `Root` note (e.g. "F"), a `Quality` (e.g. "major"), a `Suffix` for
-  extended chords (e.g. "maj7"; empty string for basic chords), and a JSON array of
-  `ChordPosition` values.
+  (full display name, e.g. "F", "Am", "Gm7b5", "Gsus2"), a `Root` note (e.g. "F"), a
+  `Quality` — one of 13 named qualities: `Major`, `Major 7`, `Sixth`, `Minor`, `Minor 7`,
+  `Minor major 7`, `Seventh`, `Diminished`, `Half-Diminished`, `Diminished 7th`,
+  `Suspended 4th`, `Suspended 2nd`, `Augmented` — an optional `Extension` (e.g. `"add9"`
+  for chords where an extension is added beyond the base quality; null otherwise), an
+  optional `Alternation` (e.g. `"#9"`, `"b5"` for chromatic alterations; null for all
+  currently seeded chords), and a JSON array of `ChordPosition` values.
 
 - **ChordPosition**: A single voicing of a chord, embedded in the chord's position JSON.
   Has a `Label` (e.g. "Barre 1st position"), a `BaseFret` (1 = nut position), an optional
@@ -208,6 +214,7 @@ containing `id`, `key`, `name`, and `stringCount`.
 
 - Q: When `DbInitializer` runs on a database that already has chord/instrument records, what should it do? → A: Differential additive seeding — compare the JSON against the database and insert only records that exist in the JSON but are not yet in the database. Existing records are never modified or deleted; their `Guid` IDs remain stable. New entries added to the JSON in future releases are automatically picked up on the next startup.
 - Q: In what order should `GET /chords` results be returned? → A: By `Root` then `Quality` — groups all voicings of the same root note together, which aligns with the chord picker UI's root-first filtering flow.
+- Q: How should the chord data model distinguish quality, extensions, and alterations — and what format should `guitar_chords.json` use? → A: The `Suffix` field is dropped entirely. The schema uses three semantic fields: `Quality` (one of 13 named qualities capturing the complete chord type), `Extension` (optional numeric/symbolic extension beyond the base quality, e.g. `"add9"`; null for most chords), and `Alternation` (optional chromatic alteration, e.g. `"#9"`, `"b5"`; null for all currently seeded chords). The JSON file stores all five fields explicitly: `name` (full display name), `root`, `quality`, `extension`, `alternation`. Example: `Gadd9` → quality `"Major"`, extension `"add9"`, alternation null. Example with alternation (future): `C7(#9)` → quality `"Seventh"`, extension null, alternation `"#9"`. The 12 seeded chord types map to this schema: major→(Major, null, null), minor→(Minor, null, null), 7→(Seventh, null, null), maj7→(Major 7, null, null), add9→(Major, add9, null), m7→(Minor 7, null, null), m7b5→(Half-Diminished, null, null), dim→(Diminished, null, null), dim7→(Diminished 7th, null, null), aug→(Augmented, null, null), sus2→(Suspended 2nd, null, null), sus4→(Suspended 4th, null, null).
 
 ## Assumptions
 

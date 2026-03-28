@@ -56,7 +56,7 @@ Returns chord summaries filtered by instrument key, with optional root and quali
 |---|---|---|---|---|
 | `instrument` | **Yes** | `InstrumentKey` enum string | `Guitar6String` | Missing → 400; invalid value → 400 |
 | `root` | No | string | `F`, `C#`, `Bb` | Case-insensitive; omit to return all roots |
-| `quality` | No | string | `major`, `min7`, `dim` | Case-insensitive; omit to return all qualities |
+| `quality` | No | string | `Minor 7`, `Seventh` | Case-insensitive; one of 13 named qualities (see spec §Key Entities); omit to return all qualities |
 
 ### Response 200
 
@@ -65,10 +65,11 @@ Returns chord summaries filtered by instrument key, with optional root and quali
   {
     "id": "uuid-of-F-major",
     "instrumentKey": "Guitar6String",
-    "name": "F major",
+    "name": "F",
     "root": "F",
-    "quality": "major",
-    "suffix": "major",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "previewPosition": {
       "label": "1",
       "baseFret": 1,
@@ -87,6 +88,8 @@ Returns chord summaries filtered by instrument key, with optional root and quali
 ```
 
 **Empty result**: `[]` when no chords match filters (not an error).
+
+> **Field semantics**: `quality` is one of 13 named chord quality values (`"Major"`, `"Minor 7"`, `"Seventh"`, `"Half-Diminished"`, etc.) that fully describes the chord's harmonic type. `extension` is an optional symbolic extension beyond the base quality (e.g. `"add9"` for an added 9th; `null` for most chords). `alternation` is an optional chromatic alteration (e.g. `"#9"`, `"b5"`; `null` for all currently seeded chords). `name` is the full conventional display name (e.g. `"F"`, `"Am7"`, `"Gadd9"`, `"Gsus2"`). There is no `suffix` field.
 
 ### Response 400 — missing `instrument`
 
@@ -134,10 +137,11 @@ Returns the full chord detail including all positions.
 {
   "id": "uuid-of-F-major",
   "instrumentKey": "Guitar6String",
-  "name": "F major",
+  "name": "F",
   "root": "F",
-  "quality": "major",
-  "suffix": "major",
+  "quality": "Major",
+  "extension": null,
+  "alternation": null,
   "positions": [
     {
       "label": "1",
