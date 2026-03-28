@@ -60,6 +60,7 @@ builder.Services.AddDomainServices();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 
@@ -70,6 +71,12 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline — exact order per FR-024.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseRequestLocalization();
 app.UseExceptionHandler();
 app.UseMiddleware<BusinessExceptionMiddleware>();
