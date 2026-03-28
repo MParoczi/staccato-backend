@@ -11,9 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Data\guitar_chords.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        <EmbeddedResource Include="Data\guitar_chords.json" />
     </ItemGroup>
 
     <ItemGroup>

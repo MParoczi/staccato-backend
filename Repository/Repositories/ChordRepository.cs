@@ -22,7 +22,7 @@ public class ChordRepository(AppDbContext context, IMapper mapper)
             query = query.Where(c => c.Name == root);
 
         if (quality is not null)
-            query = query.Where(c => c.Suffix == quality);
+            query = query.Where(c => c.Quality.ToLower() == quality.ToLower());
 
         var entities = await query.ToListAsync(ct);
         return _mapper.Map<IReadOnlyList<Chord>>(entities);

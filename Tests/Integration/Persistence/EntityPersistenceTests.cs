@@ -171,7 +171,7 @@ public class EntityPersistenceTests
         ctx.Chords.Add(new ChordEntity
         {
             Id = id, InstrumentId = instrId,
-            Name = "A", Suffix = "major", PositionsJson = posJson
+            Name = "A", Root = "A", Quality = "Major", PositionsJson = posJson
         });
         await ctx.SaveChangesAsync();
         ctx.ChangeTracker.Clear();
@@ -179,7 +179,8 @@ public class EntityPersistenceTests
         var entity = await ctx.Chords.FindAsync(id);
         Assert.NotNull(entity);
         Assert.Equal("A", entity.Name);
-        Assert.Equal("major", entity.Suffix);
+        Assert.Equal("A", entity.Root);
+        Assert.Equal("Major", entity.Quality);
         Assert.Equal(instrId, entity.InstrumentId);
         Assert.Equal(posJson, entity.PositionsJson);
     }

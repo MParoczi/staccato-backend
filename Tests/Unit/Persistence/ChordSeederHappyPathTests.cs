@@ -55,7 +55,6 @@ public class ChordSeederHappyPathTests : IDisposable
 
     private ChordSeeder CreateSeeder(AppDbContext ctx)
     {
-        // Override BaseDirectory via a subclass that accepts a custom file path.
         return new TestableChordSeeder(ctx, _tempFile);
     }
 
@@ -67,37 +66,37 @@ public class ChordSeederHappyPathTests : IDisposable
         await using var ctx = CreateContext();
         await SeedGuitarInstrumentAsync(ctx);
 
-        var chords = new[]
+        WriteChordFile(new[]
         {
-            new { name = "A", suffix = "major", positions = new[] { MakePosition() } },
-            new { name = "A", suffix = "minor", positions = new[] { MakePosition() } },
-            new { name = "B", suffix = "major", positions = new[] { MakePosition() } }
-        };
-        WriteChordFile(chords);
+            MakeChord("A", "A", "Major"),
+            MakeChord("Am", "A", "Minor"),
+            MakeChord("B", "B", "Major")
+        });
 
-        var seeder = CreateSeeder(ctx);
-        await seeder.SeedAsync();
+        await CreateSeeder(ctx).SeedAsync();
 
         Assert.Equal(3, await ctx.Chords.CountAsync());
     }
 
     [Fact]
-    public async Task SeedAsync_ValidFile_EachChordHasCorrectNameSuffixAndInstrumentId()
+    public async Task SeedAsync_ValidFile_EachChordHasCorrectFieldsAndInstrumentId()
     {
         await using var ctx = CreateContext();
         var guitar = await SeedGuitarInstrumentAsync(ctx);
 
         WriteChordFile(new[]
         {
-            new { name = "C", suffix = "maj7", positions = new[] { MakePosition() } }
+            MakeChord("C", "C", "Major")
         });
 
-        var seeder = CreateSeeder(ctx);
-        await seeder.SeedAsync();
+        await CreateSeeder(ctx).SeedAsync();
 
         var chord = await ctx.Chords.SingleAsync();
         Assert.Equal("C", chord.Name);
-        Assert.Equal("maj7", chord.Suffix);
+        Assert.Equal("C", chord.Root);
+        Assert.Equal("Major", chord.Quality);
+        Assert.Null(chord.Extension);
+        Assert.Null(chord.Alternation);
         Assert.Equal(guitar.Id, chord.InstrumentId);
         Assert.False(string.IsNullOrWhiteSpace(chord.PositionsJson));
     }
@@ -110,14 +109,12 @@ public class ChordSeederHappyPathTests : IDisposable
 
         WriteChordFile(new[]
         {
-            new { name = "G", suffix = "7", positions = new[] { MakePosition() } }
+            MakeChord("G7", "G", "Seventh")
         });
 
-        var seeder = CreateSeeder(ctx);
-        await seeder.SeedAsync();
+        await CreateSeeder(ctx).SeedAsync();
 
         var chord = await ctx.Chords.SingleAsync();
-        // Should not throw
         using var doc = JsonDocument.Parse(chord.PositionsJson);
         Assert.Equal(JsonValueKind.Array, doc.RootElement.ValueKind);
         Assert.Equal(1, doc.RootElement.GetArrayLength());
@@ -126,25 +123,65 @@ public class ChordSeederHappyPathTests : IDisposable
     // ── Idempotency ───────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task SeedAsync_NonEmptyTable_ExitsWithoutInsertingMoreRows()
+    public async Task SeedAsync_SameChordTwice_NoExtraRowsInserted()
     {
         await using var ctx = CreateContext();
         await SeedGuitarInstrumentAsync(ctx);
 
         WriteChordFile(new[]
         {
-            new { name = "D", suffix = "minor", positions = new[] { MakePosition() } }
+            MakeChord("D", "D", "Major")
         });
 
         var seeder = CreateSeeder(ctx);
         await seeder.SeedAsync(); // first run
         var countAfterFirst = await ctx.Chords.CountAsync();
 
-        await seeder.SeedAsync(); // second run — no-op
+        await seeder.SeedAsync(); // second run — differential seeder skips existing
         Assert.Equal(countAfterFirst, await ctx.Chords.CountAsync());
     }
 
-    // ── position fixture ──────────────────────────────────────────────────────
+    [Fact]
+    public async Task SeedAsync_PartiallySeeded_InsertsOnlyNewChords()
+    {
+        await using var ctx = CreateContext();
+        await SeedGuitarInstrumentAsync(ctx);
+
+        // First run: 2 chords
+        WriteChordFile(new[]
+        {
+            MakeChord("E", "E", "Major"),
+            MakeChord("Em", "E", "Minor")
+        });
+        await CreateSeeder(ctx).SeedAsync();
+        Assert.Equal(2, await ctx.Chords.CountAsync());
+
+        // Second run: same 2 chords + 1 new
+        WriteChordFile(new[]
+        {
+            MakeChord("E", "E", "Major"),
+            MakeChord("Em", "E", "Minor"),
+            MakeChord("E7", "E", "Seventh")
+        });
+        await CreateSeeder(ctx).SeedAsync();
+        Assert.Equal(3, await ctx.Chords.CountAsync());
+    }
+
+    // ── fixtures ──────────────────────────────────────────────────────────────
+
+    private static object MakeChord(string name, string root, string quality,
+        string? extension = null, string? alternation = null)
+    {
+        return new
+        {
+            name,
+            root,
+            quality,
+            extension,
+            alternation,
+            positions = new[] { MakePosition() }
+        };
+    }
 
     private static object MakePosition()
     {
@@ -165,11 +202,12 @@ public class ChordSeederHappyPathTests : IDisposable
         };
     }
 
-    // ── testable subclass — overrides file path ───────────────────────────────
+    // ── testable subclass — overrides stream ──────────────────────────────────
 
     private sealed class TestableChordSeeder(AppDbContext ctx, string filePath)
         : ChordSeeder(ctx)
     {
-        protected override string ChordFilePath => filePath;
+        protected override Stream? GetChordStream() =>
+            File.Exists(filePath) ? File.OpenRead(filePath) : null;
     }
 }
