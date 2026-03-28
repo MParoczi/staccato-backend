@@ -13,6 +13,9 @@ public class UserEntity : IEntity
     public DateTime CreatedAt { get; set; }
     public DateTime? ScheduledDeletionAt { get; set; }
     public Language Language { get; set; }
+    public PageSize? DefaultPageSize { get; set; }
+    public Guid? DefaultInstrumentId { get; set; }
+    public InstrumentEntity? DefaultInstrument { get; set; }
 
     public ICollection<NotebookEntity> Notebooks { get; set; } = new List<NotebookEntity>();
     public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = new List<RefreshTokenEntity>();

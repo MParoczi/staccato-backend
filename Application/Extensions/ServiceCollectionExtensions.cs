@@ -137,6 +137,7 @@ public static class ServiceCollectionExtensions
     {
         var blobOptions = configuration.GetSection("AzureBlob").Get<AzureBlobOptions>()!;
         services.AddSingleton(new BlobServiceClient(blobOptions.ConnectionString));
+        services.Configure<AzureBlobOptions>(configuration.GetSection("AzureBlob"));
         return services;
     }
 
@@ -232,6 +233,8 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
         services.AddSingleton<IGoogleTokenValidator, GoogleTokenValidator>();
+        services.AddSingleton<IAzureBlobService, AzureBlobService>();
+        services.AddScoped<IUserService, UserService>();
         return services;
     }
 
