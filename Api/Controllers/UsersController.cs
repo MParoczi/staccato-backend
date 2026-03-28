@@ -27,7 +27,7 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
     [HttpPut("me")]
     public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request, CancellationToken ct)
     {
-        var language = Enum.Parse<Language>(request.Language);
+        var language = request.Language == "en" ? Language.English : Language.Hungarian;
         var defaultPageSize = request.DefaultPageSize != null
             ? Enum.Parse<PageSize>(request.DefaultPageSize)
             : (PageSize?)null;

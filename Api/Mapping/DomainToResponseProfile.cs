@@ -1,6 +1,7 @@
 using System.Text.Json;
 using ApiModels.Users;
 using AutoMapper;
+using DomainModels.Enums;
 using DomainModels.Models;
 
 namespace Api.Mapping;
@@ -10,11 +11,24 @@ public class DomainToResponseProfile : Profile
     public DomainToResponseProfile()
     {
         CreateMap<User, UserResponse>()
-            .ForMember(d => d.Language, o => o.MapFrom(s => s.Language.ToString()))
-            .ForMember(d => d.DefaultPageSize, o => o.MapFrom(s => s.DefaultPageSize != null ? s.DefaultPageSize.ToString() : null));
+            .ConstructUsing((s, _) => new UserResponse(
+                s.Id,
+                s.Email,
+                s.FirstName,
+                s.LastName,
+                s.Language == Language.English ? "en" : "hu",
+                s.DefaultPageSize != null ? s.DefaultPageSize.ToString() : null,
+                s.DefaultInstrumentId,
+                s.AvatarUrl,
+                s.ScheduledDeletionAt))
+            .ForMember(dest => dest.Language, opt => opt.Ignore())
+            .ForMember(dest => dest.DefaultPageSize, opt => opt.Ignore());
 
         CreateMap<UserSavedPreset, PresetResponse>()
-            .ForMember(d => d.Styles, o => o.MapFrom(s =>
-                JsonSerializer.Deserialize<List<StyleEntryDto>>(s.StylesJson, (JsonSerializerOptions?)null)));
+            .ConstructUsing((s, _) => new PresetResponse(
+                s.Id,
+                s.Name,
+                JsonSerializer.Deserialize<List<StyleEntryDto>>(s.StylesJson, (JsonSerializerOptions?)null)
+                    ?? new List<StyleEntryDto>()));
     }
 }
