@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Domain.Exceptions;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
@@ -15,9 +17,23 @@ public class NotebookService(
     IPdfExportRepository pdfExportRepo,
     IUnitOfWork unitOfWork) : INotebookService
 {
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters =
+        {
+            new JsonStringEnumConverter(
+                JsonNamingPolicy.CamelCase)
+        }
+    };
+
     public Task<IReadOnlyList<NotebookSummary>> GetAllByUserAsync(
         Guid userId, CancellationToken ct = default)
-        => notebookRepo.GetByUserIdAsync(userId, ct);
+    {
+        return notebookRepo.GetByUserIdAsync(userId, ct);
+    }
 
     public async Task<(Notebook Notebook, IReadOnlyList<NotebookModuleStyle> Styles)> GetByIdAsync(
         Guid notebookId, Guid userId, CancellationToken ct = default)
@@ -58,21 +74,21 @@ public class NotebookService(
 
         var notebook = new Notebook
         {
-            Id          = notebookId,
-            UserId      = userId,
-            Title       = title,
+            Id = notebookId,
+            UserId = userId,
+            Title = title,
             InstrumentId = instrumentId,
-            PageSize    = pageSize,
-            CoverColor  = coverColor,
-            CreatedAt   = now,
-            UpdatedAt   = now
+            PageSize = pageSize,
+            CoverColor = coverColor,
+            CreatedAt = now,
+            UpdatedAt = now
         };
 
         await notebookRepo.AddAsync(notebook, ct);
 
         foreach (var style in resolvedStyles)
         {
-            style.Id         = Guid.NewGuid();
+            style.Id = Guid.NewGuid();
             style.NotebookId = notebookId;
             await styleRepo.AddAsync(style, ct);
         }
@@ -88,9 +104,9 @@ public class NotebookService(
     {
         var (notebook, _) = await GetByIdAsync(notebookId, userId, ct);
 
-        notebook.Title      = title;
+        notebook.Title = title;
         notebook.CoverColor = coverColor;
-        notebook.UpdatedAt  = DateTime.UtcNow;
+        notebook.UpdatedAt = DateTime.UtcNow;
 
         notebookRepo.Update(notebook);
         await unitOfWork.CommitAsync(ct);
@@ -123,7 +139,7 @@ public class NotebookService(
         CancellationToken ct = default)
     {
         var allModuleTypes = Enum.GetValues<ModuleType>().ToHashSet();
-        var incomingTypes  = styles.Select(s => s.ModuleType).ToHashSet();
+        var incomingTypes = styles.Select(s => s.ModuleType).ToHashSet();
 
         if (styles.Count != 12 || !incomingTypes.SetEquals(allModuleTypes))
             throw new BadRequestException(
@@ -173,6 +189,7 @@ public class NotebookService(
 
             styleMap = DeserializeUserPresetStyleMap(userPreset.StylesJson);
         }
+
         var existing = await styleRepo.GetByNotebookIdAsync(notebookId, ct);
 
         foreach (var record in existing)
@@ -193,15 +210,6 @@ public class NotebookService(
         return await styleRepo.GetByNotebookIdAsync(notebookId, ct);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private static readonly System.Text.Json.JsonSerializerOptions _jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter(
-            System.Text.Json.JsonNamingPolicy.CamelCase) }
-    };
-
     /// <summary>
     ///     Deserializes a preset StylesJson array into NotebookModuleStyle records.
     ///     The notebookId is set to a placeholder; CreateAsync overwrites it.
@@ -209,27 +217,27 @@ public class NotebookService(
     private static IReadOnlyList<NotebookModuleStyle> DeserializePresetStyles(
         string stylesJson, Guid notebookId)
     {
-        var entries = System.Text.Json.JsonSerializer.Deserialize<
+        var entries = JsonSerializer.Deserialize<
             List<PresetStyleEntry>>(stylesJson, _jsonOptions)!;
 
         return entries.Select(e => new NotebookModuleStyle
         {
-            ModuleType = Enum.Parse<ModuleType>(e.ModuleType, ignoreCase: true),
+            ModuleType = Enum.Parse<ModuleType>(e.ModuleType, true),
             NotebookId = notebookId,
-            StylesJson = System.Text.Json.JsonSerializer.Serialize(new
+            StylesJson = JsonSerializer.Serialize(new
             {
                 backgroundColor = e.BackgroundColor,
-                borderColor     = e.BorderColor,
-                borderStyle     = e.BorderStyle,
-                borderWidth     = e.BorderWidth,
-                borderRadius    = e.BorderRadius,
-                headerBgColor   = e.HeaderBgColor,
+                borderColor = e.BorderColor,
+                borderStyle = e.BorderStyle,
+                borderWidth = e.BorderWidth,
+                borderRadius = e.BorderRadius,
+                headerBgColor = e.HeaderBgColor,
                 headerTextColor = e.HeaderTextColor,
-                bodyTextColor   = e.BodyTextColor,
-                fontFamily      = e.FontFamily
-            }, new System.Text.Json.JsonSerializerOptions
+                bodyTextColor = e.BodyTextColor,
+                fontFamily = e.FontFamily
+            }, new JsonSerializerOptions
             {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             })
         }).ToList();
     }
@@ -240,25 +248,25 @@ public class NotebookService(
     /// </summary>
     private static Dictionary<string, string> DeserializePresetStyleMap(string stylesJson)
     {
-        var entries = System.Text.Json.JsonSerializer.Deserialize<
+        var entries = JsonSerializer.Deserialize<
             List<PresetStyleEntry>>(stylesJson, _jsonOptions)!;
 
         return entries.ToDictionary(
             e => e.ModuleType,
-            e => System.Text.Json.JsonSerializer.Serialize(new
+            e => JsonSerializer.Serialize(new
             {
                 backgroundColor = e.BackgroundColor,
-                borderColor     = e.BorderColor,
-                borderStyle     = e.BorderStyle,
-                borderWidth     = e.BorderWidth,
-                borderRadius    = e.BorderRadius,
-                headerBgColor   = e.HeaderBgColor,
+                borderColor = e.BorderColor,
+                borderStyle = e.BorderStyle,
+                borderWidth = e.BorderWidth,
+                borderRadius = e.BorderRadius,
+                headerBgColor = e.HeaderBgColor,
                 headerTextColor = e.HeaderTextColor,
-                bodyTextColor   = e.BodyTextColor,
-                fontFamily      = e.FontFamily
-            }, new System.Text.Json.JsonSerializerOptions
+                bodyTextColor = e.BodyTextColor,
+                fontFamily = e.FontFamily
+            }, new JsonSerializerOptions
             {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             }),
             StringComparer.OrdinalIgnoreCase);
     }
@@ -269,7 +277,7 @@ public class NotebookService(
     /// </summary>
     private static Dictionary<string, string> DeserializeUserPresetStyleMap(string stylesJson)
     {
-        var entries = System.Text.Json.JsonSerializer.Deserialize<
+        var entries = JsonSerializer.Deserialize<
             List<UserPresetStyleEntry>>(stylesJson, _jsonOptions)!;
 
         return entries.ToDictionary(

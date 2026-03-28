@@ -14,7 +14,7 @@ public class ChordsController(IChordService chordService, IMapper mapper) : Cont
     [HttpGet]
     [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> GetChords(
-        [FromQuery, Required] InstrumentKey? instrument,
+        [FromQuery] [Required] InstrumentKey? instrument,
         [FromQuery] string? root,
         [FromQuery] string? quality,
         CancellationToken ct)

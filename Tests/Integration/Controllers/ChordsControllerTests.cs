@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using Persistence.Context;
 using Persistence.Seed;
 
@@ -22,12 +23,12 @@ public class ChordsControllerTests
 {
     private const string TestJwtSecret = "test-secret-key-must-be-at-least-32-chars!!";
 
-    private static readonly JsonSerializerOptions JsonOpts =
-        new() { PropertyNameCaseInsensitive = true };
-
     // Minimal positions JSON matching the stored format (guitar_chords.json style)
     private const string OnePositionJson =
         """[{"label":"1","baseFret":1,"barre":null,"strings":[{"string":1,"state":"open","fret":null,"finger":null}]}]""";
+
+    private static readonly JsonSerializerOptions JsonOpts =
+        new() { PropertyNameCaseInsensitive = true };
 
     private static WebApplicationFactory<Program> CreateFactory()
     {
@@ -56,7 +57,7 @@ public class ChordsControllerTests
                 services.AddScoped<SystemStylePresetSeeder, ChordsNoOpSystemStylePresetSeeder>();
 
                 services.RemoveAll<IAzureBlobService>();
-                services.AddSingleton<IAzureBlobService>(new Moq.Mock<IAzureBlobService>().Object);
+                services.AddSingleton<IAzureBlobService>(new Mock<IAzureBlobService>().Object);
 
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -134,7 +135,7 @@ public class ChordsControllerTests
     public async Task GetChords_WithRootAndQualityFilters_Returns200Filtered()
     {
         using var factory = CreateFactory();
-        await SeedAsync(factory, root: "A", quality: "Major");
+        await SeedAsync(factory, "A", "Major");
 
         // Seed a second chord that should NOT match
         using var scope = factory.Services.CreateScope();
@@ -217,15 +218,24 @@ public class ChordsControllerTests
 
 file sealed class ChordsNoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class ChordsNoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class ChordsNoOpSystemStylePresetSeeder(AppDbContext ctx) : SystemStylePresetSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }

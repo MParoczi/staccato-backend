@@ -12,35 +12,44 @@ public class ChordServiceTests
     private readonly Mock<IChordRepository> _chordRepo = new();
     private readonly Mock<IInstrumentRepository> _instrumentRepo = new();
 
-    private ChordService CreateService() => new(_chordRepo.Object, _instrumentRepo.Object);
-
-    private static Instrument MakeInstrument(InstrumentKey key = InstrumentKey.Guitar6String) => new()
+    private ChordService CreateService()
     {
-        Id = Guid.NewGuid(),
-        Key = key,
-        DisplayName = "6-String Guitar",
-        StringCount = 6
-    };
+        return new ChordService(_chordRepo.Object, _instrumentRepo.Object);
+    }
 
-    private static Chord MakeChord(Guid? instrumentId = null) => new()
+    private static Instrument MakeInstrument(InstrumentKey key = InstrumentKey.Guitar6String)
     {
-        Id = Guid.NewGuid(),
-        InstrumentId = instrumentId ?? Guid.NewGuid(),
-        InstrumentKey = InstrumentKey.Guitar6String,
-        Name = "Am",
-        Root = "A",
-        Quality = "Minor",
-        Positions =
-        [
-            new ChordPosition
-            {
-                Label = "1",
-                BaseFret = 1,
-                Barre = null,
-                Strings = []
-            }
-        ]
-    };
+        return new Instrument
+        {
+            Id = Guid.NewGuid(),
+            Key = key,
+            DisplayName = "6-String Guitar",
+            StringCount = 6
+        };
+    }
+
+    private static Chord MakeChord(Guid? instrumentId = null)
+    {
+        return new Chord
+        {
+            Id = Guid.NewGuid(),
+            InstrumentId = instrumentId ?? Guid.NewGuid(),
+            InstrumentKey = InstrumentKey.Guitar6String,
+            Name = "Am",
+            Root = "A",
+            Quality = "Minor",
+            Positions =
+            [
+                new ChordPosition
+                {
+                    Label = "1",
+                    BaseFret = 1,
+                    Barre = null,
+                    Strings = []
+                }
+            ]
+        };
+    }
 
     // ── SearchAsync ───────────────────────────────────────────────────────
 
@@ -88,8 +97,7 @@ public class ChordServiceTests
             .Setup(r => r.GetByKeyAsync(InstrumentKey.Guitar6String, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Instrument?)null);
 
-        var ex = await Assert.ThrowsAsync<NotFoundException>(
-            () => CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null));
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() => CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null));
 
         Assert.Equal("INSTRUMENT_NOT_FOUND", ex.Code);
     }
@@ -117,7 +125,6 @@ public class ChordServiceTests
             .Setup(r => r.GetByIdAsync(id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chord?)null);
 
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => CreateService().GetByIdAsync(id));
+        await Assert.ThrowsAsync<NotFoundException>(() => CreateService().GetByIdAsync(id));
     }
 }

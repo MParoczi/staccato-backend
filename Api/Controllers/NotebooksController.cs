@@ -21,26 +21,30 @@ public class NotebooksController(INotebookService notebookService, IMapper mappe
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private Guid GetUserId() =>
-        Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid GetUserId()
+    {
+        return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    }
 
-    private static NotebookModuleStyle ToStyleDomain(ModuleStyleRequest r) =>
-        new()
+    private static NotebookModuleStyle ToStyleDomain(ModuleStyleRequest r)
+    {
+        return new NotebookModuleStyle
         {
-            ModuleType = Enum.Parse<ModuleType>(r.ModuleType, ignoreCase: true),
+            ModuleType = Enum.Parse<ModuleType>(r.ModuleType, true),
             StylesJson = JsonSerializer.Serialize(new
             {
                 backgroundColor = r.BackgroundColor,
-                borderColor     = r.BorderColor,
-                borderStyle     = r.BorderStyle,
-                borderWidth     = r.BorderWidth,
-                borderRadius    = r.BorderRadius,
-                headerBgColor   = r.HeaderBgColor,
+                borderColor = r.BorderColor,
+                borderStyle = r.BorderStyle,
+                borderWidth = r.BorderWidth,
+                borderRadius = r.BorderRadius,
+                headerBgColor = r.HeaderBgColor,
                 headerTextColor = r.HeaderTextColor,
-                bodyTextColor   = r.BodyTextColor,
-                fontFamily      = r.FontFamily
+                bodyTextColor = r.BodyTextColor,
+                fontFamily = r.FontFamily
             }, JsonOptions)
         };
+    }
 
     // ── GET /notebooks ────────────────────────────────────────────────────
 
@@ -56,7 +60,7 @@ public class NotebooksController(INotebookService notebookService, IMapper mappe
     [HttpPost]
     public async Task<IActionResult> CreateNotebook(CreateNotebookRequest request, CancellationToken ct)
     {
-        var pageSize = Enum.Parse<PageSize>(request.PageSize, ignoreCase: true);
+        var pageSize = Enum.Parse<PageSize>(request.PageSize, true);
         var styles = request.Styles?.Select(ToStyleDomain).ToList();
 
         var (notebook, stylesList) = await notebookService.CreateAsync(
@@ -64,7 +68,10 @@ public class NotebooksController(INotebookService notebookService, IMapper mappe
             pageSize, request.CoverColor, styles, ct);
 
         var response = mapper.Map<NotebookDetailResponse>(notebook)
-            with { Styles = mapper.Map<List<ModuleStyleResponse>>(stylesList) };
+            with
+            {
+                Styles = mapper.Map<List<ModuleStyleResponse>>(stylesList)
+            };
 
         return StatusCode(StatusCodes.Status201Created, response);
     }
@@ -77,7 +84,10 @@ public class NotebooksController(INotebookService notebookService, IMapper mappe
         var (notebook, styles) = await notebookService.GetByIdAsync(id, GetUserId(), ct);
 
         var response = mapper.Map<NotebookDetailResponse>(notebook)
-            with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) };
+            with
+            {
+                Styles = mapper.Map<List<ModuleStyleResponse>>(styles)
+            };
 
         return Ok(response);
     }
@@ -91,7 +101,10 @@ public class NotebooksController(INotebookService notebookService, IMapper mappe
             id, GetUserId(), request.Title, request.CoverColor, ct);
 
         var response = mapper.Map<NotebookDetailResponse>(notebook)
-            with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) };
+            with
+            {
+                Styles = mapper.Map<List<ModuleStyleResponse>>(styles)
+            };
 
         return Ok(response);
     }

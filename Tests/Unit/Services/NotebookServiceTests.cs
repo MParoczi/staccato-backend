@@ -10,22 +10,25 @@ namespace Tests.Unit.Services;
 
 public class NotebookServiceTests
 {
-    private readonly Mock<INotebookRepository>             _notebookRepo    = new();
-    private readonly Mock<INotebookModuleStyleRepository>  _styleRepo       = new();
-    private readonly Mock<ISystemStylePresetRepository>    _systemPresetRepo = new();
-    private readonly Mock<IUserSavedPresetRepository>      _userPresetRepo  = new();
-    private readonly Mock<IInstrumentRepository>           _instrumentRepo  = new();
-    private readonly Mock<IPdfExportRepository>            _pdfExportRepo   = new();
-    private readonly Mock<IUnitOfWork>                     _unitOfWork      = new();
+    private readonly Mock<IInstrumentRepository> _instrumentRepo = new();
+    private readonly Mock<INotebookRepository> _notebookRepo = new();
+    private readonly Mock<IPdfExportRepository> _pdfExportRepo = new();
+    private readonly Mock<INotebookModuleStyleRepository> _styleRepo = new();
+    private readonly Mock<ISystemStylePresetRepository> _systemPresetRepo = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IUserSavedPresetRepository> _userPresetRepo = new();
 
-    private NotebookService CreateService() => new(
-        _notebookRepo.Object,
-        _styleRepo.Object,
-        _systemPresetRepo.Object,
-        _userPresetRepo.Object,
-        _instrumentRepo.Object,
-        _pdfExportRepo.Object,
-        _unitOfWork.Object);
+    private NotebookService CreateService()
+    {
+        return new NotebookService(
+            _notebookRepo.Object,
+            _styleRepo.Object,
+            _systemPresetRepo.Object,
+            _userPresetRepo.Object,
+            _instrumentRepo.Object,
+            _pdfExportRepo.Object,
+            _unitOfWork.Object);
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -53,10 +56,11 @@ public class NotebookServiceTests
         return Enum.GetValues<ModuleType>()
             .Select(mt => new NotebookModuleStyle
             {
-                Id         = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 NotebookId = notebookId,
                 ModuleType = mt,
-                StylesJson = @"{""backgroundColor"":""#fff"",""borderColor"":""#000"",""borderStyle"":""None"",""borderWidth"":0,""borderRadius"":0,""headerBgColor"":""#eee"",""headerTextColor"":""#333"",""bodyTextColor"":""#000"",""fontFamily"":""Default""}"
+                StylesJson =
+                    @"{""backgroundColor"":""#fff"",""borderColor"":""#000"",""borderStyle"":""None"",""borderWidth"":0,""borderRadius"":0,""headerBgColor"":""#eee"",""headerTextColor"":""#333"",""bodyTextColor"":""#000"",""fontFamily"":""Default""}"
             })
             .ToList();
     }
@@ -66,37 +70,37 @@ public class NotebookServiceTests
     [Fact]
     public async Task CreateAsync_WithNullStyles_AppliesColorfulPreset()
     {
-        var userId       = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
-        var notebookId   = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
 
         var instrument = new Instrument
         {
-            Id          = instrumentId,
-            Key         = InstrumentKey.Guitar6String,
+            Id = instrumentId,
+            Key = InstrumentKey.Guitar6String,
             DisplayName = "6-String Guitar",
             StringCount = 6
         };
 
         var preset = new SystemStylePreset
         {
-            Id           = Guid.NewGuid(),
-            Name         = "Colorful",
+            Id = Guid.NewGuid(),
+            Name = "Colorful",
             DisplayOrder = 2,
-            IsDefault    = true,
-            StylesJson   = BuildPresetStylesJson()
+            IsDefault = true,
+            StylesJson = BuildPresetStylesJson()
         };
 
         var notebook = new Notebook
         {
-            Id           = notebookId,
-            UserId       = userId,
-            Title        = "My Notebook",
+            Id = notebookId,
+            UserId = userId,
+            Title = "My Notebook",
             InstrumentId = instrumentId,
-            PageSize     = PageSize.A4,
-            CoverColor   = "#ff0000",
-            CreatedAt    = DateTime.UtcNow,
-            UpdatedAt    = DateTime.UtcNow
+            PageSize = PageSize.A4,
+            CoverColor = "#ff0000",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         var styles = BuildStyles(notebookId);
@@ -129,28 +133,28 @@ public class NotebookServiceTests
     [Fact]
     public async Task CreateAsync_WithExplicitStyles_UsesProvidedStyles()
     {
-        var userId       = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
-        var notebookId   = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
 
         var instrument = new Instrument
         {
-            Id          = instrumentId,
-            Key         = InstrumentKey.Guitar6String,
+            Id = instrumentId,
+            Key = InstrumentKey.Guitar6String,
             DisplayName = "6-String Guitar",
             StringCount = 6
         };
 
         var notebook = new Notebook
         {
-            Id           = notebookId,
-            UserId       = userId,
-            Title        = "Custom",
+            Id = notebookId,
+            UserId = userId,
+            Title = "Custom",
             InstrumentId = instrumentId,
-            PageSize     = PageSize.A5,
-            CoverColor   = "#0000ff",
-            CreatedAt    = DateTime.UtcNow,
-            UpdatedAt    = DateTime.UtcNow
+            PageSize = PageSize.A5,
+            CoverColor = "#0000ff",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
         };
 
         var providedStyles = BuildStyles(notebookId);
@@ -179,7 +183,7 @@ public class NotebookServiceTests
     [Fact]
     public async Task CreateAsync_WithUnknownInstrumentId_ThrowsInstrumentNotFoundException()
     {
-        var userId       = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var instrumentId = Guid.NewGuid();
 
         _instrumentRepo
@@ -199,19 +203,19 @@ public class NotebookServiceTests
     [Fact]
     public async Task GetByIdAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
     {
-        var notebookId   = Guid.NewGuid();
-        var ownerId      = Guid.NewGuid();
-        var requesterId  = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+        var requesterId = Guid.NewGuid();
 
         var notebook = new Notebook
         {
-            Id     = notebookId,
-            UserId = ownerId  // belongs to a different user
+            Id = notebookId,
+            UserId = ownerId // belongs to a different user
         };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         var svc = CreateService();
 
@@ -239,23 +243,23 @@ public class NotebookServiceTests
     [Fact]
     public async Task UpdateAsync_ChangesOnlyTitleAndCoverColor()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
 
         var notebook = new Notebook
         {
-            Id         = notebookId,
-            UserId     = userId,
-            Title      = "Original Title",
+            Id = notebookId,
+            UserId = userId,
+            Title = "Original Title",
             CoverColor = "#000000",
-            UpdatedAt  = DateTime.UtcNow.AddDays(-1)
+            UpdatedAt = DateTime.UtcNow.AddDays(-1)
         };
 
         var styles = BuildStyles(notebookId);
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)styles));
+            .ReturnsAsync((notebook, styles));
 
         var svc = CreateService();
         var (result, _) = await svc.UpdateAsync(notebookId, userId, "New Title", "#ffffff");
@@ -285,15 +289,15 @@ public class NotebookServiceTests
     [Fact]
     public async Task UpdateAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
     {
-        var notebookId  = Guid.NewGuid();
-        var ownerId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var requesterId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = ownerId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         var svc = CreateService();
 
@@ -306,14 +310,14 @@ public class NotebookServiceTests
     [Fact]
     public async Task DeleteAsync_RemovesNotebook()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = userId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _pdfExportRepo
             .Setup(r => r.HasActiveExportForNotebookAsync(notebookId, It.IsAny<CancellationToken>()))
@@ -344,15 +348,15 @@ public class NotebookServiceTests
     [Fact]
     public async Task DeleteAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
     {
-        var notebookId  = Guid.NewGuid();
-        var ownerId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var requesterId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = ownerId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         var svc = CreateService();
 
@@ -363,14 +367,14 @@ public class NotebookServiceTests
     [Fact]
     public async Task DeleteAsync_ActiveExportExists_ThrowsConflictException()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = userId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _pdfExportRepo
             .Setup(r => r.HasActiveExportForNotebookAsync(notebookId, It.IsAny<CancellationToken>()))
@@ -390,16 +394,16 @@ public class NotebookServiceTests
     [Fact]
     public async Task GetStylesAsync_ReturnsAllTwelveStyles()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var notebook   = new Notebook { Id = notebookId, UserId = userId };
-        var styles     = BuildStyles(notebookId);
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+        var styles = BuildStyles(notebookId);
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)styles));
+            .ReturnsAsync((notebook, styles));
 
-        var svc    = CreateService();
+        var svc = CreateService();
         var result = await svc.GetStylesAsync(notebookId, userId);
 
         Assert.Equal(12, result.Count);
@@ -423,14 +427,14 @@ public class NotebookServiceTests
     [Fact]
     public async Task GetStylesAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
     {
-        var notebookId  = Guid.NewGuid();
-        var ownerId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var requesterId = Guid.NewGuid();
-        var notebook    = new Notebook { Id = notebookId, UserId = ownerId };
+        var notebook = new Notebook { Id = notebookId, UserId = ownerId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         var svc = CreateService();
 
@@ -443,15 +447,15 @@ public class NotebookServiceTests
     [Fact]
     public async Task BulkUpdateStylesAsync_ReplacesAllTwelveStyles()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var notebook   = new Notebook { Id = notebookId, UserId = userId };
-        var existing   = BuildStyles(notebookId);
-        var incoming   = BuildStyles(notebookId);  // fresh set (same shape, different object)
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+        var existing = BuildStyles(notebookId);
+        var incoming = BuildStyles(notebookId); // fresh set (same shape, different object)
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _styleRepo
             .SetupSequence(r => r.GetByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
@@ -470,7 +474,7 @@ public class NotebookServiceTests
     [Fact]
     public async Task BulkUpdateStylesAsync_InvalidStyleCount_ThrowsBadRequestException()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
 
         // Only 6 styles — invalid
@@ -488,15 +492,15 @@ public class NotebookServiceTests
     [Fact]
     public async Task BulkUpdateStylesAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
     {
-        var notebookId  = Guid.NewGuid();
-        var ownerId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var requesterId = Guid.NewGuid();
-        var notebook    = new Notebook { Id = notebookId, UserId = ownerId };
-        var incoming    = BuildStyles(notebookId);
+        var notebook = new Notebook { Id = notebookId, UserId = ownerId };
+        var incoming = BuildStyles(notebookId);
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         var svc = CreateService();
 
@@ -508,7 +512,7 @@ public class NotebookServiceTests
     public async Task BulkUpdateStylesAsync_NotebookNotFound_ThrowsNotFoundException()
     {
         var notebookId = Guid.NewGuid();
-        var incoming   = BuildStyles(notebookId);
+        var incoming = BuildStyles(notebookId);
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
@@ -525,24 +529,24 @@ public class NotebookServiceTests
     [Fact]
     public async Task ApplyPresetAsync_SystemPreset_UpdatesAllTwelveStyles()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var presetId   = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = userId };
         var existing = BuildStyles(notebookId);
 
         var preset = new SystemStylePreset
         {
-            Id         = presetId,
-            Name       = "Classic",
-            IsDefault  = false,
+            Id = presetId,
+            Name = "Classic",
+            IsDefault = false,
             StylesJson = BuildPresetStylesJson()
         };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _systemPresetRepo
             .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
@@ -553,7 +557,7 @@ public class NotebookServiceTests
             .ReturnsAsync(existing)
             .ReturnsAsync(existing);
 
-        var svc    = CreateService();
+        var svc = CreateService();
         var result = await svc.ApplyPresetAsync(notebookId, userId, presetId);
 
         Assert.Equal(12, result.Count);
@@ -565,16 +569,16 @@ public class NotebookServiceTests
     [Fact]
     public async Task ApplyPresetAsync_UserPreset_OwnershipMismatch_ThrowsForbidden()
     {
-        var userId      = Guid.NewGuid();
-        var notebookId  = Guid.NewGuid();
-        var presetId    = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
         var otherUserId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = userId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _systemPresetRepo
             .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
@@ -584,9 +588,9 @@ public class NotebookServiceTests
             .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UserSavedPreset
             {
-                Id         = presetId,
-                UserId     = otherUserId,  // different user
-                Name       = "Custom",
+                Id = presetId,
+                UserId = otherUserId, // different user
+                Name = "Custom",
                 StylesJson = "[]"
             });
 
@@ -599,15 +603,15 @@ public class NotebookServiceTests
     [Fact]
     public async Task ApplyPresetAsync_PresetNotFound_ThrowsNotFoundException()
     {
-        var userId     = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var notebookId = Guid.NewGuid();
-        var presetId   = Guid.NewGuid();
+        var presetId = Guid.NewGuid();
 
         var notebook = new Notebook { Id = notebookId, UserId = userId };
 
         _notebookRepo
             .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+            .ReturnsAsync((notebook, new List<NotebookModuleStyle>()));
 
         _systemPresetRepo
             .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))

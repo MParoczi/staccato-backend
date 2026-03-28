@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using Persistence.Context;
 using Persistence.Seed;
 
@@ -52,7 +53,7 @@ public class InstrumentsControllerTests
                 services.AddScoped<SystemStylePresetSeeder, InstrumentsNoOpSystemStylePresetSeeder>();
 
                 services.RemoveAll<IAzureBlobService>();
-                services.AddSingleton<IAzureBlobService>(new Moq.Mock<IAzureBlobService>().Object);
+                services.AddSingleton<IAzureBlobService>(new Mock<IAzureBlobService>().Object);
 
                 services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
                 {
@@ -130,15 +131,24 @@ public class InstrumentsControllerTests
 
 file sealed class InstrumentsNoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class InstrumentsNoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class InstrumentsNoOpSystemStylePresetSeeder(AppDbContext ctx) : SystemStylePresetSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }

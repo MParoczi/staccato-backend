@@ -9,7 +9,7 @@ namespace Repository.Repositories;
 
 public class SystemStylePresetRepository(AppDbContext context, IMapper mapper)
     : RepositoryBase<SystemStylePresetEntity, SystemStylePreset>(context, mapper),
-      ISystemStylePresetRepository
+        ISystemStylePresetRepository
 {
     public async Task<IReadOnlyList<SystemStylePreset>> GetAllAsync(CancellationToken ct = default)
     {

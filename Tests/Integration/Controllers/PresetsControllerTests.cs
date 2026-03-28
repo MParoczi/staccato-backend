@@ -1,10 +1,9 @@
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using Domain.Services;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
@@ -26,18 +25,18 @@ public class PresetsControllerTests
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:SecretKey"]                 = "test-secret-key-must-be-at-least-32-chars!!",
-                    ["Jwt:Issuer"]                    = "test",
-                    ["Jwt:Audience"]                  = "test",
-                    ["Jwt:AccessTokenExpiryMinutes"]  = "15",
-                    ["Jwt:RefreshTokenExpiryDays"]    = "7",
-                    ["Jwt:RememberMeExpiryDays"]      = "30",
-                    ["Google:ClientId"]               = "test.apps.googleusercontent.com",
-                    ["AzureBlob:ConnectionString"]    = "UseDevelopmentStorage=true",
-                    ["AzureBlob:ContainerName"]       = "test",
-                    ["Cors:AllowedOrigins:0"]         = "http://localhost:3000",
-                    ["RateLimit:AuthMaxRequests"]     = "1000",
-                    ["RateLimit:AuthWindowSeconds"]   = "60"
+                    ["Jwt:SecretKey"] = "test-secret-key-must-be-at-least-32-chars!!",
+                    ["Jwt:Issuer"] = "test",
+                    ["Jwt:Audience"] = "test",
+                    ["Jwt:AccessTokenExpiryMinutes"] = "15",
+                    ["Jwt:RefreshTokenExpiryDays"] = "7",
+                    ["Jwt:RememberMeExpiryDays"] = "30",
+                    ["Google:ClientId"] = "test.apps.googleusercontent.com",
+                    ["AzureBlob:ConnectionString"] = "UseDevelopmentStorage=true",
+                    ["AzureBlob:ContainerName"] = "test",
+                    ["Cors:AllowedOrigins:0"] = "http://localhost:3000",
+                    ["RateLimit:AuthMaxRequests"] = "1000",
+                    ["RateLimit:AuthWindowSeconds"] = "60"
                 });
             });
 
@@ -71,12 +70,14 @@ public class PresetsControllerTests
         });
     }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
-        factory.CreateClient(new WebApplicationFactoryClientOptions
+    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    {
+        return factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
-            HandleCookies     = false
+            HandleCookies = false
         });
+    }
 
     // ── Tests ────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ public class PresetsControllerTests
         var resp = await client.GetAsync("/presets");
 
         resp.EnsureSuccessStatusCode();
-        var json    = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
         var presets = json.RootElement.EnumerateArray().ToList();
         for (var i = 0; i < presets.Count; i++)
             Assert.Equal(i + 1, presets[i].GetProperty("displayOrder").GetInt32());
@@ -117,11 +118,11 @@ public class PresetsControllerTests
         var resp = await client.GetAsync("/presets");
 
         resp.EnsureSuccessStatusCode();
-        var json    = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
         var presets = json.RootElement.EnumerateArray().ToList();
 
         var colorful = presets.Single(p => p.GetProperty("name").GetString() == "Colorful");
-        var classic  = presets.Single(p => p.GetProperty("name").GetString() == "Classic");
+        var classic = presets.Single(p => p.GetProperty("name").GetString() == "Classic");
 
         Assert.True(colorful.GetProperty("isDefault").GetBoolean());
         Assert.False(classic.GetProperty("isDefault").GetBoolean());
@@ -135,16 +136,29 @@ public class PresetsControllerTests
 
 file sealed class PresetsNoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class PresetsNoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class PresetsTestPasswordHasher : IPasswordHasher
 {
-    public string Hash(string password) => $"hashed:{password}";
-    public bool Verify(string password, string hash) => hash == $"hashed:{password}";
+    public string Hash(string password)
+    {
+        return $"hashed:{password}";
+    }
+
+    public bool Verify(string password, string hash)
+    {
+        return hash == $"hashed:{password}";
+    }
 }

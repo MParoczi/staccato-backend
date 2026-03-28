@@ -1,6 +1,5 @@
 using AutoMapper;
 using Domain.Interfaces.Repositories;
-using DomainModels.Enums;
 using DomainModels.Models;
 using EntityModels.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -20,15 +19,15 @@ public class NotebookRepository(AppDbContext context, IMapper mapper)
             .OrderBy(n => n.CreatedAt)
             .Select(n => new NotebookSummary
             {
-                Id             = n.Id,
-                UserId         = n.UserId,
-                Title          = n.Title,
+                Id = n.Id,
+                UserId = n.UserId,
+                Title = n.Title,
                 InstrumentName = n.Instrument.DisplayName,
-                PageSize       = n.PageSize,
-                CoverColor     = n.CoverColor,
-                LessonCount    = n.Lessons.Count,
-                CreatedAt      = n.CreatedAt,
-                UpdatedAt      = n.UpdatedAt
+                PageSize = n.PageSize,
+                CoverColor = n.CoverColor,
+                LessonCount = n.Lessons.Count,
+                CreatedAt = n.CreatedAt,
+                UpdatedAt = n.UpdatedAt
             })
             .ToListAsync(ct);
     }

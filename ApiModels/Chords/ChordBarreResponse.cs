@@ -5,5 +5,6 @@ namespace ApiModels.Chords;
 public record ChordBarreResponse(
     int Fret,
     int FromString,
-    [property: JsonPropertyName("toString")] int StringTo
+    [property: JsonPropertyName("toString")]
+    int StringTo
 );

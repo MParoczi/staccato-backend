@@ -33,12 +33,16 @@ public class ChordSeederFailTests
         await ctx.SaveChangesAsync();
     }
 
-    private static ChordSeeder Seeder(AppDbContext ctx, string? json) =>
-        new TestableChordSeeder(ctx, json);
+    private static ChordSeeder Seeder(AppDbContext ctx, string? json)
+    {
+        return new TestableChordSeeder(ctx, json);
+    }
 
-    private static string Serialize(object obj) =>
-        JsonSerializer.Serialize(obj,
+    private static string Serialize(object obj)
+    {
+        return JsonSerializer.Serialize(obj,
             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    }
 
     // ── fail cases ────────────────────────────────────────────────────────────
 
@@ -57,8 +61,7 @@ public class ChordSeederFailTests
         await using var ctx = CreateContext();
         await SeedGuitarAsync(ctx);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx, "this is not json {{ [").SeedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, "this is not json {{ [").SeedAsync());
     }
 
     [Fact]
@@ -67,8 +70,7 @@ public class ChordSeederFailTests
         await using var ctx = CreateContext();
         await SeedGuitarAsync(ctx);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx, "[]").SeedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, "[]").SeedAsync());
     }
 
     [Fact]
@@ -79,12 +81,14 @@ public class ChordSeederFailTests
 
         var json = Serialize(new[]
         {
-            new { name = "A", root = "", quality = "Major", extension = (string?)null,
-                  alternation = (string?)null, positions = new[] { MakePosition() } }
+            new
+            {
+                name = "A", root = "", quality = "Major", extension = (string?)null,
+                alternation = (string?)null, positions = new[] { MakePosition() }
+            }
         });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx, json).SeedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, json).SeedAsync());
     }
 
     [Fact]
@@ -95,12 +99,14 @@ public class ChordSeederFailTests
 
         var json = Serialize(new[]
         {
-            new { name = "A", root = "A", quality = "", extension = (string?)null,
-                  alternation = (string?)null, positions = new[] { MakePosition() } }
+            new
+            {
+                name = "A", root = "A", quality = "", extension = (string?)null,
+                alternation = (string?)null, positions = new[] { MakePosition() }
+            }
         });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx, json).SeedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, json).SeedAsync());
     }
 
     [Fact]
@@ -111,12 +117,14 @@ public class ChordSeederFailTests
 
         var json = Serialize(new[]
         {
-            new { name = "A", root = "A", quality = "Major", extension = (string?)null,
-                  alternation = (string?)null, positions = Array.Empty<object>() }
+            new
+            {
+                name = "A", root = "A", quality = "Major", extension = (string?)null,
+                alternation = (string?)null, positions = Array.Empty<object>()
+            }
         });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => Seeder(ctx, json).SeedAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, json).SeedAsync());
     }
 
     // ── position fixture ──────────────────────────────────────────────────────
@@ -145,7 +153,9 @@ public class ChordSeederFailTests
     private sealed class TestableChordSeeder(AppDbContext ctx, string? json)
         : ChordSeeder(ctx)
     {
-        protected override Stream? GetChordStream() =>
-            json is null ? null : new MemoryStream(Encoding.UTF8.GetBytes(json));
+        protected override Stream? GetChordStream()
+        {
+            return json is null ? null : new MemoryStream(Encoding.UTF8.GetBytes(json));
+        }
     }
 }

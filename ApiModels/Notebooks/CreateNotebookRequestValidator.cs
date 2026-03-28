@@ -40,8 +40,8 @@ public class CreateNotebookRequestValidator : AbstractValidator<CreateNotebookRe
             RuleFor(x => x.Styles!)
                 .Must(s => s.Count == 12 &&
                            s.Select(e => e.ModuleType)
-                            .Distinct(StringComparer.OrdinalIgnoreCase)
-                            .Count() == 12 &&
+                               .Distinct(StringComparer.OrdinalIgnoreCase)
+                               .Count() == 12 &&
                            s.All(e => ValidModuleTypes.Contains(e.ModuleType)))
                 .WithMessage(
                     "Styles must contain exactly 12 items, one per ModuleType, with no duplicates.");

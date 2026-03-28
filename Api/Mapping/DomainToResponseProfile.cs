@@ -18,29 +18,6 @@ public class DomainToResponseProfile : Profile
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
-    private record StyleProperties(
-        string BackgroundColor,
-        string BorderColor,
-        string BorderStyle,
-        int BorderWidth,
-        int BorderRadius,
-        string HeaderBgColor,
-        string HeaderTextColor,
-        string BodyTextColor,
-        string FontFamily);
-
-    private record PresetStyleEntry(
-        string ModuleType,
-        string BackgroundColor,
-        string BorderColor,
-        string BorderStyle,
-        int BorderWidth,
-        int BorderRadius,
-        string HeaderBgColor,
-        string HeaderTextColor,
-        string BodyTextColor,
-        string FontFamily);
-
     public DomainToResponseProfile()
     {
         CreateMap<User, UserResponse>()
@@ -175,4 +152,27 @@ public class DomainToResponseProfile : Profile
                 s.UpdatedAt.ToString("o"),
                 new List<ModuleStyleResponse>()));
     }
+
+    private record StyleProperties(
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
+
+    private record PresetStyleEntry(
+        string ModuleType,
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
 }

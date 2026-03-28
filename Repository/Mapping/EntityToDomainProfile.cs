@@ -27,9 +27,9 @@ public class EntityToDomainProfile : Profile
                 ?? new List<ChordPosition>()));
         CreateMap<NotebookEntity, Notebook>()
             .ForMember(d => d.InstrumentName,
-                       o => o.MapFrom(s => s.Instrument != null ? s.Instrument.DisplayName : string.Empty))
+                o => o.MapFrom(s => s.Instrument != null ? s.Instrument.DisplayName : string.Empty))
             .ForMember(d => d.LessonCount,
-                       o => o.MapFrom(s => s.Lessons != null ? s.Lessons.Count : 0));
+                o => o.MapFrom(s => s.Lessons != null ? s.Lessons.Count : 0));
         CreateMap<Notebook, NotebookEntity>()
             .ForMember(d => d.User, o => o.Ignore())
             .ForMember(d => d.Instrument, o => o.Ignore())

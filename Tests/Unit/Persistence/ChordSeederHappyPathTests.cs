@@ -207,7 +207,9 @@ public class ChordSeederHappyPathTests : IDisposable
     private sealed class TestableChordSeeder(AppDbContext ctx, string filePath)
         : ChordSeeder(ctx)
     {
-        protected override Stream? GetChordStream() =>
-            File.Exists(filePath) ? File.OpenRead(filePath) : null;
+        protected override Stream? GetChordStream()
+        {
+            return File.Exists(filePath) ? File.OpenRead(filePath) : null;
+        }
     }
 }

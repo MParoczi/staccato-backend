@@ -211,32 +211,35 @@ public class DomainToResponseProfileTests
 
     // ── fixtures ─────────────────────────────────────────────────────────
 
-    private static Chord MakeChord() => new()
+    private static Chord MakeChord()
     {
-        Id = Guid.NewGuid(),
-        InstrumentId = Guid.NewGuid(),
-        InstrumentKey = InstrumentKey.Guitar6String,
-        Name = "Am",
-        Root = "A",
-        Quality = "Minor",
-        Extension = null,
-        Alternation = null,
-        Positions =
-        [
-            new ChordPosition
-            {
-                Label = "1",
-                BaseFret = 1,
-                Barre = null,
-                Strings = [new ChordString { StringNumber = 6, State = ChordStringState.Open }]
-            },
-            new ChordPosition
-            {
-                Label = "2",
-                BaseFret = 5,
-                Barre = new ChordBarre { Fret = 5, FromString = 1, StringTo = 6 },
-                Strings = [new ChordString { StringNumber = 6, State = ChordStringState.Fretted, Fret = 5, Finger = 1 }]
-            }
-        ]
-    };
+        return new Chord
+        {
+            Id = Guid.NewGuid(),
+            InstrumentId = Guid.NewGuid(),
+            InstrumentKey = InstrumentKey.Guitar6String,
+            Name = "Am",
+            Root = "A",
+            Quality = "Minor",
+            Extension = null,
+            Alternation = null,
+            Positions =
+            [
+                new ChordPosition
+                {
+                    Label = "1",
+                    BaseFret = 1,
+                    Barre = null,
+                    Strings = [new ChordString { StringNumber = 6, State = ChordStringState.Open }]
+                },
+                new ChordPosition
+                {
+                    Label = "2",
+                    BaseFret = 5,
+                    Barre = new ChordBarre { Fret = 5, FromString = 1, StringTo = 6 },
+                    Strings = [new ChordString { StringNumber = 6, State = ChordStringState.Fretted, Fret = 5, Finger = 1 }]
+                }
+            ]
+        };
+    }
 }

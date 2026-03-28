@@ -49,18 +49,18 @@ public class NotebooksControllerTests
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:SecretKey"]                 = TestJwtSecret,
-                    ["Jwt:Issuer"]                    = "test",
-                    ["Jwt:Audience"]                  = "test",
-                    ["Jwt:AccessTokenExpiryMinutes"]  = "15",
-                    ["Jwt:RefreshTokenExpiryDays"]    = "7",
-                    ["Jwt:RememberMeExpiryDays"]      = "30",
-                    ["Google:ClientId"]               = "test.apps.googleusercontent.com",
-                    ["AzureBlob:ConnectionString"]    = "UseDevelopmentStorage=true",
-                    ["AzureBlob:ContainerName"]       = "test",
-                    ["Cors:AllowedOrigins:0"]         = "http://localhost:3000",
-                    ["RateLimit:AuthMaxRequests"]     = "1000",
-                    ["RateLimit:AuthWindowSeconds"]   = "60"
+                    ["Jwt:SecretKey"] = TestJwtSecret,
+                    ["Jwt:Issuer"] = "test",
+                    ["Jwt:Audience"] = "test",
+                    ["Jwt:AccessTokenExpiryMinutes"] = "15",
+                    ["Jwt:RefreshTokenExpiryDays"] = "7",
+                    ["Jwt:RememberMeExpiryDays"] = "30",
+                    ["Google:ClientId"] = "test.apps.googleusercontent.com",
+                    ["AzureBlob:ConnectionString"] = "UseDevelopmentStorage=true",
+                    ["AzureBlob:ContainerName"] = "test",
+                    ["Cors:AllowedOrigins:0"] = "http://localhost:3000",
+                    ["RateLimit:AuthMaxRequests"] = "1000",
+                    ["RateLimit:AuthWindowSeconds"] = "60"
                 });
             });
 
@@ -96,19 +96,21 @@ public class NotebooksControllerTests
                 {
                     options.TokenValidationParameters.IssuerSigningKey =
                         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TestJwtSecret));
-                    options.TokenValidationParameters.ValidIssuer    = "test";
-                    options.TokenValidationParameters.ValidAudience  = "test";
+                    options.TokenValidationParameters.ValidIssuer = "test";
+                    options.TokenValidationParameters.ValidAudience = "test";
                 });
             });
         });
     }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
-        factory.CreateClient(new WebApplicationFactoryClientOptions
+    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    {
+        return factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
-            HandleCookies     = false
+            HandleCookies = false
         });
+    }
 
     // ── Seed helpers ──────────────────────────────────────────────────────
 
@@ -118,8 +120,8 @@ public class NotebooksControllerTests
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Instruments.Add(new InstrumentEntity
         {
-            Id          = SeedInstrumentId,
-            Key         = InstrumentKey.Guitar6String,
+            Id = SeedInstrumentId,
+            Key = InstrumentKey.Guitar6String,
             DisplayName = "6-String Guitar",
             StringCount = 6
         });
@@ -131,28 +133,28 @@ public class NotebooksControllerTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var stylesJson = System.Text.Json.JsonSerializer.Serialize(
+        var stylesJson = JsonSerializer.Serialize(
             AllModuleTypes.Select(mt => new
             {
-                moduleType      = mt,
+                moduleType = mt,
                 backgroundColor = "#ffffff",
-                borderColor     = "#000000",
-                borderStyle     = "None",
-                borderWidth     = 0,
-                borderRadius    = 0,
-                headerBgColor   = "#eeeeee",
+                borderColor = "#000000",
+                borderStyle = "None",
+                borderWidth = 0,
+                borderRadius = 0,
+                headerBgColor = "#eeeeee",
                 headerTextColor = "#333333",
-                bodyTextColor   = "#000000",
-                fontFamily      = "Default"
+                bodyTextColor = "#000000",
+                fontFamily = "Default"
             }).ToList());
 
         db.SystemStylePresets.Add(new SystemStylePresetEntity
         {
-            Id           = Guid.NewGuid(),
-            Name         = "Colorful",
+            Id = Guid.NewGuid(),
+            Name = "Colorful",
             DisplayOrder = 2,
-            IsDefault    = true,
-            StylesJson   = stylesJson
+            IsDefault = true,
+            StylesJson = stylesJson
         });
 
         await db.SaveChangesAsync();
@@ -164,47 +166,45 @@ public class NotebooksControllerTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var presetId   = Guid.NewGuid();
-        var stylesJson = System.Text.Json.JsonSerializer.Serialize(
+        var presetId = Guid.NewGuid();
+        var stylesJson = JsonSerializer.Serialize(
             AllModuleTypes.Select(mt => new
             {
-                moduleType      = mt,
+                moduleType = mt,
                 backgroundColor = "#fdfaf4",
-                borderColor     = "#c9a84c",
-                borderStyle     = "Solid",
-                borderWidth     = 1,
-                borderRadius    = 2,
-                headerBgColor   = "#8b6914",
+                borderColor = "#c9a84c",
+                borderStyle = "Solid",
+                borderWidth = 1,
+                borderRadius = 2,
+                headerBgColor = "#8b6914",
                 headerTextColor = "#fffde7",
-                bodyTextColor   = "#2c1810",
-                fontFamily      = "Serif"
+                bodyTextColor = "#2c1810",
+                fontFamily = "Serif"
             }).ToList());
 
         db.SystemStylePresets.Add(new SystemStylePresetEntity
         {
-            Id           = presetId,
-            Name         = "Classic",
+            Id = presetId,
+            Name = "Classic",
             DisplayOrder = 1,
-            IsDefault    = false,
-            StylesJson   = stylesJson
+            IsDefault = false,
+            StylesJson = stylesJson
         });
 
         await db.SaveChangesAsync();
         return presetId;
     }
 
-    private record AuthBody(string AccessToken, int ExpiresIn);
-
     /// <summary>Registers a unique user and returns an authenticated client.</summary>
     private static async Task<HttpClient> RegisterAsync(WebApplicationFactory<Program> factory)
     {
         var client = CreateClient(factory);
-        var email  = $"{Guid.NewGuid()}@test.com";
-        var resp   = await client.PostAsJsonAsync("/auth/register", new
+        var email = $"{Guid.NewGuid()}@test.com";
+        var resp = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = email,
+            Email = email,
             DisplayName = "Test User",
-            Password    = "Password1!"
+            Password = "Password1!"
         });
         resp.EnsureSuccessStatusCode();
         var body = await resp.Content.ReadFromJsonAsync<AuthBody>(JsonOpts);
@@ -213,20 +213,22 @@ public class NotebooksControllerTests
         return client;
     }
 
-    private static object BuildStylesPayload() =>
-        AllModuleTypes.Select(mt => new
+    private static object BuildStylesPayload()
+    {
+        return AllModuleTypes.Select(mt => new
         {
-            moduleType      = mt,
+            moduleType = mt,
             backgroundColor = "#ffffff",
-            borderColor     = "#cccccc",
-            borderStyle     = "Solid",
-            borderWidth     = 1,
-            borderRadius    = 4,
-            headerBgColor   = "#eeeeee",
+            borderColor = "#cccccc",
+            borderStyle = "Solid",
+            borderWidth = 1,
+            borderRadius = 4,
+            headerBgColor = "#eeeeee",
             headerTextColor = "#111111",
-            bodyTextColor   = "#222222",
-            fontFamily      = "Default"
+            bodyTextColor = "#222222",
+            fontFamily = "Default"
         }).ToList();
+    }
 
     // ── GET /notebooks ────────────────────────────────────────────────────
 
@@ -255,19 +257,19 @@ public class NotebooksControllerTests
         // Create two notebooks; ordering must be deterministic
         var r1 = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Alpha",
+            title = "Alpha",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#111111"
+            pageSize = "A4",
+            coverColor = "#111111"
         });
         r1.EnsureSuccessStatusCode();
 
         var r2 = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Beta",
+            title = "Beta",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A5",
-            coverColor   = "#222222"
+            pageSize = "A5",
+            coverColor = "#222222"
         });
         r2.EnsureSuccessStatusCode();
 
@@ -303,10 +305,10 @@ public class NotebooksControllerTests
 
         var resp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "My Notebook",
+            title = "My Notebook",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ff0000"
+            pageSize = "A4",
+            coverColor = "#ff0000"
         });
 
         Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
@@ -332,11 +334,11 @@ public class NotebooksControllerTests
 
         var resp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Custom Styled",
+            title = "Custom Styled",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A5",
-            coverColor   = "#0000ff",
-            styles       = BuildStylesPayload()
+            pageSize = "A5",
+            coverColor = "#0000ff",
+            styles = BuildStylesPayload()
         });
 
         Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
@@ -356,10 +358,10 @@ public class NotebooksControllerTests
 
         var resp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "",
+            title = "",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ff0000"
+            pageSize = "A4",
+            coverColor = "#ff0000"
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
@@ -374,10 +376,10 @@ public class NotebooksControllerTests
 
         var resp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Test",
+            title = "Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "not-a-hex"
+            pageSize = "A4",
+            coverColor = "not-a-hex"
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
@@ -392,10 +394,10 @@ public class NotebooksControllerTests
 
         var resp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Test",
-            instrumentId = Guid.NewGuid(),  // does not exist
-            pageSize     = "A4",
-            coverColor   = "#ff0000"
+            title = "Test",
+            instrumentId = Guid.NewGuid(), // does not exist
+            pageSize = "A4",
+            coverColor = "#ff0000"
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
@@ -413,10 +415,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Detail Test",
+            title = "Detail Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#abcdef"
+            pageSize = "A4",
+            coverColor = "#abcdef"
         });
         createResp.EnsureSuccessStatusCode();
         var created = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
@@ -444,10 +446,10 @@ public class NotebooksControllerTests
         var clientA = await RegisterAsync(factory);
         var createResp = await clientA.PostAsJsonAsync("/notebooks", new
         {
-            title        = "User A Notebook",
+            title = "User A Notebook",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#123456"
+            pageSize = "A4",
+            coverColor = "#123456"
         });
         createResp.EnsureSuccessStatusCode();
         var created = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
@@ -483,10 +485,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Original Title",
+            title = "Original Title",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#111111"
+            pageSize = "A4",
+            coverColor = "#111111"
         });
         createResp.EnsureSuccessStatusCode();
         var created = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
@@ -494,7 +496,7 @@ public class NotebooksControllerTests
 
         var updateResp = await client.PutAsJsonAsync($"/notebooks/{notebookId}", new
         {
-            title      = "Updated Title",
+            title = "Updated Title",
             coverColor = "#aabbcc"
         });
 
@@ -512,9 +514,9 @@ public class NotebooksControllerTests
 
         var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
         {
-            title      = "Test",
+            title = "Test",
             coverColor = "#ffffff",
-            pageSize   = "A5"  // immutable field — must return 400
+            pageSize = "A5" // immutable field — must return 400
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, updateResp.StatusCode);
@@ -528,9 +530,9 @@ public class NotebooksControllerTests
 
         var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
         {
-            title        = "Test",
-            coverColor   = "#ffffff",
-            instrumentId = Guid.NewGuid()  // immutable field — must return 400
+            title = "Test",
+            coverColor = "#ffffff",
+            instrumentId = Guid.NewGuid() // immutable field — must return 400
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, updateResp.StatusCode);
@@ -546,10 +548,10 @@ public class NotebooksControllerTests
         var clientA = await RegisterAsync(factory);
         var createResp = await clientA.PostAsJsonAsync("/notebooks", new
         {
-            title        = "User A Notebook",
+            title = "User A Notebook",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#123456"
+            pageSize = "A4",
+            coverColor = "#123456"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -558,7 +560,7 @@ public class NotebooksControllerTests
         var clientB = await RegisterAsync(factory);
         var updateResp = await clientB.PutAsJsonAsync($"/notebooks/{notebookId}", new
         {
-            title      = "Hijacked",
+            title = "Hijacked",
             coverColor = "#ffffff"
         });
 
@@ -573,7 +575,7 @@ public class NotebooksControllerTests
 
         var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
         {
-            title      = "Test",
+            title = "Test",
             coverColor = "#ffffff"
         });
 
@@ -592,10 +594,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "To Delete",
+            title = "To Delete",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ff0000"
+            pageSize = "A4",
+            coverColor = "#ff0000"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -620,10 +622,10 @@ public class NotebooksControllerTests
         // Create notebook
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Export Active",
+            title = "Export Active",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ff0000"
+            pageSize = "A4",
+            coverColor = "#ff0000"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookIdStr = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -640,13 +642,13 @@ public class NotebooksControllerTests
         using (var scope = factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            db.PdfExports.Add(new EntityModels.Entities.PdfExportEntity
+            db.PdfExports.Add(new PdfExportEntity
             {
-                Id         = Guid.NewGuid(),
+                Id = Guid.NewGuid(),
                 NotebookId = notebookId,
-                UserId     = userId,
-                Status     = DomainModels.Enums.ExportStatus.Pending,
-                CreatedAt  = DateTime.UtcNow
+                UserId = userId,
+                Status = ExportStatus.Pending,
+                CreatedAt = DateTime.UtcNow
             });
             await db.SaveChangesAsync();
         }
@@ -667,10 +669,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Styled",
+            title = "Styled",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -695,10 +697,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Style Test",
+            title = "Style Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -707,16 +709,16 @@ public class NotebooksControllerTests
         // Build replacement styles with distinct color
         var newStyles = AllModuleTypes.Select(mt => new
         {
-            moduleType      = mt,
+            moduleType = mt,
             backgroundColor = "#123456",
-            borderColor     = "#654321",
-            borderStyle     = "Solid",
-            borderWidth     = 2,
-            borderRadius    = 8,
-            headerBgColor   = "#aabbcc",
+            borderColor = "#654321",
+            borderStyle = "Solid",
+            borderWidth = 2,
+            borderRadius = 8,
+            headerBgColor = "#aabbcc",
             headerTextColor = "#112233",
-            bodyTextColor   = "#334455",
-            fontFamily      = "Default"
+            bodyTextColor = "#334455",
+            fontFamily = "Default"
         }).ToList();
 
         var putResp = await client.PutAsJsonAsync($"/notebooks/{notebookId}/styles", newStyles);
@@ -738,16 +740,16 @@ public class NotebooksControllerTests
         // Only 3 style items — invalid
         var badStyles = AllModuleTypes.Take(3).Select(mt => new
         {
-            moduleType      = mt,
+            moduleType = mt,
             backgroundColor = "#ffffff",
-            borderColor     = "#000000",
-            borderStyle     = "None",
-            borderWidth     = 0,
-            borderRadius    = 0,
-            headerBgColor   = "#eeeeee",
+            borderColor = "#000000",
+            borderStyle = "None",
+            borderWidth = 0,
+            borderRadius = 0,
+            headerBgColor = "#eeeeee",
             headerTextColor = "#333333",
-            bodyTextColor   = "#000000",
-            fontFamily      = "Default"
+            bodyTextColor = "#000000",
+            fontFamily = "Default"
         }).ToList();
 
         var resp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}/styles", badStyles);
@@ -764,14 +766,14 @@ public class NotebooksControllerTests
         await SeedInstrumentAsync(factory);
         await SeedColorfulPresetAsync(factory);
         var classicId = await SeedClassicPresetAsync(factory);
-        var client    = await RegisterAsync(factory);
+        var client = await RegisterAsync(factory);
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Preset Test",
+            title = "Preset Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -798,27 +800,28 @@ public class NotebooksControllerTests
         // Create a notebook
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "User Preset Test",
+            title = "User Preset Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
             .RootElement.GetProperty("id").GetString()!;
 
         // Create a user-saved preset (StyleEntryDto format: {moduleType, stylesJson})
-        var userStylesJson = System.Text.Json.JsonSerializer.Serialize(
+        var userStylesJson = JsonSerializer.Serialize(
             AllModuleTypes.Select(mt => new
             {
                 moduleType = mt,
-                stylesJson = $@"{{""backgroundColor"":""#aabbcc"",""borderColor"":""#000"",""borderStyle"":""None"",""borderWidth"":0,""borderRadius"":0,""headerBgColor"":""#eee"",""headerTextColor"":""#333"",""bodyTextColor"":""#000"",""fontFamily"":""Monospace""}}"
+                stylesJson =
+                    @"{""backgroundColor"":""#aabbcc"",""borderColor"":""#000"",""borderStyle"":""None"",""borderWidth"":0,""borderRadius"":0,""headerBgColor"":""#eee"",""headerTextColor"":""#333"",""bodyTextColor"":""#000"",""fontFamily"":""Monospace""}"
             }).ToList());
 
         var presetResp = await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "My Custom Preset",
-            styles = System.Text.Json.JsonSerializer.Deserialize<object>(userStylesJson)
+            name = "My Custom Preset",
+            styles = JsonSerializer.Deserialize<object>(userStylesJson)
         });
         presetResp.EnsureSuccessStatusCode();
         var presetId = JsonDocument.Parse(await presetResp.Content.ReadAsStringAsync())
@@ -845,10 +848,10 @@ public class NotebooksControllerTests
         var clientA = await RegisterAsync(factory);
         var createResp = await clientA.PostAsJsonAsync("/notebooks", new
         {
-            title        = "User A Notebook",
+            title = "User A Notebook",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -872,10 +875,10 @@ public class NotebooksControllerTests
 
         var createResp = await client.PostAsJsonAsync("/notebooks", new
         {
-            title        = "Test",
+            title = "Test",
             instrumentId = SeedInstrumentId,
-            pageSize     = "A4",
-            coverColor   = "#ffffff"
+            pageSize = "A4",
+            coverColor = "#ffffff"
         });
         createResp.EnsureSuccessStatusCode();
         var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
@@ -886,27 +889,45 @@ public class NotebooksControllerTests
 
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
+
+    private record AuthBody(string AccessToken, int ExpiresIn);
 }
 
 // ── No-op seeders ─────────────────────────────────────────────────────────────
 
 file sealed class NotebooksNoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class NotebooksNoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class NotebooksNoOpSystemStylePresetSeeder(AppDbContext ctx) : SystemStylePresetSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class NotebooksTestPasswordHasher : IPasswordHasher
 {
-    public string Hash(string password) => $"hashed:{password}";
-    public bool Verify(string password, string hash) => hash == $"hashed:{password}";
+    public string Hash(string password)
+    {
+        return $"hashed:{password}";
+    }
+
+    public bool Verify(string password, string hash)
+    {
+        return hash == $"hashed:{password}";
+    }
 }
