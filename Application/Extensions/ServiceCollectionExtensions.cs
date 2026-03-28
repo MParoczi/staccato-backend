@@ -3,21 +3,22 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
-using Microsoft.OpenApi.Models;
 using ApiModels;
 using Application.BackgroundServices;
 using Application.Options;
-using Azure.Storage.Blobs;
 using Application.Services;
+using Azure.Storage.Blobs;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
 using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Persistence;
 using Persistence.Context;
 using Persistence.Seed;
@@ -215,13 +216,13 @@ public static class ServiceCollectionExtensions
         {
             var supportedCultures = new[] { "en", "hu" };
             options.SetDefaultCulture("en")
-                   .AddSupportedCultures(supportedCultures)
-                   .AddSupportedUICultures(supportedCultures);
+                .AddSupportedCultures(supportedCultures)
+                .AddSupportedUICultures(supportedCultures);
 
             // Only use Accept-Language header; strip region suffix (e.g. en-US → en).
             options.RequestCultureProviders.Clear();
             options.RequestCultureProviders.Add(
-                new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
+                new AcceptLanguageHeaderRequestCultureProvider());
         });
 
         return services;

@@ -66,11 +66,13 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
         {
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
-            Secure   = !env.IsDevelopment(),
-            Expires  = expiry
+            Secure = !env.IsDevelopment(),
+            Expires = expiry
         });
     }
 
-    private void ClearRefreshCookie() =>
+    private void ClearRefreshCookie()
+    {
         Response.Cookies.Delete("staccato_refresh");
+    }
 }

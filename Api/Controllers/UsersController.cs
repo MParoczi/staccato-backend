@@ -15,7 +15,10 @@ namespace Api.Controllers;
 [Authorize]
 public class UsersController(IUserService userService, IMapper mapper) : ControllerBase
 {
-    private Guid GetUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private Guid GetUserId()
+    {
+        return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    }
 
     [HttpGet("me")]
     public async Task<IActionResult> GetProfile(CancellationToken ct)

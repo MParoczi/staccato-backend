@@ -23,7 +23,8 @@ public class UserService(
         return user;
     }
 
-    public async Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize, Guid? defaultInstrumentId, CancellationToken ct = default)
+    public async Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize,
+        Guid? defaultInstrumentId, CancellationToken ct = default)
     {
         var user = await userRepository.GetByIdAsync(userId, ct)
                    ?? throw new NotFoundException("User not found.");
@@ -80,7 +81,6 @@ public class UserService(
                    ?? throw new NotFoundException("User not found.");
 
         if (user.AvatarUrl is not null)
-        {
             try
             {
                 await blobService.DeleteAsync(ExtractBlobPath(user.AvatarUrl), ct);
@@ -89,7 +89,6 @@ public class UserService(
             {
                 logger.LogWarning(ex, "Failed to delete old avatar blob for user {UserId}. Proceeding with upload.", userId);
             }
-        }
 
         var url = await blobService.UploadAsync(stream, contentType, $"avatars/{userId}", ct);
         user.AvatarUrl = url;
@@ -112,16 +111,10 @@ public class UserService(
         await unitOfWork.CommitAsync(ct);
     }
 
-    private static string ExtractBlobPath(string url)
-    {
-        var path = new Uri(url).AbsolutePath;
-        // AbsolutePath = "/{container}/{blobPath}" → strip leading "/{container}/"
-        var idx = path.IndexOf('/', 1);
-        return idx >= 0 ? path[(idx + 1)..] : path.TrimStart('/');
-    }
-
     public Task<IReadOnlyList<UserSavedPreset>> GetPresetsAsync(Guid userId, CancellationToken ct = default)
-        => presetRepository.GetByUserIdAsync(userId, ct);
+    {
+        return presetRepository.GetByUserIdAsync(userId, ct);
+    }
 
     public async Task<UserSavedPreset> CreatePresetAsync(Guid userId, string name, string stylesJson, CancellationToken ct = default)
     {
@@ -152,7 +145,7 @@ public class UserService(
 
         if (name is not null && name != preset.Name)
         {
-            if (await presetRepository.ExistsByNameAsync(userId, name, excludePresetId: presetId, ct: ct))
+            if (await presetRepository.ExistsByNameAsync(userId, name, presetId, ct))
                 throw new ConflictException("DUPLICATE_PRESET_NAME",
                     "A preset with this name already exists.");
             preset.Name = name;
@@ -176,5 +169,13 @@ public class UserService(
 
         presetRepository.Remove(preset);
         await unitOfWork.CommitAsync(ct);
+    }
+
+    private static string ExtractBlobPath(string url)
+    {
+        var path = new Uri(url).AbsolutePath;
+        // AbsolutePath = "/{container}/{blobPath}" → strip leading "/{container}/"
+        var idx = path.IndexOf('/', 1);
+        return idx >= 0 ? path[(idx + 1)..] : path.TrimStart('/');
     }
 }

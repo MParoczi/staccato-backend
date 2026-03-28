@@ -9,12 +9,14 @@ namespace Tests.Unit.Mapping;
 
 public class DomainToResponseProfileTests
 {
-    private static IMapper CreateMapper() =>
-        new MapperConfiguration(cfg =>
+    private static IMapper CreateMapper()
+    {
+        return new MapperConfiguration(cfg =>
         {
             cfg.AddProfile<EntityToDomainProfile>();
             cfg.AddProfile<DomainToResponseProfile>();
         }).CreateMapper();
+    }
 
     [Fact]
     public void UserToUserResponse_EnglishLanguage_MapsToEn()

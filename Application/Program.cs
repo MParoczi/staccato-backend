@@ -91,4 +91,6 @@ app.MapControllers();
 app.Run();
 
 // Expose Program to the Tests project for WebApplicationFactory<Program>.
-public partial class Program { }
+public partial class Program
+{
+}

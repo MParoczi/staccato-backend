@@ -11,12 +11,12 @@ namespace Tests.Unit.Services;
 
 public class UserServiceTests
 {
-    private readonly Mock<IUserRepository>             _userRepo     = new();
-    private readonly Mock<IUserSavedPresetRepository>  _presetRepo   = new();
-    private readonly Mock<IInstrumentRepository>       _instrumentRepo = new();
-    private readonly Mock<IAzureBlobService>           _blobService  = new();
-    private readonly Mock<IUnitOfWork>                 _uow          = new();
-    private readonly Mock<ILogger<UserService>>        _logger       = new();
+    private readonly Mock<IAzureBlobService> _blobService = new();
+    private readonly Mock<IInstrumentRepository> _instrumentRepo = new();
+    private readonly Mock<ILogger<UserService>> _logger = new();
+    private readonly Mock<IUserSavedPresetRepository> _presetRepo = new();
+    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUserRepository> _userRepo = new();
 
     public UserServiceTests()
     {
@@ -29,21 +29,25 @@ public class UserServiceTests
             .Returns(Task.CompletedTask);
     }
 
-    private UserService CreateService() =>
-        new(_userRepo.Object, _presetRepo.Object, _instrumentRepo.Object,
+    private UserService CreateService()
+    {
+        return new UserService(_userRepo.Object, _presetRepo.Object, _instrumentRepo.Object,
             _blobService.Object, _uow.Object, _logger.Object);
+    }
 
-    private static User MakeUser(Guid? id = null, DateTime? scheduledDeletionAt = null, string? avatarUrl = null) =>
-        new()
+    private static User MakeUser(Guid? id = null, DateTime? scheduledDeletionAt = null, string? avatarUrl = null)
+    {
+        return new User
         {
-            Id                  = id ?? Guid.NewGuid(),
-            Email               = "test@example.com",
-            FirstName           = "Test",
-            LastName            = "User",
-            Language            = Language.English,
+            Id = id ?? Guid.NewGuid(),
+            Email = "test@example.com",
+            FirstName = "Test",
+            LastName = "User",
+            Language = Language.English,
             ScheduledDeletionAt = scheduledDeletionAt,
-            AvatarUrl           = avatarUrl
+            AvatarUrl = avatarUrl
         };
+    }
 
     // ── ScheduleDeletion ──────────────────────────────────────────────────
 
@@ -51,12 +55,11 @@ public class UserServiceTests
     public async Task ScheduleDeletion_WhenAlreadyScheduled_ThrowsConflictException()
     {
         var userId = Guid.NewGuid();
-        var user = MakeUser(userId, scheduledDeletionAt: DateTime.UtcNow.AddDays(15));
+        var user = MakeUser(userId, DateTime.UtcNow.AddDays(15));
         _userRepo.Setup(r => r.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        var ex = await Assert.ThrowsAsync<ConflictException>(
-            () => CreateService().ScheduleDeletionAsync(userId));
+        var ex = await Assert.ThrowsAsync<ConflictException>(() => CreateService().ScheduleDeletionAsync(userId));
 
         Assert.Equal("ACCOUNT_DELETION_ALREADY_SCHEDULED", ex.Code);
     }
@@ -92,8 +95,7 @@ public class UserServiceTests
         _userRepo.Setup(r => r.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        var ex = await Assert.ThrowsAsync<BadRequestException>(
-            () => CreateService().CancelDeletionAsync(userId));
+        var ex = await Assert.ThrowsAsync<BadRequestException>(() => CreateService().CancelDeletionAsync(userId));
 
         Assert.Equal("ACCOUNT_DELETION_NOT_SCHEDULED", ex.Code);
     }
@@ -102,7 +104,7 @@ public class UserServiceTests
     public async Task CancelDeletion_WhenScheduled_ClearsScheduledDeletionAt()
     {
         var userId = Guid.NewGuid();
-        var user = MakeUser(userId, scheduledDeletionAt: DateTime.UtcNow.AddDays(20));
+        var user = MakeUser(userId, DateTime.UtcNow.AddDays(20));
         _userRepo.Setup(r => r.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
@@ -173,8 +175,8 @@ public class UserServiceTests
         _instrumentRepo.Setup(r => r.GetByIdAsync(instrumentId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Instrument?)null);
 
-        var ex = await Assert.ThrowsAsync<NotFoundException>(
-            () => CreateService().UpdateProfileAsync(userId, "First", "Last", Language.English, null, instrumentId));
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+            CreateService().UpdateProfileAsync(userId, "First", "Last", Language.English, null, instrumentId));
 
         Assert.Equal("INSTRUMENT_NOT_FOUND", ex.Code);
     }
@@ -188,8 +190,7 @@ public class UserServiceTests
         _presetRepo.Setup(r => r.ExistsByNameAsync(userId, "My Preset", null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var ex = await Assert.ThrowsAsync<ConflictException>(
-            () => CreateService().CreatePresetAsync(userId, "My Preset", "{}"));
+        var ex = await Assert.ThrowsAsync<ConflictException>(() => CreateService().CreatePresetAsync(userId, "My Preset", "{}"));
 
         Assert.Equal("DUPLICATE_PRESET_NAME", ex.Code);
     }
@@ -203,28 +204,26 @@ public class UserServiceTests
         _presetRepo.Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UserSavedPreset?)null);
 
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => CreateService().UpdatePresetAsync(Guid.NewGuid(), presetId, "New Name", null));
+        await Assert.ThrowsAsync<NotFoundException>(() => CreateService().UpdatePresetAsync(Guid.NewGuid(), presetId, "New Name", null));
     }
 
     [Fact]
     public async Task UpdatePreset_WhenNotOwner_ThrowsForbiddenException()
     {
-        var ownerId  = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var callerId = Guid.NewGuid();
         var presetId = Guid.NewGuid();
         var preset = new UserSavedPreset { Id = presetId, UserId = ownerId, Name = "Preset", StylesJson = "{}" };
         _presetRepo.Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(preset);
 
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => CreateService().UpdatePresetAsync(callerId, presetId, "New Name", null));
+        await Assert.ThrowsAsync<ForbiddenException>(() => CreateService().UpdatePresetAsync(callerId, presetId, "New Name", null));
     }
 
     [Fact]
     public async Task UpdatePreset_WhenRenameToSameName_Succeeds()
     {
-        var userId   = Guid.NewGuid();
+        var userId = Guid.NewGuid();
         var presetId = Guid.NewGuid();
         const string name = "Unchanged Name";
         var preset = new UserSavedPreset { Id = presetId, UserId = userId, Name = name, StylesJson = "{}" };

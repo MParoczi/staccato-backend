@@ -28,7 +28,7 @@ public class DomainToResponseProfile : Profile
             .ConstructUsing((s, _) => new PresetResponse(
                 s.Id,
                 s.Name,
-                JsonSerializer.Deserialize<List<StyleEntryDto>>(s.StylesJson, (JsonSerializerOptions?)null)
-                    ?? new List<StyleEntryDto>()));
+                JsonSerializer.Deserialize<List<StyleEntryDto>>(s.StylesJson)
+                ?? new List<StyleEntryDto>()));
     }
 }

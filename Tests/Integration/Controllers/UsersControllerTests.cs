@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
-using Persistence;
 using Persistence.Context;
 using Persistence.Seed;
 
@@ -51,18 +50,18 @@ public class UsersControllerTests
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:SecretKey"]               = TestJwtSecret,
-                    ["Jwt:Issuer"]                  = "test",
-                    ["Jwt:Audience"]                = "test",
+                    ["Jwt:SecretKey"] = TestJwtSecret,
+                    ["Jwt:Issuer"] = "test",
+                    ["Jwt:Audience"] = "test",
                     ["Jwt:AccessTokenExpiryMinutes"] = "15",
-                    ["Jwt:RefreshTokenExpiryDays"]  = "7",
-                    ["Jwt:RememberMeExpiryDays"]    = "30",
-                    ["Google:ClientId"]             = "test.apps.googleusercontent.com",
-                    ["AzureBlob:ConnectionString"]  = "UseDevelopmentStorage=true",
-                    ["AzureBlob:ContainerName"]     = "test",
-                    ["Cors:AllowedOrigins:0"]       = "http://localhost:3000",
-                    ["RateLimit:AuthMaxRequests"]   = "1000",
-                    ["RateLimit:AuthWindowSeconds"] = "60",
+                    ["Jwt:RefreshTokenExpiryDays"] = "7",
+                    ["Jwt:RememberMeExpiryDays"] = "30",
+                    ["Google:ClientId"] = "test.apps.googleusercontent.com",
+                    ["AzureBlob:ConnectionString"] = "UseDevelopmentStorage=true",
+                    ["AzureBlob:ContainerName"] = "test",
+                    ["Cors:AllowedOrigins:0"] = "http://localhost:3000",
+                    ["RateLimit:AuthMaxRequests"] = "1000",
+                    ["RateLimit:AuthWindowSeconds"] = "60"
                 });
             });
 
@@ -108,18 +107,19 @@ public class UsersControllerTests
         });
     }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
-        factory.CreateClient(new WebApplicationFactoryClientOptions
+    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    {
+        return factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
-            HandleCookies     = false,
+            HandleCookies = false
         });
+    }
 
-    private static object MakeStylesPayload() =>
-        AllModuleTypes.Select(t => new { moduleType = t, stylesJson = "{}" }).ToList();
-
-    private record AuthBody(string AccessToken, int ExpiresIn);
-    private record ErrorBody(string Code, string Message);
+    private static object MakeStylesPayload()
+    {
+        return AllModuleTypes.Select(t => new { moduleType = t, stylesJson = "{}" }).ToList();
+    }
 
     /// <summary>Registers a unique user and returns (client, accessToken).</summary>
     private static async Task<(HttpClient Client, string Token)> RegisterAsync(WebApplicationFactory<Program> factory)
@@ -128,9 +128,9 @@ public class UsersControllerTests
         var email = $"{Guid.NewGuid()}@example.com";
         var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = email,
+            Email = email,
             DisplayName = "Test User",
-            Password    = "Password1!",
+            Password = "Password1!"
         });
         response.EnsureSuccessStatusCode();
         var body = await response.Content.ReadFromJsonAsync<AuthBody>(JsonOpts);
@@ -169,11 +169,11 @@ public class UsersControllerTests
 
         var response = await client.PutAsJsonAsync("/users/me", new
         {
-            firstName           = "Updated",
-            lastName            = "Name",
-            language            = "hu",
-            defaultPageSize     = (string?)null,
-            defaultInstrumentId = (Guid?)null,
+            firstName = "Updated",
+            lastName = "Name",
+            language = "hu",
+            defaultPageSize = (string?)null,
+            defaultInstrumentId = (Guid?)null
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -198,7 +198,7 @@ public class UsersControllerTests
         var response = await client.PutAsJsonAsync("/users/me", new
         {
             firstName = "Test",
-            lastName  = "User",
+            lastName = "User"
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -295,8 +295,8 @@ public class UsersControllerTests
 
         var response = await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "My Preset",
-            styles = MakeStylesPayload(),
+            name = "My Preset",
+            styles = MakeStylesPayload()
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -313,14 +313,14 @@ public class UsersControllerTests
 
         await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "My Preset",
-            styles = MakeStylesPayload(),
+            name = "My Preset",
+            styles = MakeStylesPayload()
         });
 
         var response = await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "My Preset",
-            styles = MakeStylesPayload(),
+            name = "My Preset",
+            styles = MakeStylesPayload()
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -339,16 +339,16 @@ public class UsersControllerTests
 
         var create = await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "Original",
-            styles = MakeStylesPayload(),
+            name = "Original",
+            styles = MakeStylesPayload()
         });
         var created = JsonDocument.Parse(await create.Content.ReadAsStringAsync());
         var id = created.RootElement.GetProperty("id").GetString();
 
         var response = await client.PutAsJsonAsync($"/users/me/presets/{id}", new
         {
-            name   = "Renamed",
-            styles = (object?)null,
+            name = "Renamed",
+            styles = (object?)null
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -365,8 +365,8 @@ public class UsersControllerTests
         var (clientA, _) = await RegisterAsync(factory);
         var create = await clientA.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "User A Preset",
-            styles = MakeStylesPayload(),
+            name = "User A Preset",
+            styles = MakeStylesPayload()
         });
         var created = JsonDocument.Parse(await create.Content.ReadAsStringAsync());
         var id = created.RootElement.GetProperty("id").GetString();
@@ -375,8 +375,8 @@ public class UsersControllerTests
         var (clientB, _) = await RegisterAsync(factory);
         var response = await clientB.PutAsJsonAsync($"/users/me/presets/{id}", new
         {
-            name   = "Hijacked",
-            styles = (object?)null,
+            name = "Hijacked",
+            styles = (object?)null
         });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -392,8 +392,8 @@ public class UsersControllerTests
 
         var create = await client.PostAsJsonAsync("/users/me/presets", new
         {
-            name   = "To Delete",
-            styles = MakeStylesPayload(),
+            name = "To Delete",
+            styles = MakeStylesPayload()
         });
         var created = JsonDocument.Parse(await create.Content.ReadAsStringAsync());
         var id = created.RootElement.GetProperty("id").GetString();
@@ -406,25 +406,45 @@ public class UsersControllerTests
         var json = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
         Assert.Equal(0, json.RootElement.GetArrayLength());
     }
+
+    private record AuthBody(string AccessToken, int ExpiresIn);
+
+    private record ErrorBody(string Code, string Message);
 }
 
 file sealed class UsersTestPasswordHasher : IPasswordHasher
 {
-    public string Hash(string password) => $"TEST:{password}";
-    public bool Verify(string password, string hash) => hash == $"TEST:{password}";
+    public string Hash(string password)
+    {
+        return $"TEST:{password}";
+    }
+
+    public bool Verify(string password, string hash)
+    {
+        return hash == $"TEST:{password}";
+    }
 }
 
 file sealed class UsersNoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class UsersNoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class UsersNoOpSystemStylePresetSeeder(AppDbContext ctx) : SystemStylePresetSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }

@@ -6,7 +6,10 @@ namespace Domain.Services;
 public interface IUserService
 {
     Task<User> GetProfileAsync(Guid userId, CancellationToken ct = default);
-    Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize, Guid? defaultInstrumentId, CancellationToken ct = default);
+
+    Task<User> UpdateProfileAsync(Guid userId, string firstName, string lastName, Language language, PageSize? defaultPageSize, Guid? defaultInstrumentId,
+        CancellationToken ct = default);
+
     Task ScheduleDeletionAsync(Guid userId, CancellationToken ct = default);
     Task CancelDeletionAsync(Guid userId, CancellationToken ct = default);
     Task<User> UploadAvatarAsync(Guid userId, Stream stream, string contentType, CancellationToken ct = default);

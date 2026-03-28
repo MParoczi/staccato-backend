@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Persistence;
 using Persistence.Context;
 using Persistence.Seed;
 
@@ -25,25 +24,26 @@ public class AuthControllerTests
     private static readonly JsonSerializerOptions JsonOpts =
         new() { PropertyNameCaseInsensitive = true };
 
-    private static WebApplicationFactory<Program> CreateFactory(int rateLimit = 100) =>
-        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+    private static WebApplicationFactory<Program> CreateFactory(int rateLimit = 100)
+    {
+        return new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.ConfigureAppConfiguration((_, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string?>
                 {
-                    ["Jwt:SecretKey"]               = "test-secret-key-must-be-at-least-32-chars!!",
-                    ["Jwt:Issuer"]                  = "test",
-                    ["Jwt:Audience"]                = "test",
+                    ["Jwt:SecretKey"] = "test-secret-key-must-be-at-least-32-chars!!",
+                    ["Jwt:Issuer"] = "test",
+                    ["Jwt:Audience"] = "test",
                     ["Jwt:AccessTokenExpiryMinutes"] = "15",
-                    ["Jwt:RefreshTokenExpiryDays"]  = "7",
-                    ["Jwt:RememberMeExpiryDays"]    = "30",
-                    ["Google:ClientId"]             = "test.apps.googleusercontent.com",
-                    ["AzureBlob:ConnectionString"]  = "UseDevelopmentStorage=true",
-                    ["AzureBlob:ContainerName"]     = "test",
-                    ["Cors:AllowedOrigins:0"]       = "http://localhost:3000",
-                    ["RateLimit:AuthMaxRequests"]   = rateLimit.ToString(),
-                    ["RateLimit:AuthWindowSeconds"] = "60",
+                    ["Jwt:RefreshTokenExpiryDays"] = "7",
+                    ["Jwt:RememberMeExpiryDays"] = "30",
+                    ["Google:ClientId"] = "test.apps.googleusercontent.com",
+                    ["AzureBlob:ConnectionString"] = "UseDevelopmentStorage=true",
+                    ["AzureBlob:ContainerName"] = "test",
+                    ["Cors:AllowedOrigins:0"] = "http://localhost:3000",
+                    ["RateLimit:AuthMaxRequests"] = rateLimit.ToString(),
+                    ["RateLimit:AuthWindowSeconds"] = "60"
                 });
             });
 
@@ -79,13 +79,16 @@ public class AuthControllerTests
                 services.AddScoped<SystemStylePresetSeeder, NoOpSystemStylePresetSeeder>();
             });
         });
+    }
 
-    private static HttpClient CreateClient(WebApplicationFactory<Program> factory) =>
-        factory.CreateClient(new WebApplicationFactoryClientOptions
+    private static HttpClient CreateClient(WebApplicationFactory<Program> factory)
+    {
+        return factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false,
-            HandleCookies     = false,
+            HandleCookies = false
         });
+    }
 
     /// <summary>Registers a user and returns the raw <c>staccato_refresh</c> cookie value.</summary>
     private static async Task<string> RegisterAndGetCookie(
@@ -93,9 +96,9 @@ public class AuthControllerTests
     {
         var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = email,
+            Email = email,
             DisplayName = "Test User",
-            Password    = password,
+            Password = password
         });
         response.EnsureSuccessStatusCode();
         return ExtractRefreshCookieValue(response)!;
@@ -107,9 +110,9 @@ public class AuthControllerTests
     {
         var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email      = email,
-            Password   = password,
-            RememberMe = rememberMe,
+            Email = email,
+            Password = password,
+            RememberMe = rememberMe
         });
         response.EnsureSuccessStatusCode();
         return ExtractRefreshCookieValue(response)!;
@@ -146,9 +149,6 @@ public class AuthControllerTests
         return req;
     }
 
-    private record ErrorBody(string Code, string Message);
-    private record AuthBody(string AccessToken, int ExpiresIn);
-
     // ── Register ──────────────────────────────────────────────────────────
 
     [Fact]
@@ -159,9 +159,9 @@ public class AuthControllerTests
 
         var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = "register-valid@example.com",
+            Email = "register-valid@example.com",
             DisplayName = "Test User",
-            Password    = "Password1!",
+            Password = "Password1!"
         });
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -185,9 +185,9 @@ public class AuthControllerTests
 
         var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = email,
+            Email = email,
             DisplayName = "Another User",
-            Password    = "Password1!",
+            Password = "Password1!"
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -206,9 +206,9 @@ public class AuthControllerTests
         // Missing required fields → FluentValidation fires
         var response = await client.PostAsJsonAsync("/auth/register", new
         {
-            Email       = "not-an-email",
+            Email = "not-an-email",
             DisplayName = "",
-            Password    = "short",
+            Password = "short"
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -230,8 +230,8 @@ public class AuthControllerTests
 
         var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email    = email,
-            Password = "Password1!",
+            Email = email,
+            Password = "Password1!"
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -248,8 +248,8 @@ public class AuthControllerTests
 
         var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email    = email,
-            Password = "WrongPassword!",
+            Email = email,
+            Password = "WrongPassword!"
         });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -269,9 +269,9 @@ public class AuthControllerTests
 
         var response = await client.PostAsJsonAsync("/auth/login", new
         {
-            Email      = email,
-            Password   = "Password1!",
-            RememberMe = true,
+            Email = email,
+            Password = "Password1!",
+            RememberMe = true
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -381,18 +381,16 @@ public class AuthControllerTests
     public async Task RateLimit_ExceedsLimit_Returns429()
     {
         // Use a dedicated factory with a limit of 2 so we only need 3 requests
-        using var factory = CreateFactory(rateLimit: 2);
+        using var factory = CreateFactory(2);
         var client = CreateClient(factory);
 
         HttpResponseMessage? lastResponse = null;
         for (var i = 0; i < 3; i++)
-        {
             lastResponse = await client.PostAsJsonAsync("/auth/login", new
             {
-                Email    = "ratelimit@example.com",
-                Password = "any-password",
+                Email = "ratelimit@example.com",
+                Password = "any-password"
             });
-        }
 
         Assert.Equal((HttpStatusCode)429, lastResponse!.StatusCode);
     }
@@ -412,9 +410,9 @@ public class AuthControllerTests
         request.Headers.Add("Accept-Language", "hu");
         request.Content = JsonContent.Create(new
         {
-            Email       = email,
+            Email = email,
             DisplayName = "Test User",
-            Password    = "Password1!",
+            Password = "Password1!"
         });
 
         var response = await client.SendAsync(request);
@@ -426,6 +424,10 @@ public class AuthControllerTests
         Assert.Equal("EMAIL_ALREADY_REGISTERED", body!.Code);
         Assert.Equal("Ezzel az e-mail c\u00edmmel m\u00e1r l\u00e9tezik fi\u00f3k.", body.Message);
     }
+
+    private record ErrorBody(string Code, string Message);
+
+    private record AuthBody(string AccessToken, int ExpiresIn);
 }
 
 /// <summary>
@@ -434,22 +436,38 @@ public class AuthControllerTests
 /// </summary>
 file sealed class TestPasswordHasher : IPasswordHasher
 {
-    public string Hash(string password) => $"TEST:{password}";
-    public bool Verify(string password, string hash) => hash == $"TEST:{password}";
+    public string Hash(string password)
+    {
+        return $"TEST:{password}";
+    }
+
+    public bool Verify(string password, string hash)
+    {
+        return hash == $"TEST:{password}";
+    }
 }
 
 // No-op seeder stubs so the chord/instrument JSON files are never touched during tests.
 file sealed class NoOpInstrumentSeeder(AppDbContext ctx) : InstrumentSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class NoOpChordSeeder(AppDbContext ctx) : ChordSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 file sealed class NoOpSystemStylePresetSeeder(AppDbContext ctx) : SystemStylePresetSeeder(ctx)
 {
-    public override Task SeedAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public override Task SeedAsync(CancellationToken ct = default)
+    {
+        return Task.CompletedTask;
+    }
 }

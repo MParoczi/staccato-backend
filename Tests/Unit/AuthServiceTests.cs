@@ -10,12 +10,12 @@ namespace Tests.Unit;
 
 public class AuthServiceTests
 {
-    private readonly Mock<IUserRepository>         _userRepo         = new();
+    private readonly Mock<IGoogleTokenValidator> _googleValidator = new();
+    private readonly Mock<IPasswordHasher> _hasher = new();
+    private readonly Mock<IJwtService> _jwt = new();
     private readonly Mock<IRefreshTokenRepository> _refreshTokenRepo = new();
-    private readonly Mock<IUnitOfWork>             _uow              = new();
-    private readonly Mock<IPasswordHasher>         _hasher           = new();
-    private readonly Mock<IJwtService>             _jwt              = new();
-    private readonly Mock<IGoogleTokenValidator>   _googleValidator  = new();
+    private readonly Mock<IUnitOfWork> _uow = new();
+    private readonly Mock<IUserRepository> _userRepo = new();
 
     public AuthServiceTests()
     {
@@ -34,9 +34,11 @@ public class AuthServiceTests
             .Returns(Task.CompletedTask);
     }
 
-    private AuthService CreateService() =>
-        new(_userRepo.Object, _refreshTokenRepo.Object, _uow.Object,
+    private AuthService CreateService()
+    {
+        return new AuthService(_userRepo.Object, _refreshTokenRepo.Object, _uow.Object,
             _hasher.Object, _jwt.Object, _googleValidator.Object);
+    }
 
     // ── RegisterAsync ─────────────────────────────────────────────────────
 
@@ -60,8 +62,7 @@ public class AuthServiceTests
         _userRepo.Setup(r => r.GetByEmailAsync("test@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new User { Id = Guid.NewGuid(), Email = "test@example.com" });
 
-        var ex = await Assert.ThrowsAsync<ConflictException>(
-            () => CreateService().RegisterAsync("test@example.com", "Jane Doe", "password123"));
+        var ex = await Assert.ThrowsAsync<ConflictException>(() => CreateService().RegisterAsync("test@example.com", "Jane Doe", "password123"));
 
         Assert.Equal(AuthErrorCodes.EmailAlreadyRegistered, ex.Code);
     }
@@ -89,8 +90,7 @@ public class AuthServiceTests
             .ReturnsAsync(user);
         _hasher.Setup(h => h.Verify("wrong", "hashed")).Returns(false);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().LoginAsync("test@example.com", "wrong"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().LoginAsync("test@example.com", "wrong"));
 
         Assert.Equal(AuthErrorCodes.InvalidCredentials, ex.Code);
     }
@@ -101,8 +101,7 @@ public class AuthServiceTests
         _userRepo.Setup(r => r.GetByEmailAsync("unknown@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync((User?)null);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().LoginAsync("unknown@example.com", "password"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().LoginAsync("unknown@example.com", "password"));
 
         Assert.Equal(AuthErrorCodes.InvalidCredentials, ex.Code);
     }
@@ -114,8 +113,7 @@ public class AuthServiceTests
         _userRepo.Setup(r => r.GetByEmailAsync("test@example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().LoginAsync("test@example.com", "password"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().LoginAsync("test@example.com", "password"));
 
         Assert.Equal(AuthErrorCodes.NoPasswordSet, ex.Code);
     }
@@ -134,7 +132,7 @@ public class AuthServiceTests
             .Callback<RefreshToken, CancellationToken>((t, _) => captured = t)
             .Returns(Task.CompletedTask);
 
-        await CreateService().LoginAsync("test@example.com", "password", rememberMe: true);
+        await CreateService().LoginAsync("test@example.com", "password", true);
 
         Assert.NotNull(captured);
         Assert.True((captured!.ExpiresAt - DateTime.UtcNow).TotalDays > 25,
@@ -202,8 +200,7 @@ public class AuthServiceTests
         _googleValidator.Setup(v => v.ValidateAsync("bad", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new UnauthorizedException(AuthErrorCodes.GoogleAuthFailed, "Google Sign-In failed."));
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().GoogleLoginAsync("bad"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().GoogleLoginAsync("bad"));
 
         Assert.Equal(AuthErrorCodes.GoogleAuthFailed, ex.Code);
     }
@@ -214,8 +211,7 @@ public class AuthServiceTests
         _googleValidator.Setup(v => v.ValidateAsync("token", It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ServiceUnavailableException());
 
-        await Assert.ThrowsAsync<ServiceUnavailableException>(
-            () => CreateService().GoogleLoginAsync("token"));
+        await Assert.ThrowsAsync<ServiceUnavailableException>(() => CreateService().GoogleLoginAsync("token"));
     }
 
     // ── RefreshAsync ──────────────────────────────────────────────────────
@@ -257,8 +253,7 @@ public class AuthServiceTests
         _refreshTokenRepo.Setup(r => r.RevokeAllForUserAsync(userId, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().RefreshAsync("revoked"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().RefreshAsync("revoked"));
 
         Assert.Equal(AuthErrorCodes.InvalidToken, ex.Code);
         _refreshTokenRepo.Verify(r => r.RevokeAllForUserAsync(userId, It.IsAny<CancellationToken>()), Times.Once);
@@ -275,8 +270,7 @@ public class AuthServiceTests
         _refreshTokenRepo.Setup(r => r.GetByTokenAsync("expired", It.IsAny<CancellationToken>()))
             .ReturnsAsync(token);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().RefreshAsync("expired"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().RefreshAsync("expired"));
 
         Assert.Equal(AuthErrorCodes.TokenExpired, ex.Code);
     }
@@ -287,8 +281,7 @@ public class AuthServiceTests
         _refreshTokenRepo.Setup(r => r.GetByTokenAsync("unknown", It.IsAny<CancellationToken>()))
             .ReturnsAsync((RefreshToken?)null);
 
-        var ex = await Assert.ThrowsAsync<UnauthorizedException>(
-            () => CreateService().RefreshAsync("unknown"));
+        var ex = await Assert.ThrowsAsync<UnauthorizedException>(() => CreateService().RefreshAsync("unknown"));
 
         Assert.Equal(AuthErrorCodes.InvalidToken, ex.Code);
     }

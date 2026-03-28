@@ -1,9 +1,7 @@
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
 using Domain.Services;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using DomainModels.Models;
 
 namespace Application.BackgroundServices;
 
@@ -16,10 +14,7 @@ public sealed class AccountDeletionCleanupService(
     {
         using var timer = new PeriodicTimer(TimeSpan.FromHours(24));
 
-        while (await timer.WaitForNextTickAsync(stoppingToken))
-        {
-            await RunCleanupAsync(stoppingToken);
-        }
+        while (await timer.WaitForNextTickAsync(stoppingToken)) await RunCleanupAsync(stoppingToken);
     }
 
     private async Task RunCleanupAsync(CancellationToken ct)
@@ -28,7 +23,7 @@ public sealed class AccountDeletionCleanupService(
         var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
         var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        IReadOnlyList<DomainModels.Models.User> expiredUsers;
+        IReadOnlyList<User> expiredUsers;
         try
         {
             expiredUsers = await userRepo.GetExpiredForDeletionAsync(ct);
@@ -45,7 +40,6 @@ public sealed class AccountDeletionCleanupService(
         foreach (var user in expiredUsers)
         {
             if (user.AvatarUrl is not null)
-            {
                 try
                 {
                     await blobService.DeleteAsync($"avatars/{user.Id}", ct);
@@ -54,7 +48,6 @@ public sealed class AccountDeletionCleanupService(
                 {
                     logger.LogWarning(ex, "Failed to delete avatar blob for user {UserId}. Continuing.", user.Id);
                 }
-            }
 
             userRepo.Remove(user);
         }
