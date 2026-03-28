@@ -147,7 +147,7 @@ Any visitor (no login required) can retrieve the list of system style presets to
 
 - An `Instrument` entity already exists in the system, is immutable, and was seeded at startup; the notebook creation endpoint validates the provided `instrumentId` against this seeded data.
 - The `CoverColor` field is validated as a CSS hex colour string (e.g. `#8B4513`); the exact format (3-digit vs 6-digit hex) is accepted as-is from the client.
-- When `styles` is `null` or omitted in `POST /notebooks`, "Colorful" is identified programmatically as the system preset with `IsDefault = true`; if no default is seeded, this is a data error.
+- When `styles` is `null` or omitted in `POST /notebooks`, "Colorful" is identified programmatically as the system preset with `IsDefault = true`. If `GetDefaultAsync()` returns null (no preset has `IsDefault = true`), this is a server-side configuration error — the service throws an unhandled exception and the client receives **500 Problem Details**. No specific error code is defined for this case; it should never occur in a correctly seeded environment.
 - The `PUT /notebooks/{id}` endpoint receives only `title` and `coverColor` fields. The presence of any other field (including `instrumentId` or `pageSize`) causes a 400 error regardless of whether the submitted value matches the stored value.
 - `NotebookSummary` includes an `updatedAt` field (present in the TypeScript interface) even though the feature description lists only `createdAt`; this matches the established data model.
 - User-saved presets are out of scope for creation/saving in this feature (managed elsewhere); this feature only supports *applying* existing user-saved presets to a notebook.

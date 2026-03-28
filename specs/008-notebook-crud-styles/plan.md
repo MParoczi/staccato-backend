@@ -183,8 +183,11 @@ Swap `isDefault` values: `BuildPreset("Classic", 1, false, ...)` and `BuildPrese
 public interface ISystemStylePresetRepository : IRepository<SystemStylePreset>
 {
     Task<IReadOnlyList<SystemStylePreset>> GetAllAsync(CancellationToken ct = default);
+    Task<SystemStylePreset?> GetDefaultAsync(CancellationToken ct = default);
 }
 ```
+
+`GetAllAsync` is used by `GET /presets`. `GetDefaultAsync` is used by `CreateAsync` to resolve the Colorful preset without loading all 5 presets.
 
 **Repository/Repositories/SystemStylePresetRepository.cs**
 Extends `RepositoryBase<SystemStylePresetEntity, SystemStylePreset>`.
@@ -197,14 +200,24 @@ Change `GetByUserIdAsync` return type to `Task<IReadOnlyList<NotebookSummary>>`.
 Update `GetByUserIdAsync` to:
 ```csharp
 .Include(n => n.Instrument)
-.Include(n => n.Lessons)
 .Where(n => n.UserId == userId)
 .OrderBy(n => n.CreatedAt)
-.Select(n => new NotebookSummaryEntity { ... })   // or project directly
+.Select(n => new NotebookSummary
+{
+    Id             = n.Id,
+    UserId         = n.UserId,
+    Title          = n.Title,
+    InstrumentName = n.Instrument.DisplayName,
+    PageSize       = n.PageSize,
+    CoverColor     = n.CoverColor,
+    LessonCount    = n.Lessons.Count,   // EF translates to COUNT(*) subquery — no lessons loaded into memory
+    CreatedAt      = n.CreatedAt,
+    UpdatedAt      = n.UpdatedAt
+})
+.ToListAsync(ct);
 ```
-Use AutoMapper `.ProjectTo<NotebookSummary>()` or manual `Select` projection.
 
-> **Note**: `NotebookSummary` is a domain model, not an entity. The repository maps the EF projection to the domain model. AutoMapper `EntityToDomainProfile` must be updated to include `NotebookEntity → NotebookSummary` mapping (or use a dedicated projection).
+> **Note**: Use a direct `.Select()` projection rather than `.Include(n => n.Lessons)` + AutoMapper. Loading all `LessonEntity` rows into memory just to count them is wasteful; the projected `n.Lessons.Count` compiles to a SQL `COUNT(*)` subquery. `EntityToDomainProfile` does NOT need a `NotebookEntity → NotebookSummary` mapping for this path.
 
 ---
 
@@ -227,7 +240,7 @@ Use AutoMapper `.ProjectTo<NotebookSummary>()` or manual `Select` projection.
 
 **`CreateAsync`**
 1. Verify `instrumentId` exists via `IInstrumentRepository.GetByIdAsync` → throw `new InstrumentNotFoundException(instrumentId)` if null (maps to HTTP 422; `NotFoundException` must NOT be used here as it maps to 404).
-2. Resolve styles: if `styles` is null/empty → fetch `ISystemStylePresetRepository` preset where `IsDefault = true`, deserialize its `StylesJson` array into 12 `NotebookModuleStyle` records; otherwise use the provided list.
+2. Resolve styles: if `styles` is null/empty → call `ISystemStylePresetRepository.GetDefaultAsync(ct)` to fetch the Colorful preset. If `null` is returned (no preset has `IsDefault = true`), throw `new InvalidOperationException("No default system style preset is configured.")` — this propagates as HTTP 500 Problem Details. Otherwise, deserialize the preset's `StylesJson` array into 12 `NotebookModuleStyle` records; use the provided list if styles were explicitly supplied.
 3. Create `Notebook` with `Id = Guid.NewGuid()`, `CreatedAt = DateTime.UtcNow`, `UpdatedAt = DateTime.UtcNow`.
 4. Set `Id = Guid.NewGuid()` on each `NotebookModuleStyle`.
 5. `await _notebookRepo.AddAsync(notebook, ct)`.
@@ -267,9 +280,9 @@ Use AutoMapper `.ProjectTo<NotebookSummary>()` or manual `Select` projection.
 2. Try `_systemPresetRepo.GetByIdAsync(presetId, ct)`. If null, try `_userPresetRepo.GetByIdAsync(presetId, ct)`.
 3. If user-saved preset found but `preset.UserId != userId` → throw `ForbiddenException`.
 4. If both null → throw `NotFoundException`.
-5. Deserialize preset's `StylesJson` array. Extract per-ModuleType style properties.
+5. Deserialize preset's `StylesJson` array. Extract per-ModuleType style properties into a dictionary keyed by `ModuleType`.
 6. Fetch existing 12 notebook style records.
-7. For each, update `StylesJson` from preset entry. Call `_styleRepo.Update(record)`.
+7. For each record, look up the matching entry in the dictionary by `ModuleType`. If no entry is found (preset `StylesJson` has fewer than 12 entries — malformed seed data), throw `new InvalidOperationException($"Preset is missing style definition for module type {record.ModuleType}.")` → propagates as HTTP 500 Problem Details. Otherwise update `StylesJson`. Call `_styleRepo.Update(record)`.
 8. Update `notebook.UpdatedAt = DateTime.UtcNow`. Call `_notebookRepo.Update(notebook)`.
 9. `await _unitOfWork.CommitAsync(ct)`.
 10. Return updated records.
@@ -338,6 +351,8 @@ private static NotebookModuleStyle ToStyleDomain(ModuleStyleRequest r) =>
 [ApiController][Route("presets")]   (no [Authorize])
 GET /presets → 200 List<SystemStylePresetResponse>
 ```
+
+> **JSON naming convention**: ASP.NET Core's global `JsonSerializerOptions` uses `JsonNamingPolicy.CamelCase` (configured in `Application/Program.cs` via `AddControllers().AddJsonOptions(...)`). All request and response JSON property names are camelCase (`backgroundColor`, `borderColor`, etc.). This is the canonical naming — `ModuleStyleRequest` and `ModuleStyleResponse` property names in C# are PascalCase but serialised/deserialised as camelCase automatically. The `StylesJson` column on `NotebookModuleStyleEntity` is also written with `JsonNamingPolicy.CamelCase` (confirmed by seeder pattern).
 
 ---
 

@@ -18,11 +18,11 @@
 
 **Purpose**: Add `CoverColor` to the database schema and fix seed data. These changes must exist before any other code can compile and run against the database.
 
-- [ ] T001 Add `public string CoverColor { get; set; } = string.Empty;` to `EntityModels/Entities/NotebookEntity.cs`
-- [ ] T002 Add `: IEntity` to `EntityModels/Entities/SystemStylePresetEntity.cs` class declaration
-- [ ] T003 Add `.Property(n => n.CoverColor).IsRequired().HasMaxLength(7);` to `Persistence/Configurations/NotebookConfiguration.cs`
-- [ ] T004 Generate migration `AddNotebookCoverColor` via `dotnet ef migrations add AddNotebookCoverColor --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`; verify the generated migration adds `CoverColor nvarchar(7) NOT NULL DEFAULT '#000000'`
-- [ ] T005 Fix `IsDefault` values in `Persistence/Seed/SystemStylePresetSeeder.cs`: change Classic to `false`, Colorful to `true`
+- [x] T001 Add `public string CoverColor { get; set; } = string.Empty;` to `EntityModels/Entities/NotebookEntity.cs`
+- [x] T002 Add `: IEntity` to `EntityModels/Entities/SystemStylePresetEntity.cs` class declaration
+- [x] T003 Add `.Property(n => n.CoverColor).IsRequired().HasMaxLength(7);` to `Persistence/Configurations/NotebookConfiguration.cs`
+- [x] T004 Generate migration `AddNotebookCoverColor` via `dotnet ef migrations add AddNotebookCoverColor --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`; verify the generated migration adds `CoverColor nvarchar(7) NOT NULL DEFAULT '#000000'`
+- [x] T005 Fix `IsDefault` values in `Persistence/Seed/SystemStylePresetSeeder.cs`: change Classic to `false`, Colorful to `true`
 
 **Checkpoint**: Solution compiles. Migration applies cleanly. `GET /presets` would return Colorful with `isDefault: true` once wired up.
 
@@ -36,11 +36,11 @@
 
 - [ ] T006 Add `public string CoverColor { get; set; } = string.Empty;` to `DomainModels/Models/Notebook.cs`
 - [ ] T007 [P] Create `DomainModels/Models/NotebookSummary.cs` with properties: `Id`, `UserId`, `Title`, `InstrumentName : string`, `PageSize : PageSize`, `CoverColor : string`, `LessonCount : int`, `CreatedAt : DateTime`, `UpdatedAt : DateTime`
-- [ ] T008 [P] Create `Domain/Interfaces/Repositories/ISystemStylePresetRepository.cs` extending `IRepository<SystemStylePreset>` with `Task<IReadOnlyList<SystemStylePreset>> GetAllAsync(CancellationToken ct = default)`
+- [ ] T008 [P] Create `Domain/Interfaces/Repositories/ISystemStylePresetRepository.cs` extending `IRepository<SystemStylePreset>` with two methods: `GetAllAsync` (for GET /presets) and `GetDefaultAsync` (returns the preset where `IsDefault = true`, used by `CreateAsync` to avoid loading all 5 presets when only the default is needed)
 - [ ] T009 Update `Domain/Interfaces/Repositories/INotebookRepository.cs`: change `GetByUserIdAsync` return type from `IReadOnlyList<Notebook>` to `IReadOnlyList<NotebookSummary>`
 - [ ] T010 [P] Add `HasActiveExportForNotebookAsync(Guid notebookId, CancellationToken ct = default) : Task<bool>` to `Domain/Interfaces/Repositories/IPdfExportRepository.cs`; implement the method in `Repository/Repositories/PdfExportRepository.cs` querying for any export with the given `NotebookId` and a status of `InProgress`
 - [ ] T011 [P] Verify and create exception classes in `Domain/Exceptions/`: (1) `ConflictException.cs` mapping to HTTP 409 — create if absent; (2) `InstrumentNotFoundException.cs` mapping to HTTP **422** for `INSTRUMENT_NOT_FOUND` — this is a **required new class**: the existing `NotFoundException` maps to 404, not 422, so it cannot be reused for this error code
-- [ ] T012 Add `NotebookEntity → NotebookSummary` mapping to `Repository/Mapping/EntityToDomainProfile.cs`, projecting `Instrument.DisplayName` → `InstrumentName` and `Lessons.Count` → `LessonCount`
+- [ ] T012 ~~Add `NotebookEntity → NotebookSummary` to `EntityToDomainProfile`~~ — No AutoMapper mapping needed for this path. The `GetByUserIdAsync` query uses a direct `.Select()` projection that computes `InstrumentName = n.Instrument.DisplayName` and `LessonCount = n.Lessons.Count` inside the SQL query (EF translates to `COUNT(*)` subquery). Verify `EntityToDomainProfile` does NOT attempt a `NotebookEntity → NotebookSummary` mapping that would conflict.
 - [ ] T013 Update `Repository/Repositories/NotebookRepository.cs` — rewrite `GetByUserIdAsync` to `.Include(n => n.Instrument).Include(n => n.Lessons).Where(n => n.UserId == userId).OrderBy(n => n.CreatedAt)` then project/map to `IReadOnlyList<NotebookSummary>`
 - [ ] T014 [P] Create `Repository/Repositories/SystemStylePresetRepository.cs` extending `RepositoryBase<SystemStylePresetEntity, SystemStylePreset>`; implement `GetAllAsync` with `.OrderBy(p => p.DisplayOrder).ToListAsync(ct)`
 - [ ] T015 [P] Create `ApiModels/Notebooks/ModuleStyleRequest.cs` (record: `ModuleType`, `BackgroundColor`, `BorderColor`, `BorderStyle`, `BorderWidth`, `BorderRadius`, `HeaderBgColor`, `HeaderTextColor`, `BodyTextColor`, `FontFamily`) and `ApiModels/Notebooks/ModuleStyleRequestValidator.cs` (all hex colours via `^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$`, `BorderStyle`/`FontFamily` enum parse, `BorderWidth` ∈ [0, 20], `BorderRadius` ∈ [0, 50])

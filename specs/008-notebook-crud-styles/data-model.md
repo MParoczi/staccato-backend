@@ -284,8 +284,11 @@ Task<(Notebook Notebook, IReadOnlyList<NotebookModuleStyle> Styles)?> GetWithSty
 public interface ISystemStylePresetRepository : IRepository<SystemStylePreset>
 {
     Task<IReadOnlyList<SystemStylePreset>> GetAllAsync(CancellationToken ct = default);
+    Task<SystemStylePreset?> GetDefaultAsync(CancellationToken ct = default);
 }
 ```
+
+> `GetDefaultAsync` returns the preset where `IsDefault = true`. Used by `NotebookService.CreateAsync` when no explicit styles are provided — avoids loading all 5 presets when only the default is needed.
 
 ---
 
