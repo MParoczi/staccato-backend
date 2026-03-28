@@ -17,8 +17,8 @@
 
 **Purpose**: No new project scaffolding needed — this is an existing 9-project solution. Phase 1 verifies the foundation and creates the only new directory required.
 
-- [ ] T001 Confirm `Azure.Storage.Blobs` is present in `Application/Application.csproj` (verify existing reference before writing AzureBlobService)
-- [ ] T002 Create directory `Api/Mapping/` (new — no profile files exist there yet)
+- [x] T001 Confirm `Azure.Storage.Blobs` is present in `Application/Application.csproj` (verify existing reference before writing AzureBlobService)
+- [x] T002 Create directory `Api/Mapping/` (new — no profile files exist there yet)
 
 ---
 
