@@ -158,6 +158,41 @@ public class NotebooksControllerTests
         await db.SaveChangesAsync();
     }
 
+    /// <summary>Seeds Classic as a non-default system preset and returns its ID.</summary>
+    private static async Task<Guid> SeedClassicPresetAsync(WebApplicationFactory<Program> factory)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var presetId   = Guid.NewGuid();
+        var stylesJson = System.Text.Json.JsonSerializer.Serialize(
+            AllModuleTypes.Select(mt => new
+            {
+                moduleType      = mt,
+                backgroundColor = "#fdfaf4",
+                borderColor     = "#c9a84c",
+                borderStyle     = "Solid",
+                borderWidth     = 1,
+                borderRadius    = 2,
+                headerBgColor   = "#8b6914",
+                headerTextColor = "#fffde7",
+                bodyTextColor   = "#2c1810",
+                fontFamily      = "Serif"
+            }).ToList());
+
+        db.SystemStylePresets.Add(new SystemStylePresetEntity
+        {
+            Id           = presetId,
+            Name         = "Classic",
+            DisplayOrder = 1,
+            IsDefault    = false,
+            StylesJson   = stylesJson
+        });
+
+        await db.SaveChangesAsync();
+        return presetId;
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 
     /// <summary>Registers a unique user and returns an authenticated client.</summary>
@@ -718,6 +753,138 @@ public class NotebooksControllerTests
         var resp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}/styles", badStyles);
 
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+
+    // ── POST /notebooks/{id}/styles/apply-preset/{presetId} ───────────────
+
+    [Fact]
+    public async Task ApplyPreset_Returns200_WithSystemPreset()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var classicId = await SeedClassicPresetAsync(factory);
+        var client    = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Preset Test",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var resp = await client.PostAsync(
+            $"/notebooks/{notebookId}/styles/apply-preset/{classicId}", null);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(12, json.RootElement.GetArrayLength());
+        // Classic uses Serif — verify it was applied
+        Assert.Equal("Serif", json.RootElement[0].GetProperty("fontFamily").GetString());
+    }
+
+    [Fact]
+    public async Task ApplyPreset_Returns200_WithUserSavedPreset()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        // Create a notebook
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "User Preset Test",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        // Create a user-saved preset (StyleEntryDto format: {moduleType, stylesJson})
+        var userStylesJson = System.Text.Json.JsonSerializer.Serialize(
+            AllModuleTypes.Select(mt => new
+            {
+                moduleType = mt,
+                stylesJson = $@"{{""backgroundColor"":""#aabbcc"",""borderColor"":""#000"",""borderStyle"":""None"",""borderWidth"":0,""borderRadius"":0,""headerBgColor"":""#eee"",""headerTextColor"":""#333"",""bodyTextColor"":""#000"",""fontFamily"":""Monospace""}}"
+            }).ToList());
+
+        var presetResp = await client.PostAsJsonAsync("/users/me/presets", new
+        {
+            name   = "My Custom Preset",
+            styles = System.Text.Json.JsonSerializer.Deserialize<object>(userStylesJson)
+        });
+        presetResp.EnsureSuccessStatusCode();
+        var presetId = JsonDocument.Parse(await presetResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var resp = await client.PostAsync(
+            $"/notebooks/{notebookId}/styles/apply-preset/{presetId}", null);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(12, json.RootElement.GetArrayLength());
+        Assert.Equal("Monospace", json.RootElement[0].GetProperty("fontFamily").GetString());
+    }
+
+    [Fact]
+    public async Task ApplyPreset_Returns403_WhenNotebookNotOwnedByUser()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var classicId = await SeedClassicPresetAsync(factory);
+
+        // User A creates notebook
+        var clientA = await RegisterAsync(factory);
+        var createResp = await clientA.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "User A Notebook",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        // User B tries to apply a preset to User A's notebook
+        var clientB = await RegisterAsync(factory);
+        var resp = await clientB.PostAsync(
+            $"/notebooks/{notebookId}/styles/apply-preset/{classicId}", null);
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task ApplyPreset_Returns404_WhenPresetNotFound()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Test",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var resp = await client.PostAsync(
+            $"/notebooks/{notebookId}/styles/apply-preset/{Guid.NewGuid()}", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
 }
 

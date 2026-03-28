@@ -118,10 +118,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T038 [US4] Implement `ApplyPresetAsync` in `Domain/Services/NotebookService.cs`: (1) ownership check on notebook, (2) try `ISystemStylePresetRepository.GetByIdAsync` → if null try `IUserSavedPresetRepository.GetByIdAsync`, (3) user-saved preset ownership check → `ForbiddenException`, (4) both null → `NotFoundException`, (5) deserialize preset `StylesJson` array into per-`ModuleType` style map, (6) fetch existing 12 notebook style records, (7) for each record overwrite `StylesJson` from map entry, (8) refresh `notebook.UpdatedAt`, (9) commit, (10) return updated records
-- [ ] T039 [US4] Add `POST /notebooks/{id}/styles/apply-preset/{presetId}` (→ 200) action to `Api/Controllers/NotebooksController.cs`
-- [ ] T040 [P] [US4] Extend `Tests/Unit/Services/NotebookServiceTests.cs` with US4 tests: `ApplyPresetAsync_SystemPreset_UpdatesAllTwelveStyles`, `ApplyPresetAsync_UserPreset_OwnershipMismatch_ThrowsForbidden`, `ApplyPresetAsync_PresetNotFound_ThrowsNotFoundException`
-- [ ] T041 [P] [US4] Extend `Tests/Integration/Controllers/NotebooksControllerTests.cs` with US4 tests: `ApplyPreset_Returns200_WithSystemPreset`, `ApplyPreset_Returns200_WithUserSavedPreset`, `ApplyPreset_Returns403_WhenNotebookNotOwnedByUser`, `ApplyPreset_Returns404_WhenPresetNotFound`
+- [x] T038 [US4] Implement `ApplyPresetAsync` in `Domain/Services/NotebookService.cs`: (1) ownership check on notebook, (2) try `ISystemStylePresetRepository.GetByIdAsync` → if null try `IUserSavedPresetRepository.GetByIdAsync`, (3) user-saved preset ownership check → `ForbiddenException`, (4) both null → `NotFoundException`, (5) deserialize preset `StylesJson` array into per-`ModuleType` style map, (6) fetch existing 12 notebook style records, (7) for each record overwrite `StylesJson` from map entry, (8) refresh `notebook.UpdatedAt`, (9) commit, (10) return updated records
+- [x] T039 [US4] Add `POST /notebooks/{id}/styles/apply-preset/{presetId}` (→ 200) action to `Api/Controllers/NotebooksController.cs`
+- [x] T040 [P] [US4] Extend `Tests/Unit/Services/NotebookServiceTests.cs` with US4 tests: `ApplyPresetAsync_SystemPreset_UpdatesAllTwelveStyles`, `ApplyPresetAsync_UserPreset_OwnershipMismatch_ThrowsForbidden`, `ApplyPresetAsync_PresetNotFound_ThrowsNotFoundException`
+- [x] T041 [P] [US4] Extend `Tests/Integration/Controllers/NotebooksControllerTests.cs` with US4 tests: `ApplyPreset_Returns200_WithSystemPreset`, `ApplyPreset_Returns200_WithUserSavedPreset`, `ApplyPreset_Returns403_WhenNotebookNotOwnedByUser`, `ApplyPreset_Returns404_WhenPresetNotFound`
 
 **Checkpoint**: User Stories 1–4 all work independently. All 4 US4 integration tests pass.
 
@@ -135,9 +135,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T042 [US5] Add `SystemStylePreset → SystemStylePresetResponse` mapping to `Api/Mapping/DomainToResponseProfile.cs`; deserialize `StylesJson` array from `SystemStylePreset` into `List<ModuleStyleResponse>`, setting `Id = Guid.Empty` and `NotebookId = Guid.Empty` on each entry
-- [ ] T043 [US5] Create `Api/Controllers/PresetsController.cs` with `[ApiController][Route("presets")]` (no `[Authorize]`); implement `GET /presets` → call `ISystemStylePresetRepository.GetAllAsync`, map to `List<SystemStylePresetResponse>`, return 200
-- [ ] T044 [P] [US5] Write `Tests/Integration/Controllers/PresetsControllerTests.cs`; implement tests: `GetPresets_Returns200WithFivePresets_WhenUnauthenticated`, `GetPresets_Returns200OrderedByDisplayOrder`, `GetPresets_HasColorfulAsDefault`
+- [x] T042 [US5] Add `SystemStylePreset → SystemStylePresetResponse` mapping to `Api/Mapping/DomainToResponseProfile.cs`; deserialize `StylesJson` array from `SystemStylePreset` into `List<ModuleStyleResponse>`, setting `Id = Guid.Empty` and `NotebookId = Guid.Empty` on each entry
+- [x] T043 [US5] Create `Api/Controllers/PresetsController.cs` with `[ApiController][Route("presets")]` (no `[Authorize]`); implement `GET /presets` → call `ISystemStylePresetRepository.GetAllAsync`, map to `List<SystemStylePresetResponse>`, return 200
+- [x] T044 [P] [US5] Write `Tests/Integration/Controllers/PresetsControllerTests.cs`; implement tests: `GetPresets_Returns200WithFivePresets_WhenUnauthenticated`, `GetPresets_Returns200OrderedByDisplayOrder`, `GetPresets_HasColorfulAsDefault`
 
 **Checkpoint**: All 5 user stories work independently. All 3 US5 integration tests pass. End-to-end flow from quickstart.md is executable.
 
@@ -145,9 +145,9 @@
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-- [ ] T045 Update `specs/008-notebook-crud-styles/contracts/api-contracts.md` — add `Error 409: ACTIVE_EXPORT_EXISTS` to the `DELETE /notebooks/{id}` section and add `ACTIVE_EXPORT_EXISTS | 409 | Active PDF export exists for the notebook` row to the Error Code Reference table
-- [ ] T046 Run `dotnet build Staccato.sln` and resolve any remaining compiler errors or warnings
-- [ ] T047 Run `dotnet test Staccato.sln` and confirm all tests pass (unit + integration)
+- [x] T045 Update `specs/008-notebook-crud-styles/contracts/api-contracts.md` — add `Error 409: ACTIVE_EXPORT_EXISTS` to the `DELETE /notebooks/{id}` section and add `ACTIVE_EXPORT_EXISTS | 409 | Active PDF export exists for the notebook` row to the Error Code Reference table
+- [x] T046 Run `dotnet build Staccato.sln` and resolve any remaining compiler errors or warnings
+- [x] T047 Run `dotnet test Staccato.sln` and confirm all tests pass (unit + integration)
 - [ ] T048 Apply migration (`dotnet ef database update --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`) and run the quickstart.md manual test sequence end-to-end
 
 ---

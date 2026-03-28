@@ -519,4 +519,107 @@ public class NotebookServiceTests
         await Assert.ThrowsAsync<NotFoundException>(() =>
             svc.BulkUpdateStylesAsync(notebookId, Guid.NewGuid(), incoming));
     }
+
+    // ── ApplyPresetAsync ──────────────────────────────────────────────────
+
+    [Fact]
+    public async Task ApplyPresetAsync_SystemPreset_UpdatesAllTwelveStyles()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var presetId   = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+        var existing = BuildStyles(notebookId);
+
+        var preset = new SystemStylePreset
+        {
+            Id         = presetId,
+            Name       = "Classic",
+            IsDefault  = false,
+            StylesJson = BuildPresetStylesJson()
+        };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _systemPresetRepo
+            .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(preset);
+
+        _styleRepo
+            .SetupSequence(r => r.GetByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing)
+            .ReturnsAsync(existing);
+
+        var svc    = CreateService();
+        var result = await svc.ApplyPresetAsync(notebookId, userId, presetId);
+
+        Assert.Equal(12, result.Count);
+        _styleRepo.Verify(r => r.Update(It.IsAny<NotebookModuleStyle>()), Times.Exactly(12));
+        _notebookRepo.Verify(r => r.Update(It.IsAny<Notebook>()), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ApplyPresetAsync_UserPreset_OwnershipMismatch_ThrowsForbidden()
+    {
+        var userId      = Guid.NewGuid();
+        var notebookId  = Guid.NewGuid();
+        var presetId    = Guid.NewGuid();
+        var otherUserId = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _systemPresetRepo
+            .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SystemStylePreset?)null);
+
+        _userPresetRepo
+            .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserSavedPreset
+            {
+                Id         = presetId,
+                UserId     = otherUserId,  // different user
+                Name       = "Custom",
+                StylesJson = "[]"
+            });
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            svc.ApplyPresetAsync(notebookId, userId, presetId));
+    }
+
+    [Fact]
+    public async Task ApplyPresetAsync_PresetNotFound_ThrowsNotFoundException()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var presetId   = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _systemPresetRepo
+            .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SystemStylePreset?)null);
+
+        _userPresetRepo
+            .Setup(r => r.GetByIdAsync(presetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserSavedPreset?)null);
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            svc.ApplyPresetAsync(notebookId, userId, presetId));
+    }
 }

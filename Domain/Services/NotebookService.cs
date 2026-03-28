@@ -157,11 +157,11 @@ public class NotebookService(
 
         // Look up preset: system first, then user-saved
         var systemPreset = await systemPresetRepo.GetByIdAsync(presetId, ct);
-        string stylesJson;
+        Dictionary<string, string> styleMap;
 
         if (systemPreset is not null)
         {
-            stylesJson = systemPreset.StylesJson;
+            styleMap = DeserializePresetStyleMap(systemPreset.StylesJson);
         }
         else
         {
@@ -171,10 +171,8 @@ public class NotebookService(
             if (userPreset.UserId != userId)
                 throw new ForbiddenException();
 
-            stylesJson = userPreset.StylesJson;
+            styleMap = DeserializeUserPresetStyleMap(userPreset.StylesJson);
         }
-
-        var styleMap = DeserializePresetStyleMap(stylesJson);
         var existing = await styleRepo.GetByNotebookIdAsync(notebookId, ct);
 
         foreach (var record in existing)
@@ -265,6 +263,21 @@ public class NotebookService(
             StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    ///     Deserializes a user-saved preset StylesJson array into a dictionary keyed by moduleType.
+    ///     User presets store [{moduleType, stylesJson}] where stylesJson is the flat style object.
+    /// </summary>
+    private static Dictionary<string, string> DeserializeUserPresetStyleMap(string stylesJson)
+    {
+        var entries = System.Text.Json.JsonSerializer.Deserialize<
+            List<UserPresetStyleEntry>>(stylesJson, _jsonOptions)!;
+
+        return entries.ToDictionary(
+            e => e.ModuleType,
+            e => e.StylesJson,
+            StringComparer.OrdinalIgnoreCase);
+    }
+
     private record PresetStyleEntry(
         string ModuleType,
         string BackgroundColor,
@@ -276,4 +289,6 @@ public class NotebookService(
         string HeaderTextColor,
         string BodyTextColor,
         string FontFamily);
+
+    private record UserPresetStyleEntry(string ModuleType, string StylesJson);
 }

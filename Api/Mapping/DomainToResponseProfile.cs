@@ -29,6 +29,18 @@ public class DomainToResponseProfile : Profile
         string BodyTextColor,
         string FontFamily);
 
+    private record PresetStyleEntry(
+        string ModuleType,
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
+
     public DomainToResponseProfile()
     {
         CreateMap<User, UserResponse>()
@@ -127,6 +139,26 @@ public class DomainToResponseProfile : Profile
                 s.LessonCount,
                 s.CreatedAt.ToString("o"),
                 s.UpdatedAt.ToString("o")));
+
+        CreateMap<SystemStylePreset, SystemStylePresetResponse>()
+            .ConvertUsing((src, _, _) =>
+            {
+                var entries = JsonSerializer.Deserialize<List<PresetStyleEntry>>(src.StylesJson, JsonOptions)!;
+                var styles = entries.Select(e => new ModuleStyleResponse(
+                    Guid.Empty,
+                    Guid.Empty,
+                    e.ModuleType,
+                    e.BackgroundColor,
+                    e.BorderColor,
+                    e.BorderStyle,
+                    e.BorderWidth,
+                    e.BorderRadius,
+                    e.HeaderBgColor,
+                    e.HeaderTextColor,
+                    e.BodyTextColor,
+                    e.FontFamily)).ToList();
+                return new SystemStylePresetResponse(src.Id, src.Name, src.DisplayOrder, src.IsDefault, styles);
+            });
 
         // NotebookDetailResponse requires Styles — controller builds final response using:
         //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }

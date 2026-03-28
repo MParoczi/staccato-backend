@@ -132,6 +132,7 @@ Hard-deletes the notebook and all its lessons, pages, and modules (EF cascade).
 
 **Error 403**: Notebook belongs to another user.
 **Error 404**: Notebook not found.
+**Error 409**: `ACTIVE_EXPORT_EXISTS` — a PDF export for this notebook is currently in progress.
 
 ---
 

@@ -28,7 +28,19 @@ public class SystemStylePresetSeederTests
     }
 
     [Fact]
-    public async Task SeedAsync_EmptyTable_ClassicIsDefault()
+    public async Task SeedAsync_EmptyTable_ColorfulIsDefault()
+    {
+        await using var ctx = CreateContext();
+        var seeder = new SystemStylePresetSeeder(ctx);
+
+        await seeder.SeedAsync();
+
+        var colorful = await ctx.SystemStylePresets.SingleAsync(p => p.Name == "Colorful");
+        Assert.True(colorful.IsDefault);
+    }
+
+    [Fact]
+    public async Task SeedAsync_EmptyTable_ClassicIsNotDefault()
     {
         await using var ctx = CreateContext();
         var seeder = new SystemStylePresetSeeder(ctx);
@@ -36,11 +48,11 @@ public class SystemStylePresetSeederTests
         await seeder.SeedAsync();
 
         var classic = await ctx.SystemStylePresets.SingleAsync(p => p.Name == "Classic");
-        Assert.True(classic.IsDefault);
+        Assert.False(classic.IsDefault);
     }
 
     [Fact]
-    public async Task SeedAsync_EmptyTable_OnlyClassicIsDefault()
+    public async Task SeedAsync_EmptyTable_ExactlyOnePresetIsDefault()
     {
         await using var ctx = CreateContext();
         var seeder = new SystemStylePresetSeeder(ctx);
