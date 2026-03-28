@@ -384,4 +384,139 @@ public class NotebookServiceTests
         _notebookRepo.Verify(r => r.Remove(It.IsAny<Notebook>()), Times.Never);
         _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    // ── GetStylesAsync ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetStylesAsync_ReturnsAllTwelveStyles()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var notebook   = new Notebook { Id = notebookId, UserId = userId };
+        var styles     = BuildStyles(notebookId);
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)styles));
+
+        var svc    = CreateService();
+        var result = await svc.GetStylesAsync(notebookId, userId);
+
+        Assert.Equal(12, result.Count);
+    }
+
+    [Fact]
+    public async Task GetStylesAsync_NotebookNotFound_ThrowsNotFoundException()
+    {
+        var notebookId = Guid.NewGuid();
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(default((Notebook, IReadOnlyList<NotebookModuleStyle>)?));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            svc.GetStylesAsync(notebookId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetStylesAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
+    {
+        var notebookId  = Guid.NewGuid();
+        var ownerId     = Guid.NewGuid();
+        var requesterId = Guid.NewGuid();
+        var notebook    = new Notebook { Id = notebookId, UserId = ownerId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            svc.GetStylesAsync(notebookId, requesterId));
+    }
+
+    // ── BulkUpdateStylesAsync ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task BulkUpdateStylesAsync_ReplacesAllTwelveStyles()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+        var notebook   = new Notebook { Id = notebookId, UserId = userId };
+        var existing   = BuildStyles(notebookId);
+        var incoming   = BuildStyles(notebookId);  // fresh set (same shape, different object)
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _styleRepo
+            .SetupSequence(r => r.GetByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing)
+            .ReturnsAsync(existing);
+
+        var svc = CreateService();
+        var result = await svc.BulkUpdateStylesAsync(notebookId, userId, incoming);
+
+        Assert.Equal(12, result.Count);
+        _styleRepo.Verify(r => r.Update(It.IsAny<NotebookModuleStyle>()), Times.Exactly(12));
+        _notebookRepo.Verify(r => r.Update(It.IsAny<Notebook>()), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BulkUpdateStylesAsync_InvalidStyleCount_ThrowsBadRequestException()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+
+        // Only 6 styles — invalid
+        var insufficient = BuildStyles(notebookId).Take(6).ToList();
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            svc.BulkUpdateStylesAsync(notebookId, userId, insufficient));
+
+        _notebookRepo.Verify(r => r.GetWithStylesAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task BulkUpdateStylesAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
+    {
+        var notebookId  = Guid.NewGuid();
+        var ownerId     = Guid.NewGuid();
+        var requesterId = Guid.NewGuid();
+        var notebook    = new Notebook { Id = notebookId, UserId = ownerId };
+        var incoming    = BuildStyles(notebookId);
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            svc.BulkUpdateStylesAsync(notebookId, requesterId, incoming));
+    }
+
+    [Fact]
+    public async Task BulkUpdateStylesAsync_NotebookNotFound_ThrowsNotFoundException()
+    {
+        var notebookId = Guid.NewGuid();
+        var incoming   = BuildStyles(notebookId);
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(default((Notebook, IReadOnlyList<NotebookModuleStyle>)?));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            svc.BulkUpdateStylesAsync(notebookId, Guid.NewGuid(), incoming));
+    }
 }

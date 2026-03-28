@@ -15,6 +15,7 @@ public class NotebookModuleStyleRepository(AppDbContext context, IMapper mapper)
         Guid notebookId, CancellationToken ct = default)
     {
         var entities = await _context.NotebookModuleStyles
+            .AsNoTracking()
             .Where(s => s.NotebookId == notebookId)
             .OrderBy(s => (int)s.ModuleType)
             .ToListAsync(ct);

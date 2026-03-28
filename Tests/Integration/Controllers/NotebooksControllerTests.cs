@@ -619,6 +619,106 @@ public class NotebooksControllerTests
         var deleteResp = await client.DeleteAsync($"/notebooks/{notebookId}");
         Assert.Equal(HttpStatusCode.Conflict, deleteResp.StatusCode);
     }
+
+    // ── GET /notebooks/{id}/styles ────────────────────────────────────────
+
+    [Fact]
+    public async Task GetStyles_Returns200WithTwelveItems()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Styled",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var resp = await client.GetAsync($"/notebooks/{notebookId}/styles");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(12, json.RootElement.GetArrayLength());
+    }
+
+    // ── PUT /notebooks/{id}/styles ────────────────────────────────────────
+
+    [Fact]
+    public async Task BulkUpdateStyles_Returns200WithUpdatedStyles()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Style Test",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ffffff"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        // Build replacement styles with distinct color
+        var newStyles = AllModuleTypes.Select(mt => new
+        {
+            moduleType      = mt,
+            backgroundColor = "#123456",
+            borderColor     = "#654321",
+            borderStyle     = "Solid",
+            borderWidth     = 2,
+            borderRadius    = 8,
+            headerBgColor   = "#aabbcc",
+            headerTextColor = "#112233",
+            bodyTextColor   = "#334455",
+            fontFamily      = "Default"
+        }).ToList();
+
+        var putResp = await client.PutAsJsonAsync($"/notebooks/{notebookId}/styles", newStyles);
+
+        Assert.Equal(HttpStatusCode.OK, putResp.StatusCode);
+        var json = JsonDocument.Parse(await putResp.Content.ReadAsStringAsync());
+        Assert.Equal(12, json.RootElement.GetArrayLength());
+        // Verify one of the updated colours persisted
+        var first = json.RootElement[0];
+        Assert.Equal("#123456", first.GetProperty("backgroundColor").GetString());
+    }
+
+    [Fact]
+    public async Task BulkUpdateStyles_Returns400_WhenNotTwelveItems()
+    {
+        using var factory = CreateFactory();
+        var client = await RegisterAsync(factory);
+
+        // Only 3 style items — invalid
+        var badStyles = AllModuleTypes.Take(3).Select(mt => new
+        {
+            moduleType      = mt,
+            backgroundColor = "#ffffff",
+            borderColor     = "#000000",
+            borderStyle     = "None",
+            borderWidth     = 0,
+            borderRadius    = 0,
+            headerBgColor   = "#eeeeee",
+            headerTextColor = "#333333",
+            bodyTextColor   = "#000000",
+            fontFamily      = "Default"
+        }).ToList();
+
+        var resp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}/styles", badStyles);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+    }
 }
 
 // ── No-op seeders ─────────────────────────────────────────────────────────────
