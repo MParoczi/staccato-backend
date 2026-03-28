@@ -127,5 +127,20 @@ public class DomainToResponseProfile : Profile
                 s.LessonCount,
                 s.CreatedAt.ToString("o"),
                 s.UpdatedAt.ToString("o")));
+
+        // NotebookDetailResponse requires Styles — controller builds final response using:
+        //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }
+        CreateMap<Notebook, NotebookDetailResponse>()
+            .ConstructUsing((s, _) => new NotebookDetailResponse(
+                s.Id,
+                s.Title,
+                s.InstrumentId,
+                s.InstrumentName,
+                s.PageSize.ToString(),
+                s.CoverColor,
+                s.LessonCount,
+                s.CreatedAt.ToString("o"),
+                s.UpdatedAt.ToString("o"),
+                new List<ModuleStyleResponse>()));
     }
 }

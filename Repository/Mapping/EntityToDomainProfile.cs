@@ -25,7 +25,17 @@ public class EntityToDomainProfile : Profile
             .ForMember(d => d.Positions, o => o.MapFrom(s =>
                 JsonSerializer.Deserialize<List<ChordPosition>>(s.PositionsJson, JsonOptions)
                 ?? new List<ChordPosition>()));
-        CreateMap<NotebookEntity, Notebook>().ReverseMap();
+        CreateMap<NotebookEntity, Notebook>()
+            .ForMember(d => d.InstrumentName,
+                       o => o.MapFrom(s => s.Instrument != null ? s.Instrument.DisplayName : string.Empty))
+            .ForMember(d => d.LessonCount,
+                       o => o.MapFrom(s => s.Lessons != null ? s.Lessons.Count : 0));
+        CreateMap<Notebook, NotebookEntity>()
+            .ForMember(d => d.User, o => o.Ignore())
+            .ForMember(d => d.Instrument, o => o.Ignore())
+            .ForMember(d => d.Lessons, o => o.Ignore())
+            .ForMember(d => d.ModuleStyles, o => o.Ignore())
+            .ForMember(d => d.PdfExports, o => o.Ignore());
         CreateMap<NotebookModuleStyleEntity, NotebookModuleStyle>().ReverseMap();
         CreateMap<SystemStylePresetEntity, SystemStylePreset>().ReverseMap();
         CreateMap<LessonEntity, Lesson>().ReverseMap();

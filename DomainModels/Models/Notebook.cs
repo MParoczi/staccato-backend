@@ -10,6 +10,8 @@ public class Notebook
     public Guid InstrumentId { get; init; }
     public PageSize PageSize { get; init; }
     public string CoverColor { get; set; } = string.Empty;
+    public string InstrumentName { get; set; } = string.Empty;
+    public int LessonCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
