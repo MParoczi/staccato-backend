@@ -83,6 +83,7 @@ app.UseMiddleware<BusinessExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("StaccatoPolicy"); // must match ServiceCollectionExtensions.CorsPolicyName
 app.UseRateLimiter();
+app.UseResponseCaching();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHub<NotificationHub>("/hubs/notifications");

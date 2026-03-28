@@ -1,7 +1,10 @@
 ﻿[
   {
     "name": "A",
-    "suffix": "major",
+    "root": "A",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -96,8 +99,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "minor",
+    "name": "Am",
+    "root": "A",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -192,8 +198,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "7",
+    "name": "A7",
+    "root": "A",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -288,8 +297,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "maj7",
+    "name": "Amaj7",
+    "root": "A",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -384,8 +396,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "m7",
+    "name": "Am7",
+    "root": "A",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -480,8 +495,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "dim",
+    "name": "Adim",
+    "root": "A",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -572,8 +590,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "aug",
+    "name": "Aaug",
+    "root": "A",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -664,8 +685,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "sus2",
+    "name": "Asus2",
+    "root": "A",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -760,8 +784,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "sus4",
+    "name": "Asus4",
+    "root": "A",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -856,8 +883,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "m7b5",
+    "name": "Am7b5",
+    "root": "A",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -948,8 +978,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "dim7",
+    "name": "Adim7",
+    "root": "A",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1040,8 +1073,11 @@
     ]
   },
   {
-    "name": "A",
-    "suffix": "add9",
+    "name": "Aadd9",
+    "root": "A",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1137,7 +1173,10 @@
   },
   {
     "name": "Bb",
-    "suffix": "major",
+    "root": "Bb",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1236,8 +1275,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "minor",
+    "name": "Bbm",
+    "root": "Bb",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1336,8 +1378,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "7",
+    "name": "Bb7",
+    "root": "Bb",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1436,8 +1481,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "maj7",
+    "name": "Bbmaj7",
+    "root": "Bb",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1536,8 +1584,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "m7",
+    "name": "Bbm7",
+    "root": "Bb",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1636,8 +1687,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "dim",
+    "name": "Bbdim",
+    "root": "Bb",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1728,8 +1782,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "aug",
+    "name": "Bbaug",
+    "root": "Bb",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1820,8 +1877,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "sus2",
+    "name": "Bbsus2",
+    "root": "Bb",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -1920,8 +1980,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "sus4",
+    "name": "Bbsus4",
+    "root": "Bb",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2020,8 +2083,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "m7b5",
+    "name": "Bbm7b5",
+    "root": "Bb",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2112,8 +2178,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "dim7",
+    "name": "Bbdim7",
+    "root": "Bb",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2204,8 +2273,11 @@
     ]
   },
   {
-    "name": "Bb",
-    "suffix": "add9",
+    "name": "Bbadd9",
+    "root": "Bb",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2301,7 +2373,10 @@
   },
   {
     "name": "B",
-    "suffix": "major",
+    "root": "B",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2400,8 +2475,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "minor",
+    "name": "Bm",
+    "root": "B",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2500,8 +2578,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "7",
+    "name": "B7",
+    "root": "B",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2600,8 +2681,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "maj7",
+    "name": "Bmaj7",
+    "root": "B",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2700,8 +2784,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "m7",
+    "name": "Bm7",
+    "root": "B",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2800,8 +2887,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "dim",
+    "name": "Bdim",
+    "root": "B",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2892,8 +2982,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "aug",
+    "name": "Baug",
+    "root": "B",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -2984,8 +3077,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "sus2",
+    "name": "Bsus2",
+    "root": "B",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3084,8 +3180,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "sus4",
+    "name": "Bsus4",
+    "root": "B",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3184,8 +3283,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "m7b5",
+    "name": "Bm7b5",
+    "root": "B",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3276,8 +3378,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "dim7",
+    "name": "Bdim7",
+    "root": "B",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3368,8 +3473,11 @@
     ]
   },
   {
-    "name": "B",
-    "suffix": "add9",
+    "name": "Badd9",
+    "root": "B",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3465,7 +3573,10 @@
   },
   {
     "name": "C",
-    "suffix": "major",
+    "root": "C",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3564,8 +3675,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "minor",
+    "name": "Cm",
+    "root": "C",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3664,8 +3778,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "7",
+    "name": "C7",
+    "root": "C",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3764,8 +3881,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "maj7",
+    "name": "Cmaj7",
+    "root": "C",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3864,8 +3984,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "m7",
+    "name": "Cm7",
+    "root": "C",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -3964,8 +4087,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "dim",
+    "name": "Cdim",
+    "root": "C",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4056,8 +4182,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "aug",
+    "name": "Caug",
+    "root": "C",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4148,8 +4277,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "sus2",
+    "name": "Csus2",
+    "root": "C",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4248,8 +4380,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "sus4",
+    "name": "Csus4",
+    "root": "C",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4348,8 +4483,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "m7b5",
+    "name": "Cm7b5",
+    "root": "C",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4440,8 +4578,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "dim7",
+    "name": "Cdim7",
+    "root": "C",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4532,8 +4673,11 @@
     ]
   },
   {
-    "name": "C",
-    "suffix": "add9",
+    "name": "Cadd9",
+    "root": "C",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4629,7 +4773,10 @@
   },
   {
     "name": "C#",
-    "suffix": "major",
+    "root": "C#",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4728,8 +4875,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "minor",
+    "name": "C#m",
+    "root": "C#",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4828,8 +4978,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "7",
+    "name": "C#7",
+    "root": "C#",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -4928,8 +5081,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "maj7",
+    "name": "C#maj7",
+    "root": "C#",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5028,8 +5184,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "m7",
+    "name": "C#m7",
+    "root": "C#",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5128,8 +5287,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "dim",
+    "name": "C#dim",
+    "root": "C#",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5220,8 +5382,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "aug",
+    "name": "C#aug",
+    "root": "C#",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5312,8 +5477,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "sus2",
+    "name": "C#sus2",
+    "root": "C#",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5412,8 +5580,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "sus4",
+    "name": "C#sus4",
+    "root": "C#",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5512,8 +5683,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "m7b5",
+    "name": "C#m7b5",
+    "root": "C#",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5604,8 +5778,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "dim7",
+    "name": "C#dim7",
+    "root": "C#",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5696,8 +5873,11 @@
     ]
   },
   {
-    "name": "C#",
-    "suffix": "add9",
+    "name": "C#add9",
+    "root": "C#",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5793,7 +5973,10 @@
   },
   {
     "name": "D",
-    "suffix": "major",
+    "root": "D",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5892,8 +6075,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "minor",
+    "name": "Dm",
+    "root": "D",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -5992,8 +6178,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "7",
+    "name": "D7",
+    "root": "D",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6092,8 +6281,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "maj7",
+    "name": "Dmaj7",
+    "root": "D",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6192,8 +6384,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "m7",
+    "name": "Dm7",
+    "root": "D",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6292,8 +6487,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "dim",
+    "name": "Ddim",
+    "root": "D",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6384,8 +6582,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "aug",
+    "name": "Daug",
+    "root": "D",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6476,8 +6677,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "sus2",
+    "name": "Dsus2",
+    "root": "D",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6576,8 +6780,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "sus4",
+    "name": "Dsus4",
+    "root": "D",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6676,8 +6883,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "m7b5",
+    "name": "Dm7b5",
+    "root": "D",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6768,8 +6978,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "dim7",
+    "name": "Ddim7",
+    "root": "D",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6860,8 +7073,11 @@
     ]
   },
   {
-    "name": "D",
-    "suffix": "add9",
+    "name": "Dadd9",
+    "root": "D",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -6957,7 +7173,10 @@
   },
   {
     "name": "Eb",
-    "suffix": "major",
+    "root": "Eb",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7056,8 +7275,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "minor",
+    "name": "Ebm",
+    "root": "Eb",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7156,8 +7378,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "7",
+    "name": "Eb7",
+    "root": "Eb",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7256,8 +7481,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "maj7",
+    "name": "Ebmaj7",
+    "root": "Eb",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7356,8 +7584,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "m7",
+    "name": "Ebm7",
+    "root": "Eb",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7456,8 +7687,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "dim",
+    "name": "Ebdim",
+    "root": "Eb",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7548,8 +7782,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "aug",
+    "name": "Ebaug",
+    "root": "Eb",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7640,8 +7877,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "sus2",
+    "name": "Ebsus2",
+    "root": "Eb",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7740,8 +7980,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "sus4",
+    "name": "Ebsus4",
+    "root": "Eb",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7840,8 +8083,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "m7b5",
+    "name": "Ebm7b5",
+    "root": "Eb",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -7932,8 +8178,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "dim7",
+    "name": "Ebdim7",
+    "root": "Eb",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8024,8 +8273,11 @@
     ]
   },
   {
-    "name": "Eb",
-    "suffix": "add9",
+    "name": "Ebadd9",
+    "root": "Eb",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8121,7 +8373,10 @@
   },
   {
     "name": "E",
-    "suffix": "major",
+    "root": "E",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8216,8 +8471,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "minor",
+    "name": "Em",
+    "root": "E",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8312,8 +8570,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "7",
+    "name": "E7",
+    "root": "E",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8408,8 +8669,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "maj7",
+    "name": "Emaj7",
+    "root": "E",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8504,8 +8768,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "m7",
+    "name": "Em7",
+    "root": "E",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8600,8 +8867,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "dim",
+    "name": "Edim",
+    "root": "E",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8692,8 +8962,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "aug",
+    "name": "Eaug",
+    "root": "E",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8784,8 +9057,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "sus2",
+    "name": "Esus2",
+    "root": "E",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8880,8 +9156,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "sus4",
+    "name": "Esus4",
+    "root": "E",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -8976,8 +9255,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "m7b5",
+    "name": "Em7b5",
+    "root": "E",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9068,8 +9350,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "dim7",
+    "name": "Edim7",
+    "root": "E",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9160,8 +9445,11 @@
     ]
   },
   {
-    "name": "E",
-    "suffix": "add9",
+    "name": "Eadd9",
+    "root": "E",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9253,7 +9541,10 @@
   },
   {
     "name": "F",
-    "suffix": "major",
+    "root": "F",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9352,8 +9643,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "minor",
+    "name": "Fm",
+    "root": "F",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9452,8 +9746,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "7",
+    "name": "F7",
+    "root": "F",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9552,8 +9849,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "maj7",
+    "name": "Fmaj7",
+    "root": "F",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9652,8 +9952,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "m7",
+    "name": "Fm7",
+    "root": "F",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9752,8 +10055,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "dim",
+    "name": "Fdim",
+    "root": "F",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9844,8 +10150,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "aug",
+    "name": "Faug",
+    "root": "F",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -9936,8 +10245,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "sus2",
+    "name": "Fsus2",
+    "root": "F",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10036,8 +10348,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "sus4",
+    "name": "Fsus4",
+    "root": "F",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10136,8 +10451,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "m7b5",
+    "name": "Fm7b5",
+    "root": "F",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10228,8 +10546,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "dim7",
+    "name": "Fdim7",
+    "root": "F",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10320,8 +10641,11 @@
     ]
   },
   {
-    "name": "F",
-    "suffix": "add9",
+    "name": "Fadd9",
+    "root": "F",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10417,7 +10741,10 @@
   },
   {
     "name": "F#",
-    "suffix": "major",
+    "root": "F#",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10516,8 +10843,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "minor",
+    "name": "F#m",
+    "root": "F#",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10616,8 +10946,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "7",
+    "name": "F#7",
+    "root": "F#",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10716,8 +11049,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "maj7",
+    "name": "F#maj7",
+    "root": "F#",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10816,8 +11152,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "m7",
+    "name": "F#m7",
+    "root": "F#",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -10916,8 +11255,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "dim",
+    "name": "F#dim",
+    "root": "F#",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11008,8 +11350,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "aug",
+    "name": "F#aug",
+    "root": "F#",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11100,8 +11445,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "sus2",
+    "name": "F#sus2",
+    "root": "F#",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11200,8 +11548,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "sus4",
+    "name": "F#sus4",
+    "root": "F#",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11300,8 +11651,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "m7b5",
+    "name": "F#m7b5",
+    "root": "F#",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11392,8 +11746,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "dim7",
+    "name": "F#dim7",
+    "root": "F#",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11484,8 +11841,11 @@
     ]
   },
   {
-    "name": "F#",
-    "suffix": "add9",
+    "name": "F#add9",
+    "root": "F#",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11581,7 +11941,10 @@
   },
   {
     "name": "G",
-    "suffix": "major",
+    "root": "G",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11680,8 +12043,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "minor",
+    "name": "Gm",
+    "root": "G",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11780,8 +12146,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "7",
+    "name": "G7",
+    "root": "G",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11880,8 +12249,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "maj7",
+    "name": "Gmaj7",
+    "root": "G",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -11980,8 +12352,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "m7",
+    "name": "Gm7",
+    "root": "G",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12080,8 +12455,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "dim",
+    "name": "Gdim",
+    "root": "G",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12172,8 +12550,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "aug",
+    "name": "Gaug",
+    "root": "G",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12264,8 +12645,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "sus2",
+    "name": "Gsus2",
+    "root": "G",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12364,8 +12748,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "sus4",
+    "name": "Gsus4",
+    "root": "G",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12464,8 +12851,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "m7b5",
+    "name": "Gm7b5",
+    "root": "G",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12556,8 +12946,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "dim7",
+    "name": "Gdim7",
+    "root": "G",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12648,8 +13041,11 @@
     ]
   },
   {
-    "name": "G",
-    "suffix": "add9",
+    "name": "Gadd9",
+    "root": "G",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12745,7 +13141,10 @@
   },
   {
     "name": "Ab",
-    "suffix": "major",
+    "root": "Ab",
+    "quality": "Major",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12844,8 +13243,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "minor",
+    "name": "Abm",
+    "root": "Ab",
+    "quality": "Minor",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -12944,8 +13346,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "7",
+    "name": "Ab7",
+    "root": "Ab",
+    "quality": "Seventh",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13044,8 +13449,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "maj7",
+    "name": "Abmaj7",
+    "root": "Ab",
+    "quality": "Major 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13144,8 +13552,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "m7",
+    "name": "Abm7",
+    "root": "Ab",
+    "quality": "Minor 7",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13244,8 +13655,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "dim",
+    "name": "Abdim",
+    "root": "Ab",
+    "quality": "Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13336,8 +13750,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "aug",
+    "name": "Abaug",
+    "root": "Ab",
+    "quality": "Augmented",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13428,8 +13845,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "sus2",
+    "name": "Absus2",
+    "root": "Ab",
+    "quality": "Suspended 2nd",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13528,8 +13948,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "sus4",
+    "name": "Absus4",
+    "root": "Ab",
+    "quality": "Suspended 4th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13628,8 +14051,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "m7b5",
+    "name": "Abm7b5",
+    "root": "Ab",
+    "quality": "Half-Diminished",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13720,8 +14146,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "dim7",
+    "name": "Abdim7",
+    "root": "Ab",
+    "quality": "Diminished 7th",
+    "extension": null,
+    "alternation": null,
     "positions": [
       {
         "label": "1",
@@ -13812,8 +14241,11 @@
     ]
   },
   {
-    "name": "Ab",
-    "suffix": "add9",
+    "name": "Abadd9",
+    "root": "Ab",
+    "quality": "Major",
+    "extension": "add9",
+    "alternation": null,
     "positions": [
       {
         "label": "1",

@@ -8,59 +8,41 @@ namespace Persistence.Seed;
 
 public class ChordSeeder(AppDbContext context)
 {
-    protected virtual string ChordFilePath =>
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "guitar_chords.json");
+    protected virtual Stream? GetChordStream() =>
+        typeof(ChordSeeder).Assembly
+            .GetManifestResourceStream("Persistence.Data.guitar_chords.json");
 
     public virtual async Task SeedAsync(CancellationToken ct = default)
     {
-        if (await context.Chords.AnyAsync(ct)) return;
-
-        var filePath = ChordFilePath;
-
-        if (!File.Exists(filePath))
-            throw new InvalidOperationException(
-                $"Chord data file not found at expected path: {filePath}");
-
-        string json;
-        try
-        {
-            json = await File.ReadAllTextAsync(filePath, ct);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException(
-                $"Failed to read chord data file at path: {filePath}", ex);
-        }
+        var stream = GetChordStream()
+            ?? throw new InvalidOperationException(
+                "Embedded chord data resource 'Persistence.Data.guitar_chords.json' not found.");
 
         List<ChordRecord>? records;
         try
         {
+            using var reader = new StreamReader(stream); // strips UTF-8 BOM automatically
+            var json = await reader.ReadToEndAsync(ct);
             records = JsonSerializer.Deserialize<List<ChordRecord>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (JsonException ex)
         {
             throw new InvalidOperationException(
-                $"Failed to deserialize chord data file at path: {filePath}", ex);
+                "Failed to deserialize embedded chord data resource.", ex);
         }
 
         if (records is null || records.Count == 0)
             throw new InvalidOperationException(
-                $"Chord data file is empty or invalid at path: {filePath}");
+                "Embedded chord data resource is empty or invalid.");
 
-        var seen = new HashSet<string>();
         foreach (var record in records)
         {
-            if (string.IsNullOrWhiteSpace(record.Name) ||
-                string.IsNullOrWhiteSpace(record.Suffix) ||
+            if (string.IsNullOrWhiteSpace(record.Root) ||
+                string.IsNullOrWhiteSpace(record.Quality) ||
                 record.Positions is null || record.Positions.Count == 0)
                 throw new InvalidOperationException(
-                    $"Chord data file contains an entry with missing name, suffix, or positions at path: {filePath}");
-
-            var key = $"{record.Name}|{record.Suffix}";
-            if (!seen.Add(key))
-                throw new InvalidOperationException(
-                    $"Chord data file contains duplicate name+suffix '{key}' at path: {filePath}");
+                    $"Chord record '{record.Name}' is missing root, quality, or positions.");
         }
 
         var guitar = await context.Instruments
@@ -68,21 +50,39 @@ public class ChordSeeder(AppDbContext context)
                      ?? throw new InvalidOperationException(
                          "Guitar6String instrument not found — run InstrumentSeeder before ChordSeeder.");
 
+        // Build HashSet of existing natural keys to enable differential seeding
+        var existing = await context.Chords
+            .Where(c => c.InstrumentId == guitar.Id)
+            .Select(c => new { c.Root, c.Quality, c.Extension })
+            .ToListAsync(ct);
+
+        var existingKeys = existing
+            .Select(c => (c.Root, c.Quality, c.Extension ?? string.Empty))
+            .ToHashSet();
+
         var serialiserOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        var entities = records.Select(r => new ChordEntity
-        {
-            Id = Guid.NewGuid(),
-            InstrumentId = guitar.Id,
-            Name = r.Name,
-            Suffix = r.Suffix,
-            PositionsJson = JsonSerializer.Serialize(r.Positions, serialiserOptions)
-        }).ToList();
+        var toAdd = records
+            .Where(r => !existingKeys.Contains((r.Root, r.Quality, r.Extension ?? string.Empty)))
+            .Select(r => new ChordEntity
+            {
+                Id = Guid.NewGuid(),
+                InstrumentId = guitar.Id,
+                Name = r.Name,
+                Root = r.Root,
+                Quality = r.Quality,
+                Extension = r.Extension,
+                Alternation = r.Alternation,
+                PositionsJson = JsonSerializer.Serialize(r.Positions, serialiserOptions)
+            })
+            .ToList();
 
-        context.Chords.AddRange(entities);
+        if (toAdd.Count == 0) return;
+
+        context.Chords.AddRange(toAdd);
         await context.SaveChangesAsync(ct);
     }
 
@@ -90,8 +90,11 @@ public class ChordSeeder(AppDbContext context)
 
     private sealed class ChordRecord
     {
-        public string Name { get; } = string.Empty;
-        public string Suffix { get; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Root { get; set; } = string.Empty;
+        public string Quality { get; set; } = string.Empty;
+        public string? Extension { get; set; }
+        public string? Alternation { get; set; }
         public List<JsonElement>? Positions { get; set; }
     }
 }

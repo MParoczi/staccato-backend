@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using DomainModels.Enums;
 using EntityModels.Entities;
@@ -8,35 +9,21 @@ using Persistence.Seed;
 namespace Tests.Unit.Persistence;
 
 /// <summary>
-///     Six fail cases from FR-038: missing file, invalid JSON, null/empty array,
-///     missing fields, empty positions, duplicate name+suffix.
+///     Fail cases for ChordSeeder: null stream, invalid JSON, empty array,
+///     missing required fields (root/quality), and empty positions.
 /// </summary>
-public class ChordSeederFailTests : IDisposable
+public class ChordSeederFailTests
 {
-    private readonly string _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-    private readonly string _tempFile;
-
-    public ChordSeederFailTests()
-    {
-        Directory.CreateDirectory(_tempDir);
-        _tempFile = Path.Combine(_tempDir, "guitar_chords.json");
-    }
-
-    public void Dispose()
-    {
-        Directory.Delete(_tempDir, true);
-    }
-
     // ── helpers ──────────────────────────────────────────────────────────────
 
-    private AppDbContext CreateContext()
+    private static AppDbContext CreateContext()
     {
         return new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
     }
 
-    private async Task SeedGuitarAsync(AppDbContext ctx)
+    private static async Task SeedGuitarAsync(AppDbContext ctx)
     {
         ctx.Instruments.Add(new InstrumentEntity
         {
@@ -46,113 +33,93 @@ public class ChordSeederFailTests : IDisposable
         await ctx.SaveChangesAsync();
     }
 
-    private ChordSeeder Seeder(AppDbContext ctx)
-    {
-        return new TestableChordSeeder(ctx, _tempFile);
-    }
+    private static ChordSeeder Seeder(AppDbContext ctx, string? json) =>
+        new TestableChordSeeder(ctx, json);
 
-    // FR-038 (a): file missing → InvalidOperationException containing the file path
+    private static string Serialize(object obj) =>
+        JsonSerializer.Serialize(obj,
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+    // ── fail cases ────────────────────────────────────────────────────────────
+
     [Fact]
-    public async Task SeedAsync_FileMissing_ThrowsWithFilePath()
-    {
-        await using var ctx = CreateContext();
-        await SeedGuitarAsync(ctx);
-        // Do NOT create the file
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
-    }
-
-    // FR-038 (b): invalid JSON → exception with file path
-    [Fact]
-    public async Task SeedAsync_InvalidJson_ThrowsWithFilePath()
-    {
-        await using var ctx = CreateContext();
-        await SeedGuitarAsync(ctx);
-        File.WriteAllText(_tempFile, "this is not json {{ [");
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
-    }
-
-    // FR-038 (c): valid JSON but empty array → InvalidOperationException with file path
-    [Fact]
-    public async Task SeedAsync_EmptyArray_ThrowsWithFilePath()
-    {
-        await using var ctx = CreateContext();
-        await SeedGuitarAsync(ctx);
-        File.WriteAllText(_tempFile, "[]");
-
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
-    }
-
-    // FR-038 (d): entry missing name/suffix/positions field → exception with file path
-    [Fact]
-    public async Task SeedAsync_EntryMissingName_ThrowsWithFilePath()
+    public async Task SeedAsync_StreamNull_ThrowsInvalidOperation()
     {
         await using var ctx = CreateContext();
         await SeedGuitarAsync(ctx);
 
-        // name is empty string
-        var chords = new[]
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx, null).SeedAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_InvalidJson_ThrowsInvalidOperation()
+    {
+        await using var ctx = CreateContext();
+        await SeedGuitarAsync(ctx);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Seeder(ctx, "this is not json {{ [").SeedAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_EmptyArray_ThrowsInvalidOperation()
+    {
+        await using var ctx = CreateContext();
+        await SeedGuitarAsync(ctx);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Seeder(ctx, "[]").SeedAsync());
+    }
+
+    [Fact]
+    public async Task SeedAsync_EntryMissingRoot_ThrowsInvalidOperation()
+    {
+        await using var ctx = CreateContext();
+        await SeedGuitarAsync(ctx);
+
+        var json = Serialize(new[]
         {
-            new { name = "", suffix = "major", positions = new[] { MakePosition() } }
-        };
-        File.WriteAllText(_tempFile,
-            JsonSerializer.Serialize(chords,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            new { name = "A", root = "", quality = "Major", extension = (string?)null,
+                  alternation = (string?)null, positions = new[] { MakePosition() } }
+        });
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Seeder(ctx, json).SeedAsync());
     }
 
-    // FR-038 (e): entry with empty positions array → exception with file path
     [Fact]
-    public async Task SeedAsync_EmptyPositionsArray_ThrowsWithFilePath()
+    public async Task SeedAsync_EntryMissingQuality_ThrowsInvalidOperation()
     {
         await using var ctx = CreateContext();
         await SeedGuitarAsync(ctx);
 
-        var chords = new[]
+        var json = Serialize(new[]
         {
-            new { name = "A", suffix = "major", positions = Array.Empty<object>() }
-        };
-        File.WriteAllText(_tempFile,
-            JsonSerializer.Serialize(chords,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            new { name = "A", root = "A", quality = "", extension = (string?)null,
+                  alternation = (string?)null, positions = new[] { MakePosition() } }
+        });
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Seeder(ctx, json).SeedAsync());
     }
 
-    // FR-038 (f): duplicate name+suffix → exception with file path
     [Fact]
-    public async Task SeedAsync_DuplicateNamePlusSuffix_ThrowsWithFilePath()
+    public async Task SeedAsync_EmptyPositionsArray_ThrowsInvalidOperation()
     {
         await using var ctx = CreateContext();
         await SeedGuitarAsync(ctx);
 
-        var chords = new[]
+        var json = Serialize(new[]
         {
-            new { name = "A", suffix = "major", positions = new[] { MakePosition() } },
-            new { name = "A", suffix = "major", positions = new[] { MakePosition() } } // duplicate
-        };
-        File.WriteAllText(_tempFile,
-            JsonSerializer.Serialize(chords,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            new { name = "A", root = "A", quality = "Major", extension = (string?)null,
+                  alternation = (string?)null, positions = Array.Empty<object>() }
+        });
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Seeder(ctx).SeedAsync());
-
-        Assert.Contains(_tempFile, ex.Message);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Seeder(ctx, json).SeedAsync());
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
+    // ── position fixture ──────────────────────────────────────────────────────
 
     private static object MakePosition()
     {
@@ -173,9 +140,12 @@ public class ChordSeederFailTests : IDisposable
         };
     }
 
-    private sealed class TestableChordSeeder(AppDbContext ctx, string filePath)
+    // ── testable subclass — overrides stream ──────────────────────────────────
+
+    private sealed class TestableChordSeeder(AppDbContext ctx, string? json)
         : ChordSeeder(ctx)
     {
-        protected override string ChordFilePath => filePath;
+        protected override Stream? GetChordStream() =>
+            json is null ? null : new MemoryStream(Encoding.UTF8.GetBytes(json));
     }
 }

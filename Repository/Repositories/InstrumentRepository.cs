@@ -1,5 +1,6 @@
 using AutoMapper;
 using Domain.Interfaces.Repositories;
+using DomainModels.Enums;
 using DomainModels.Models;
 using EntityModels.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -16,5 +17,14 @@ public class InstrumentRepository(AppDbContext context, IMapper mapper)
             .OrderBy(i => i.DisplayName)
             .ToListAsync(ct);
         return _mapper.Map<IReadOnlyList<Instrument>>(entities);
+    }
+
+    public async Task<Instrument?> GetByKeyAsync(InstrumentKey key, CancellationToken ct = default)
+    {
+        var entity = await _context.Instruments
+            .Where(i => i.Key == key)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ct);
+        return _mapper.Map<Instrument?>(entity);
     }
 }
