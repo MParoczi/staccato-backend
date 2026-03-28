@@ -1,0 +1,428 @@
+# Implementation Plan: Notebook CRUD and Style Management
+
+**Branch**: `008-notebook-crud-styles` | **Date**: 2026-03-28 | **Spec**: [spec.md](spec.md)
+**Input**: Feature specification from `/specs/008-notebook-crud-styles/spec.md`
+
+---
+
+## Summary
+
+Implement full CRUD for `Notebook` (list, create, detail, update title/coverColor, delete) and complete module style management (view styles, bulk-replace styles, apply preset). Expose a public `GET /presets` endpoint for system presets.
+
+**Critical pre-work**: The `Notebooks` table is missing `CoverColor` — a migration must be added. `SystemStylePresetEntity` must be patched to implement `IEntity`. The `SystemStylePresetSeeder` sets Classic as `IsDefault = true`; this must be corrected to Colorful per the spec. `ISystemStylePresetRepository` does not exist and must be created. `INotebookRepository.GetByUserIdAsync` lacks ordering and returns `Notebook` instead of `NotebookSummary`; both must be updated.
+
+---
+
+## Technical Context
+
+**Language/Version**: C# 13, .NET 10
+**Primary Dependencies**: ASP.NET Core 10, Entity Framework Core 10, AutoMapper, FluentValidation, xUnit + Moq
+**Storage**: SQL Server via EF Core — migration `AddNotebookCoverColor` required
+**Testing**: xUnit unit tests (Moq) + integration tests (WebApplicationFactory + InMemory EF)
+**Target Platform**: ASP.NET Core web service (Linux/Windows)
+**Project Type**: Web service — layered architecture (Api / Domain / Repository / Persistence)
+**Performance Goals**: Standard web API response times (sub-second for all notebook operations)
+**Constraints**: No new libraries; all secrets via `IOptions<T>`; `CancellationToken` on all async methods
+**Scale/Scope**: Personal app — single user's notebook list, no pagination required
+
+---
+
+## Constitution Check
+
+| # | Gate | Status | Notes |
+|---|---|---|---|
+| G1 | Project references match dependency map. Domain references DomainModels only. | ✅ | `NotebookService` references only `DomainModels` types and `Domain.Interfaces`. `Api` references `Domain` and `ApiModels`. No violations. |
+| G2 | No controller contains business logic; all logic in Domain services. | ✅ | Controllers: extract input → serialize styles → call service → map response. No business logic. Ownership checks are in the service, not the controller. |
+| G3 | Repository methods do not call `SaveChanges`; persistence via `IUnitOfWork.CommitAsync`. | ✅ | All write paths in `NotebookService` end with `await _unitOfWork.CommitAsync(ct)`. Repositories only call `AddAsync`, `Update`, `Remove`. |
+| G4 | Business rule violations thrown as typed `BusinessException` subclasses. | ✅ | `ForbiddenException`, `NotFoundException`, `BadRequestException` (for immutable-field attempts), and a new `InstrumentNotFoundException` (422) used throughout `NotebookService`. |
+| G5 | All PKs are app-generated `Guid.NewGuid()`; no DB-generated keys. | ✅ | `NotebookService.CreateAsync` sets `Id = Guid.NewGuid()` for notebook and each of the 12 styles. |
+| G6 | Cascade delete rules match hierarchy; Instrument uses `DeleteBehavior.Restrict`. | ✅ | `NotebookConfiguration` already has cascade-from-User and restrict-from-Instrument. No changes to these rules. |
+| G7 | HTTP status codes, error format, and 403 ownership behaviour match API Contract Discipline. | ✅ | POST→201, GET→200, PUT→200, DELETE→204; business errors use `{ code, message, details }`; ownership violations throw `ForbiddenException` → 403. |
+| G8 | User text stored as `TextSpan[]` (text + bold only). | ✅ | Not applicable to this feature (no user-text content fields). |
+| G9 | `ModuleTypeConstraints` and `PageSizeDimensions` are the only source of truth. | ✅ | Validation uses `Enum.GetValues<ModuleType>()` to verify 12 module types; the constants classes are not bypassed. |
+| G10 | No hardcoded secrets; config via `IOptions<T>`; tokens per security rules. | ✅ | No new secrets. JWT handling unchanged. |
+| G11 | Unit tests cover happy path + all exception paths; integration tests cover all new endpoints. | ✅ | `NotebookServiceTests` covers 8 service methods × happy + exception paths. `NotebooksControllerTests` and `PresetsControllerTests` cover all endpoints. |
+| G12 | Nullable enabled; no `.Result`/`.Wait()`; `CancellationToken` throughout. | ✅ | All async methods accept `CancellationToken ct = default` and pass it through to EF and repo calls. |
+| G13 | No new library introduced. | ✅ | Only `System.Text.Json` (already in-process) used for style serialization. |
+
+---
+
+## Project Structure
+
+### Documentation (this feature)
+
+```text
+specs/008-notebook-crud-styles/
+├── plan.md          ← this file
+├── research.md      ← Phase 0 — 10 decisions documented
+├── data-model.md    ← Phase 1 — entities, DTOs, validation rules
+├── quickstart.md    ← Phase 1 — setup and test guide
+├── contracts/
+│   └── api-contracts.md  ← Phase 1 — all 9 endpoints documented
+└── tasks.md         ← Phase 2 output (generated by /speckit.tasks)
+```
+
+### Source Code
+
+```text
+# Changes to existing files
+EntityModels/Entities/
+  NotebookEntity.cs                              ← ADD CoverColor : string
+  SystemStylePresetEntity.cs                     ← ADD : IEntity
+
+DomainModels/Models/
+  Notebook.cs                                    ← ADD CoverColor : string
+  NotebookSummary.cs                             ← NEW — list projection
+
+Persistence/Configurations/
+  NotebookConfiguration.cs                       ← ADD CoverColor column config (nvarchar(7))
+
+Persistence/Migrations/
+  <timestamp>_AddNotebookCoverColor.cs           ← NEW — adds CoverColor to Notebooks
+
+Persistence/Seed/
+  SystemStylePresetSeeder.cs                     ← FIX IsDefault: Classic→false, Colorful→true
+
+Domain/Interfaces/Repositories/
+  INotebookRepository.cs                         ← UPDATE GetByUserIdAsync signature
+  ISystemStylePresetRepository.cs                ← NEW
+
+Repository/Repositories/
+  NotebookRepository.cs                          ← UPDATE GetByUserIdAsync (ordering + NotebookSummary projection)
+  SystemStylePresetRepository.cs                 ← NEW
+
+Domain/Services/
+  INotebookService.cs                            ← NEW
+  NotebookService.cs                             ← NEW
+
+ApiModels/Notebooks/                             ← NEW folder
+  CreateNotebookRequest.cs
+  CreateNotebookRequestValidator.cs
+  UpdateNotebookRequest.cs
+  UpdateNotebookRequestValidator.cs
+  ModuleStyleRequest.cs
+  ModuleStyleRequestValidator.cs
+  ModuleStyleResponse.cs
+  NotebookSummaryResponse.cs
+  NotebookDetailResponse.cs
+  SystemStylePresetResponse.cs
+
+Api/Controllers/
+  NotebooksController.cs                         ← NEW
+  PresetsController.cs                           ← NEW
+
+Api/Mapping/
+  DomainToResponseProfile.cs                     ← UPDATE — add Notebook* and ModuleStyle* mappings
+  (new TypeConverter for NotebookModuleStyle → ModuleStyleResponse)
+
+Application/Extensions/
+  ServiceCollectionExtensions.cs                 ← UPDATE AddDomainServices + AddRepositories
+
+Tests/Unit/Services/
+  NotebookServiceTests.cs                        ← NEW
+
+Tests/Integration/Controllers/
+  NotebooksControllerTests.cs                    ← NEW
+  PresetsControllerTests.cs                      ← NEW
+```
+
+**Structure Decision**: 9-project solution unchanged. All new code fits within existing project roles. No new projects.
+
+---
+
+## Complexity Tracking
+
+> No Constitution Check violations.
+
+---
+
+## Implementation Guide
+
+### Step 1 — Entity and Domain Model Changes
+
+**EntityModels/Entities/NotebookEntity.cs**
+Add `public string CoverColor { get; set; } = string.Empty;`.
+
+**EntityModels/Entities/SystemStylePresetEntity.cs**
+Change `public class SystemStylePresetEntity` → `public class SystemStylePresetEntity : IEntity`.
+
+**DomainModels/Models/Notebook.cs**
+Add `public string CoverColor { get; set; } = string.Empty;`.
+
+**DomainModels/Models/NotebookSummary.cs** (new file)
+```
+Id, UserId, Title, InstrumentName : string, PageSize : PageSize, CoverColor : string,
+LessonCount : int, CreatedAt : DateTime, UpdatedAt : DateTime
+```
+
+---
+
+### Step 2 — EF Core Configuration and Migration
+
+**Persistence/Configurations/NotebookConfiguration.cs**
+Add: `builder.Property(n => n.CoverColor).IsRequired().HasMaxLength(7);`
+
+**Migration** `AddNotebookCoverColor`
+Generated via:
+```bash
+dotnet ef migrations add AddNotebookCoverColor \
+  --project Persistence/Persistence.csproj \
+  --startup-project Application/Application.csproj
+```
+Adds `CoverColor nvarchar(7) NOT NULL` with `DEFAULT '#000000'`.
+
+**Persistence/Seed/SystemStylePresetSeeder.cs**
+Swap `isDefault` values: `BuildPreset("Classic", 1, false, ...)` and `BuildPreset("Colorful", 2, true, ...)`.
+
+---
+
+### Step 3 — Repository Layer
+
+**Domain/Interfaces/Repositories/ISystemStylePresetRepository.cs**
+```csharp
+public interface ISystemStylePresetRepository : IRepository<SystemStylePreset>
+{
+    Task<IReadOnlyList<SystemStylePreset>> GetAllAsync(CancellationToken ct = default);
+}
+```
+
+**Repository/Repositories/SystemStylePresetRepository.cs**
+Extends `RepositoryBase<SystemStylePresetEntity, SystemStylePreset>`.
+`GetAllAsync`: `.OrderBy(p => p.DisplayOrder).ToListAsync(ct)`.
+
+**Domain/Interfaces/Repositories/INotebookRepository.cs**
+Change `GetByUserIdAsync` return type to `Task<IReadOnlyList<NotebookSummary>>`.
+
+**Repository/Repositories/NotebookRepository.cs**
+Update `GetByUserIdAsync` to:
+```csharp
+.Include(n => n.Instrument)
+.Include(n => n.Lessons)
+.Where(n => n.UserId == userId)
+.OrderBy(n => n.CreatedAt)
+.Select(n => new NotebookSummaryEntity { ... })   // or project directly
+```
+Use AutoMapper `.ProjectTo<NotebookSummary>()` or manual `Select` projection.
+
+> **Note**: `NotebookSummary` is a domain model, not an entity. The repository maps the EF projection to the domain model. AutoMapper `EntityToDomainProfile` must be updated to include `NotebookEntity → NotebookSummary` mapping (or use a dedicated projection).
+
+---
+
+### Step 4 — Domain Service
+
+**Domain/Services/INotebookService.cs** — define these methods:
+
+| Method | Parameters | Returns |
+|---|---|---|
+| `GetAllByUserAsync` | `Guid userId, CancellationToken` | `Task<IReadOnlyList<NotebookSummary>>` |
+| `GetByIdAsync` | `Guid notebookId, Guid userId, CancellationToken` | `Task<(Notebook, IReadOnlyList<NotebookModuleStyle>)>` |
+| `CreateAsync` | `Guid userId, string title, Guid instrumentId, PageSize pageSize, string coverColor, IReadOnlyList<NotebookModuleStyle>? styles, CancellationToken` | `Task<(Notebook, IReadOnlyList<NotebookModuleStyle>)>` |
+| `UpdateAsync` | `Guid notebookId, Guid userId, string title, string coverColor, CancellationToken` | `Task<(Notebook, IReadOnlyList<NotebookModuleStyle>)>` |
+| `DeleteAsync` | `Guid notebookId, Guid userId, CancellationToken` | `Task` |
+| `GetStylesAsync` | `Guid notebookId, Guid userId, CancellationToken` | `Task<IReadOnlyList<NotebookModuleStyle>>` |
+| `BulkUpdateStylesAsync` | `Guid notebookId, Guid userId, IReadOnlyList<NotebookModuleStyle> styles, CancellationToken` | `Task<IReadOnlyList<NotebookModuleStyle>>` |
+| `ApplyPresetAsync` | `Guid notebookId, Guid userId, Guid presetId, CancellationToken` | `Task<IReadOnlyList<NotebookModuleStyle>>` |
+
+**Domain/Services/NotebookService.cs** — key logic per method:
+
+**`CreateAsync`**
+1. Verify `instrumentId` exists via `IInstrumentRepository.GetByIdAsync` → throw `new InstrumentNotFoundException(instrumentId)` if null (maps to HTTP 422; `NotFoundException` must NOT be used here as it maps to 404).
+2. Resolve styles: if `styles` is null/empty → fetch `ISystemStylePresetRepository` preset where `IsDefault = true`, deserialize its `StylesJson` array into 12 `NotebookModuleStyle` records; otherwise use the provided list.
+3. Create `Notebook` with `Id = Guid.NewGuid()`, `CreatedAt = DateTime.UtcNow`, `UpdatedAt = DateTime.UtcNow`.
+4. Set `Id = Guid.NewGuid()` on each `NotebookModuleStyle`.
+5. `await _notebookRepo.AddAsync(notebook, ct)`.
+6. `foreach style: await _styleRepo.AddAsync(style, ct)`.
+7. `await _unitOfWork.CommitAsync(ct)`.
+8. Fetch and return via `_notebookRepo.GetWithStylesAsync`.
+
+**`GetByIdAsync`**
+1. `var result = await _notebookRepo.GetWithStylesAsync(notebookId, ct)` → throw `NotFoundException` if null.
+2. If `result.Notebook.UserId != userId` → throw `ForbiddenException`.
+3. Return tuple.
+
+**`UpdateAsync`**
+1. `GetByIdAsync` (includes ownership check).
+2. Update `notebook.Title`, `notebook.CoverColor`, `notebook.UpdatedAt = DateTime.UtcNow`.
+3. `_notebookRepo.Update(notebook)`.
+4. `await _unitOfWork.CommitAsync(ct)`.
+5. Fetch and return full detail.
+
+**`DeleteAsync`**
+1. `GetByIdAsync` (includes ownership check).
+2. Check for active exports: `await _pdfExportRepo.HasActiveExportForNotebookAsync(notebookId, ct)` → if true, throw `ConflictException("ACTIVE_EXPORT_EXISTS", ...)` (409).
+3. `_notebookRepo.Remove(notebook)`.
+4. `await _unitOfWork.CommitAsync(ct)`.
+
+**`BulkUpdateStylesAsync`**
+1. Ownership check via `GetByIdAsync` (also fetches notebook for UpdatedAt update).
+2. Validate `styles` has exactly 12 items covering all `ModuleType` values (throw `BadRequestException` if not).
+3. Fetch existing 12 style records via `_styleRepo.GetByNotebookIdAsync`.
+4. For each existing record, find the matching incoming style by `ModuleType` and overwrite `StylesJson` in place. `Id` is preserved — no delete/recreate. Call `_styleRepo.Update(record)`.
+5. Update `notebook.UpdatedAt = DateTime.UtcNow`. Call `_notebookRepo.Update(notebook)`.
+6. `await _unitOfWork.CommitAsync(ct)`.
+7. Return updated records.
+
+**`ApplyPresetAsync`**
+1. Ownership check on notebook (via `GetByIdAsync` — also fetches notebook for UpdatedAt update).
+2. Try `_systemPresetRepo.GetByIdAsync(presetId, ct)`. If null, try `_userPresetRepo.GetByIdAsync(presetId, ct)`.
+3. If user-saved preset found but `preset.UserId != userId` → throw `ForbiddenException`.
+4. If both null → throw `NotFoundException`.
+5. Deserialize preset's `StylesJson` array. Extract per-ModuleType style properties.
+6. Fetch existing 12 notebook style records.
+7. For each, update `StylesJson` from preset entry. Call `_styleRepo.Update(record)`.
+8. Update `notebook.UpdatedAt = DateTime.UtcNow`. Call `_notebookRepo.Update(notebook)`.
+9. `await _unitOfWork.CommitAsync(ct)`.
+10. Return updated records.
+
+---
+
+### Step 5 — API Models and Validators
+
+**ApiModels/Notebooks/** (all new):
+
+`ModuleStyleRequest` — record with all style fields + `ModuleType`.
+`ModuleStyleRequestValidator` — validates hex colours (regex `^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$`), enum values for `BorderStyle` and `FontFamily`, numeric ranges: `BorderWidth` ∈ [0, 20], `BorderRadius` ∈ [0, 50].
+
+`CreateNotebookRequest` — `Title`, `InstrumentId`, `PageSize` (string), `CoverColor`, `Styles?`.
+`CreateNotebookRequestValidator` — validates title max 200, `PageSize` enum, `CoverColor` hex, and if `Styles` provided: count == 12 and all 12 `ModuleType` values present.
+
+`UpdateNotebookRequest` — `Title`, `CoverColor`.
+`UpdateNotebookRequestValidator` — validates title max 200, `CoverColor` hex.
+
+`NotebookSummaryResponse`, `NotebookDetailResponse`, `ModuleStyleResponse`, `SystemStylePresetResponse` — records with response fields.
+
+---
+
+### Step 6 — Controllers
+
+**Api/Controllers/NotebooksController.cs**
+```
+[ApiController][Route("notebooks")][Authorize]
+private Guid GetUserId() — parses NameIdentifier claim
+
+GET  /notebooks               → 200 List<NotebookSummaryResponse>
+POST /notebooks               → 201 NotebookDetailResponse
+GET  /notebooks/{id}          → 200 NotebookDetailResponse
+PUT  /notebooks/{id}          → 200 NotebookDetailResponse
+DELETE /notebooks/{id}        → 204
+
+GET  /notebooks/{id}/styles                         → 200 List<ModuleStyleResponse>
+PUT  /notebooks/{id}/styles                         → 200 List<ModuleStyleResponse>
+POST /notebooks/{id}/styles/apply-preset/{presetId} → 200 List<ModuleStyleResponse>
+```
+
+**Style serialization in controller** (for POST and PUT styles):
+```csharp
+// Serialize ModuleStyleRequest → NotebookModuleStyle.StylesJson
+private static NotebookModuleStyle ToStyleDomain(ModuleStyleRequest r) =>
+    new()
+    {
+        ModuleType = Enum.Parse<ModuleType>(r.ModuleType),
+        StylesJson = JsonSerializer.Serialize(new
+        {
+            backgroundColor = r.BackgroundColor,
+            borderColor = r.BorderColor,
+            borderStyle = r.BorderStyle,
+            borderWidth = r.BorderWidth,
+            borderRadius = r.BorderRadius,
+            headerBgColor = r.HeaderBgColor,
+            headerTextColor = r.HeaderTextColor,
+            bodyTextColor = r.BodyTextColor,
+            fontFamily = r.FontFamily
+        }, _jsonOptions)
+    };
+```
+
+**Api/Controllers/PresetsController.cs**
+```
+[ApiController][Route("presets")]   (no [Authorize])
+GET /presets → 200 List<SystemStylePresetResponse>
+```
+
+---
+
+### Step 7 — AutoMapper Profiles
+
+**Api/Mapping/DomainToResponseProfile.cs** — add:
+
+- `NotebookSummary → NotebookSummaryResponse`
+- `(Notebook, IReadOnlyList<NotebookModuleStyle>) → NotebookDetailResponse` — use a custom resolver or map in controller via `mapper.Map<NotebookDetailResponse>(notebook)` then `dest.Styles = mapper.Map<List<ModuleStyleResponse>>(styles)`
+- `NotebookModuleStyle → ModuleStyleResponse` — via `ITypeConverter<NotebookModuleStyle, ModuleStyleResponse>` that deserializes `StylesJson`
+- `SystemStylePreset → SystemStylePresetResponse` — deserialize `StylesJson` array to `List<ModuleStyleResponse>`, setting `Id = Guid.Empty` and `NotebookId = Guid.Empty` on each entry (preset styles have no notebook-specific identity)
+
+Private `StyleProperties` record (within the profile file) for JSON deserialization:
+```csharp
+private record StyleProperties(
+    string BackgroundColor, string BorderColor, string BorderStyle,
+    int BorderWidth, int BorderRadius, string HeaderBgColor,
+    string HeaderTextColor, string BodyTextColor, string FontFamily);
+```
+
+**Repository/Mapping/EntityToDomainProfile.cs** — add:
+- `NotebookEntity → NotebookSummary` mapping (used by the updated `GetByUserIdAsync`)
+
+---
+
+### Step 8 — DI Registration
+
+**Application/Extensions/ServiceCollectionExtensions.cs**:
+
+In `AddRepositories()`: add `services.AddScoped<ISystemStylePresetRepository, SystemStylePresetRepository>();`
+
+In `AddDomainServices()`: add `services.AddScoped<INotebookService, NotebookService>();`
+
+---
+
+### Step 9 — Tests
+
+**Tests/Unit/Services/NotebookServiceTests.cs**
+
+Dependencies mocked: `INotebookRepository`, `INotebookModuleStyleRepository`, `ISystemStylePresetRepository`, `IUserSavedPresetRepository`, `IInstrumentRepository`, `IPdfExportRepository`, `IUnitOfWork`.
+
+| Test | Covers |
+|---|---|
+| `CreateAsync_WithNullStyles_AppliesColorfulPreset` | Colorful preset applied when styles omitted |
+| `CreateAsync_WithExplicitStyles_UsesProvidedStyles` | Custom styles used when provided |
+| `CreateAsync_WithUnknownInstrumentId_ThrowsNotFoundException` | INSTRUMENT_NOT_FOUND |
+| `GetByIdAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException` | Ownership — 403 |
+| `GetByIdAsync_NotebookDoesNotExist_ThrowsNotFoundException` | 404 |
+| `UpdateAsync_ChangesOnlyTitleAndCoverColor` | Happy path update |
+| `DeleteAsync_RemovesNotebook` | Happy path delete |
+| `DeleteAsync_ActiveExportExists_ThrowsConflictException` | 409 ACTIVE_EXPORT_EXISTS |
+| `BulkUpdateStylesAsync_ReplacesAllTwelveStyles` | Happy path bulk update |
+| `ApplyPresetAsync_SystemPreset_UpdatesAllTwelveStyles` | System preset applied |
+| `ApplyPresetAsync_UserPreset_OwnershipMismatch_ThrowsForbidden` | User preset 403 |
+| `ApplyPresetAsync_PresetNotFound_ThrowsNotFoundException` | 404 |
+
+**Tests/Integration/Controllers/NotebooksControllerTests.cs**
+
+| Test | Covers |
+|---|---|
+| `GetNotebooks_Returns200WithEmptyArray_WhenNoNotebooks` | Empty list |
+| `GetNotebooks_Returns200OrderedByCreatedAtAsc` | Ordering |
+| `GetNotebooks_Returns401_WhenUnauthenticated` | Auth guard |
+| `CreateNotebook_Returns201WithTwelveStyles_WhenNoStylesProvided` | Default Colorful styles |
+| `CreateNotebook_Returns201WithProvidedStyles` | Custom styles |
+| `CreateNotebook_Returns400_WhenTitleMissing` | Validation |
+| `CreateNotebook_Returns400_WhenCoverColorInvalid` | Hex validation |
+| `CreateNotebook_Returns422_WhenInstrumentIdNotFound` | INSTRUMENT_NOT_FOUND |
+| `GetNotebook_Returns200WithStyles` | Detail with styles |
+| `GetNotebook_Returns403_WhenNotOwnedByUser` | Ownership |
+| `GetNotebook_Returns404_WhenNotFound` | Not found |
+| `UpdateNotebook_Returns200WithUpdatedValues` | Happy path update |
+| `UpdateNotebook_Returns400_WhenPageSizeIncluded` | NOTEBOOK_PAGE_SIZE_IMMUTABLE |
+| `UpdateNotebook_Returns400_WhenInstrumentIdIncluded` | NOTEBOOK_INSTRUMENT_IMMUTABLE |
+| `DeleteNotebook_Returns204` | Happy path delete |
+| `GetStyles_Returns200WithTwelveItems` | Style list |
+| `BulkUpdateStyles_Returns200WithUpdatedStyles` | Bulk update |
+| `BulkUpdateStyles_Returns400_WhenNotTwelveItems` | Validation |
+| `ApplyPreset_Returns200_WithSystemPreset` | System preset |
+| `ApplyPreset_Returns404_WhenPresetNotFound` | Not found |
+
+**Tests/Integration/Controllers/PresetsControllerTests.cs**
+
+| Test | Covers |
+|---|---|
+| `GetPresets_Returns200WithFivePresets_WhenUnauthenticated` | Public endpoint, no auth needed |
+| `GetPresets_Returns200OrderedByDisplayOrder` | Ordering by displayOrder |
+| `GetPresets_HasColorfulAsDefault` | Colorful isDefault = true |
