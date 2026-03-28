@@ -17,8 +17,8 @@ public class SystemStylePresetSeeder(AppDbContext context)
         if (await context.SystemStylePresets.AnyAsync(ct)) return;
 
         context.SystemStylePresets.AddRange(
-            BuildPreset("Classic", 1, true, BuildClassicStyles()),
-            BuildPreset("Colorful", 2, false, BuildColorfulStyles()),
+            BuildPreset("Classic", 1, false, BuildClassicStyles()),
+            BuildPreset("Colorful", 2, true, BuildColorfulStyles()),
             BuildPreset("Dark", 3, false, BuildDarkStyles()),
             BuildPreset("Minimal", 4, false, BuildMinimalStyles()),
             BuildPreset("Pastel", 5, false, BuildPastelStyles())

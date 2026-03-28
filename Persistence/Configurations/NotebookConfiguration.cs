@@ -14,6 +14,7 @@ public class NotebookConfiguration : IEntityTypeConfiguration<NotebookEntity>
 
         builder.Property(n => n.Title).IsRequired().HasColumnType("nvarchar(max)");
         builder.Property(n => n.PageSize).IsRequired();
+        builder.Property(n => n.CoverColor).IsRequired().HasMaxLength(7);
         builder.Property(n => n.CreatedAt).IsRequired();
         builder.Property(n => n.UpdatedAt).IsRequired();
 

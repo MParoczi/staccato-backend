@@ -1,6 +1,6 @@
 namespace EntityModels.Entities;
 
-public class SystemStylePresetEntity
+public class SystemStylePresetEntity : IEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
