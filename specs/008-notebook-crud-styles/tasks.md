@@ -148,7 +148,7 @@
 - [x] T045 Update `specs/008-notebook-crud-styles/contracts/api-contracts.md` — add `Error 409: ACTIVE_EXPORT_EXISTS` to the `DELETE /notebooks/{id}` section and add `ACTIVE_EXPORT_EXISTS | 409 | Active PDF export exists for the notebook` row to the Error Code Reference table
 - [x] T046 Run `dotnet build Staccato.sln` and resolve any remaining compiler errors or warnings
 - [x] T047 Run `dotnet test Staccato.sln` and confirm all tests pass (unit + integration)
-- [ ] T048 Apply migration (`dotnet ef database update --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`) and run the quickstart.md manual test sequence end-to-end
+- [x] T048 Apply migration (`dotnet ef database update --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`) and run the quickstart.md manual test sequence end-to-end
 
 ---
 
