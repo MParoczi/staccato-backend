@@ -3,6 +3,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
 using DomainModels.Enums;
 using DomainModels.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Domain.Services;
 
@@ -11,7 +12,8 @@ public class UserService(
     IUserSavedPresetRepository presetRepository,
     IInstrumentRepository instrumentRepository,
     IAzureBlobService blobService,
-    IUnitOfWork unitOfWork) : IUserService
+    IUnitOfWork unitOfWork,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<User> GetProfileAsync(Guid userId, CancellationToken ct = default)
     {
@@ -72,11 +74,51 @@ public class UserService(
         await unitOfWork.CommitAsync(ct);
     }
 
-    public Task<User> UploadAvatarAsync(Guid userId, Stream stream, string contentType, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task<User> UploadAvatarAsync(Guid userId, Stream stream, string contentType, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct)
+                   ?? throw new NotFoundException("User not found.");
 
-    public Task DeleteAvatarAsync(Guid userId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        if (user.AvatarUrl is not null)
+        {
+            try
+            {
+                await blobService.DeleteAsync(ExtractBlobPath(user.AvatarUrl), ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to delete old avatar blob for user {UserId}. Proceeding with upload.", userId);
+            }
+        }
+
+        var url = await blobService.UploadAsync(stream, contentType, $"avatars/{userId}", ct);
+        user.AvatarUrl = url;
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(ct);
+        return user;
+    }
+
+    public async Task DeleteAvatarAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct)
+                   ?? throw new NotFoundException("User not found.");
+
+        if (user.AvatarUrl is null)
+            return;
+
+        await blobService.DeleteAsync(ExtractBlobPath(user.AvatarUrl), ct);
+        user.AvatarUrl = null;
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(ct);
+    }
+
+    private static string ExtractBlobPath(string url)
+    {
+        var path = new Uri(url).AbsolutePath;
+        // AbsolutePath = "/{container}/{blobPath}" → strip leading "/{container}/"
+        var idx = path.IndexOf('/', 1);
+        return idx >= 0 ? path[(idx + 1)..] : path.TrimStart('/');
+    }
 
     public Task<IReadOnlyList<UserSavedPreset>> GetPresetsAsync(Guid userId, CancellationToken ct = default)
         => throw new NotImplementedException();

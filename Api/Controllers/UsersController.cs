@@ -4,6 +4,7 @@ using AutoMapper;
 using Domain.Services;
 using DomainModels.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -53,6 +54,30 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
     public async Task<IActionResult> CancelDeletion(CancellationToken ct)
     {
         await userService.CancelDeletionAsync(GetUserId(), ct);
+        return NoContent();
+    }
+
+    [HttpPut("me/avatar")]
+    public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { code = "INVALID_FILE", message = "A file is required." });
+
+        if (file.Length > 2_097_152)
+            return BadRequest(new { code = "FILE_TOO_LARGE", message = "File must not exceed 2 MB." });
+
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+            return BadRequest(new { code = "INVALID_FILE_TYPE", message = "File must be a JPEG, PNG, or WebP image." });
+
+        var user = await userService.UploadAvatarAsync(GetUserId(), file.OpenReadStream(), file.ContentType, ct);
+        return Ok(mapper.Map<UserResponse>(user));
+    }
+
+    [HttpDelete("me/avatar")]
+    public async Task<IActionResult> DeleteAvatar(CancellationToken ct)
+    {
+        await userService.DeleteAvatarAsync(GetUserId(), ct);
         return NoContent();
     }
 }
