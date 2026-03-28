@@ -3,16 +3,20 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.OpenApi.Models;
 using ApiModels;
 using Application.BackgroundServices;
 using Application.Options;
 using Azure.Storage.Blobs;
+using Application.Services;
 using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
+using Domain.Services;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Context;
@@ -87,9 +91,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddRateLimiting(
-        this IServiceCollection services,
-        RateLimitOptions rateLimitOptions)
+    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
         {
@@ -98,6 +100,8 @@ public static class ServiceCollectionExtensions
                 if (context.Request.Path.StartsWithSegments("/auth"))
                 {
                     var remoteIp = context.Connection.RemoteIpAddress ?? IPAddress.Loopback;
+                    var rateLimitOptions = context.RequestServices
+                        .GetRequiredService<IOptions<RateLimitOptions>>().Value;
                     return RateLimitPartition.GetFixedWindowLimiter(remoteIp, _ =>
                         new FixedWindowRateLimiterOptions
                         {
@@ -202,9 +206,72 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    // Populated in a future feature.
+    public static IServiceCollection AddLocalizationSupport(this IServiceCollection services)
+    {
+        services.AddLocalization();
+
+        services.AddRequestLocalization(options =>
+        {
+            var supportedCultures = new[] { "en", "hu" };
+            options.SetDefaultCulture("en")
+                   .AddSupportedCultures(supportedCultures)
+                   .AddSupportedUICultures(supportedCultures);
+
+            // Only use Accept-Language header; strip region suffix (e.g. en-US → en).
+            options.RequestCultureProviders.Clear();
+            options.RequestCultureProviders.Add(
+                new Microsoft.AspNetCore.Localization.AcceptLanguageHeaderRequestCultureProvider());
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+        services.AddSingleton<IGoogleTokenValidator, GoogleTokenValidator>();
+        return services;
+    }
+
+    public static IServiceCollection AddSwagger(this IServiceCollection services)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Staccato API",
+                Version = "v1",
+                Description = "Backend API for the Staccato instrument learning notebook application."
+            });
+
+            var bearerScheme = new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Enter your JWT access token."
+            };
+            options.AddSecurityDefinition("Bearer", bearerScheme);
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
+
         return services;
     }
 }

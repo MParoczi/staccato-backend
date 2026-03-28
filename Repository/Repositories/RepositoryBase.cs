@@ -15,7 +15,7 @@ public abstract class RepositoryBase<TEntity, TDomain>(AppDbContext context, IMa
 
     public async Task<TDomain?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await _context.Set<TEntity>().FirstOrDefaultAsync(e => e.Id == id, ct);
+        var entity = await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(e => e.Id == id, ct);
         return _mapper.Map<TDomain?>(entity);
     }
 

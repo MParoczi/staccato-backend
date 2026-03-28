@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="EMAIL_ALREADY_REGISTERED" xml:space="preserve">
+    <value>An account with this email address already exists.</value>
+  </data>
+  <data name="INVALID_CREDENTIALS" xml:space="preserve">
+    <value>Invalid email address or password.</value>
+  </data>
+  <data name="NO_PASSWORD_SET" xml:space="preserve">
+    <value>This account uses Google Sign-In. Please log in with Google.</value>
+  </data>
+  <data name="INVALID_TOKEN" xml:space="preserve">
+    <value>Your session is no longer valid. Please log in again.</value>
+  </data>
+  <data name="TOKEN_EXPIRED" xml:space="preserve">
+    <value>Your session has expired. Please log in again.</value>
+  </data>
+  <data name="GOOGLE_AUTH_FAILED" xml:space="preserve">
+    <value>Google Sign-In failed. Please try again.</value>
+  </data>
+  <data name="SERVICE_UNAVAILABLE" xml:space="preserve">
+    <value>An external service is temporarily unavailable. Please try again later.</value>
+  </data>
+</root>

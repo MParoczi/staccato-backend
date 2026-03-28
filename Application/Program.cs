@@ -35,14 +35,19 @@ builder.Services
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
+builder.Services
+    .AddOptions<GoogleOptions>()
+    .BindConfiguration("Google")
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 // Read values needed as parameters before Build() — do NOT use BuildServiceProvider().
 var corsConfiguration = builder.Configuration.GetSection("Cors").Get<CorsConfiguration>()!;
-var rateLimitOptions = builder.Configuration.GetSection("RateLimit").Get<RateLimitOptions>()!;
 
 // Service registrations.
 builder.Services.AddAuth(builder.Configuration);
 builder.Services.AddCorsPolicy(corsConfiguration);
-builder.Services.AddRateLimiting(rateLimitOptions);
+builder.Services.AddRateLimiting();
 builder.Services.AddAzureBlob(builder.Configuration);
 builder.Services.AddMappingProfiles();
 builder.Services.AddFluentValidationPipeline();
@@ -50,10 +55,12 @@ builder.Services.AddSignalRHub();
 builder.Services.AddBackgroundWorkers();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddRepositories();
+builder.Services.AddLocalizationSupport();
 builder.Services.AddDomainServices();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 
@@ -64,8 +71,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Middleware pipeline — exact order per FR-024.
-app.UseMiddleware<BusinessExceptionMiddleware>();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseRequestLocalization();
 app.UseExceptionHandler();
+app.UseMiddleware<BusinessExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("StaccatoPolicy"); // must match ServiceCollectionExtensions.CorsPolicyName
 app.UseRateLimiter();
@@ -75,3 +89,6 @@ app.MapHub<NotificationHub>("/hubs/notifications");
 app.MapControllers();
 
 app.Run();
+
+// Expose Program to the Tests project for WebApplicationFactory<Program>.
+public partial class Program { }
