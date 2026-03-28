@@ -10,7 +10,10 @@ public class InstrumentServiceTests
 {
     private readonly Mock<IInstrumentRepository> _instrumentRepo = new();
 
-    private InstrumentService CreateService() => new(_instrumentRepo.Object);
+    private InstrumentService CreateService()
+    {
+        return new InstrumentService(_instrumentRepo.Object);
+    }
 
     [Fact]
     public async Task GetAllAsync_ReturnsAllInstrumentsFromRepository()

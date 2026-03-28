@@ -1,6 +1,8 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ApiModels.Chords;
 using ApiModels.Instruments;
+using ApiModels.Notebooks;
 using ApiModels.Users;
 using AutoMapper;
 using DomainModels.Enums;
@@ -10,6 +12,12 @@ namespace Api.Mapping;
 
 public class DomainToResponseProfile : Profile
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
+
     public DomainToResponseProfile()
     {
         CreateMap<User, UserResponse>()
@@ -78,5 +86,93 @@ public class DomainToResponseProfile : Profile
                 s.Extension,
                 s.Alternation,
                 ctx.Mapper.Map<IReadOnlyList<ChordPositionResponse>>(s.Positions)));
+
+        CreateMap<NotebookModuleStyle, ModuleStyleResponse>()
+            .ConvertUsing((src, _, _) =>
+            {
+                var props = JsonSerializer.Deserialize<StyleProperties>(src.StylesJson, JsonOptions)!;
+                return new ModuleStyleResponse(
+                    src.Id,
+                    src.NotebookId,
+                    src.ModuleType.ToString(),
+                    props.BackgroundColor,
+                    props.BorderColor,
+                    props.BorderStyle,
+                    props.BorderWidth,
+                    props.BorderRadius,
+                    props.HeaderBgColor,
+                    props.HeaderTextColor,
+                    props.BodyTextColor,
+                    props.FontFamily);
+            });
+
+        CreateMap<NotebookSummary, NotebookSummaryResponse>()
+            .ConstructUsing((s, _) => new NotebookSummaryResponse(
+                s.Id,
+                s.Title,
+                s.InstrumentName,
+                s.PageSize.ToString(),
+                s.CoverColor,
+                s.LessonCount,
+                s.CreatedAt.ToString("o"),
+                s.UpdatedAt.ToString("o")));
+
+        CreateMap<SystemStylePreset, SystemStylePresetResponse>()
+            .ConvertUsing((src, _, _) =>
+            {
+                var entries = JsonSerializer.Deserialize<List<PresetStyleEntry>>(src.StylesJson, JsonOptions)!;
+                var styles = entries.Select(e => new ModuleStyleResponse(
+                    Guid.Empty,
+                    Guid.Empty,
+                    e.ModuleType,
+                    e.BackgroundColor,
+                    e.BorderColor,
+                    e.BorderStyle,
+                    e.BorderWidth,
+                    e.BorderRadius,
+                    e.HeaderBgColor,
+                    e.HeaderTextColor,
+                    e.BodyTextColor,
+                    e.FontFamily)).ToList();
+                return new SystemStylePresetResponse(src.Id, src.Name, src.DisplayOrder, src.IsDefault, styles);
+            });
+
+        // NotebookDetailResponse requires Styles — controller builds final response using:
+        //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }
+        CreateMap<Notebook, NotebookDetailResponse>()
+            .ConstructUsing((s, _) => new NotebookDetailResponse(
+                s.Id,
+                s.Title,
+                s.InstrumentId,
+                s.InstrumentName,
+                s.PageSize.ToString(),
+                s.CoverColor,
+                s.LessonCount,
+                s.CreatedAt.ToString("o"),
+                s.UpdatedAt.ToString("o"),
+                new List<ModuleStyleResponse>()));
     }
+
+    private record StyleProperties(
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
+
+    private record PresetStyleEntry(
+        string ModuleType,
+        string BackgroundColor,
+        string BorderColor,
+        string BorderStyle,
+        int BorderWidth,
+        int BorderRadius,
+        string HeaderBgColor,
+        string HeaderTextColor,
+        string BodyTextColor,
+        string FontFamily);
 }

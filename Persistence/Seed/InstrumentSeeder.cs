@@ -15,7 +15,7 @@ public class InstrumentSeeder(AppDbContext context)
         new() { Id = Guid.NewGuid(), Key = InstrumentKey.Bass5String, DisplayName = "5-String Bass", StringCount = 5 },
         new() { Id = Guid.NewGuid(), Key = InstrumentKey.Ukulele4String, DisplayName = "Ukulele", StringCount = 4 },
         new() { Id = Guid.NewGuid(), Key = InstrumentKey.Banjo4String, DisplayName = "4-String Banjo", StringCount = 4 },
-        new() { Id = Guid.NewGuid(), Key = InstrumentKey.Banjo5String, DisplayName = "5-String Banjo", StringCount = 5 },
+        new() { Id = Guid.NewGuid(), Key = InstrumentKey.Banjo5String, DisplayName = "5-String Banjo", StringCount = 5 }
     ];
 
     public virtual async Task SeedAsync(CancellationToken ct = default)

@@ -8,15 +8,17 @@ namespace Persistence.Seed;
 
 public class ChordSeeder(AppDbContext context)
 {
-    protected virtual Stream? GetChordStream() =>
-        typeof(ChordSeeder).Assembly
+    protected virtual Stream? GetChordStream()
+    {
+        return typeof(ChordSeeder).Assembly
             .GetManifestResourceStream("Persistence.Data.guitar_chords.json");
+    }
 
     public virtual async Task SeedAsync(CancellationToken ct = default)
     {
         var stream = GetChordStream()
-            ?? throw new InvalidOperationException(
-                "Embedded chord data resource 'Persistence.Data.guitar_chords.json' not found.");
+                     ?? throw new InvalidOperationException(
+                         "Embedded chord data resource 'Persistence.Data.guitar_chords.json' not found.");
 
         List<ChordRecord>? records;
         try
@@ -37,13 +39,11 @@ public class ChordSeeder(AppDbContext context)
                 "Embedded chord data resource is empty or invalid.");
 
         foreach (var record in records)
-        {
             if (string.IsNullOrWhiteSpace(record.Root) ||
                 string.IsNullOrWhiteSpace(record.Quality) ||
                 record.Positions is null || record.Positions.Count == 0)
                 throw new InvalidOperationException(
                     $"Chord record '{record.Name}' is missing root, quality, or positions.");
-        }
 
         var guitar = await context.Instruments
                          .FirstOrDefaultAsync(i => i.Key == InstrumentKey.Guitar6String, ct)
@@ -90,9 +90,9 @@ public class ChordSeeder(AppDbContext context)
 
     private sealed class ChordRecord
     {
-        public string Name { get; set; } = string.Empty;
-        public string Root { get; set; } = string.Empty;
-        public string Quality { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
+        public string Root { get; } = string.Empty;
+        public string Quality { get; } = string.Empty;
         public string? Extension { get; set; }
         public string? Alternation { get; set; }
         public List<JsonElement>? Positions { get; set; }

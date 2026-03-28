@@ -8,6 +8,7 @@ public class NotebookEntity : IEntity
     public string Title { get; set; } = string.Empty;
     public Guid InstrumentId { get; set; }
     public PageSize PageSize { get; set; }
+    public string CoverColor { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

@@ -29,9 +29,9 @@ public class UsersControllerTests
 
     private static readonly string[] AllModuleTypes =
     [
-        "Title", "Breadcrumb", "Text", "BulletList", "NumberedList",
-        "CheckboxList", "Table", "MusicalNotes", "ChordProgression",
-        "ChordTablatureGroup", "Date", "SectionHeading"
+        "Title", "Breadcrumb", "Subtitle", "Theory", "Practice",
+        "Example", "Important", "Tip", "Homework", "Question",
+        "ChordTablature", "FreeText"
     ];
 
     private static WebApplicationFactory<Program> CreateFactory()
