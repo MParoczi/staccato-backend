@@ -69,10 +69,10 @@
 
 **Independent Test**: `DELETE /users/me` → 204 → `GET /users/me` returns `scheduledDeletionAt` set ~30 days out → `POST /users/me/cancel-deletion` → 204 → `GET /users/me` returns `scheduledDeletionAt: null`.
 
-- [ ] T022 [US2] Implement `UserService.ScheduleDeletionAsync(Guid userId, CancellationToken ct)` in `Domain/Services/UserService.cs` — load user; if `ScheduledDeletionAt != null` throw `ConflictException("ACCOUNT_DELETION_ALREADY_SCHEDULED", ...)`; set `ScheduledDeletionAt = DateTime.UtcNow.AddDays(30)`; call `_uow.CommitAsync(ct)`
-- [ ] T023 [US2] Implement `UserService.CancelDeletionAsync(Guid userId, CancellationToken ct)` in `Domain/Services/UserService.cs` — load user; if `ScheduledDeletionAt == null` throw `BadRequestException("ACCOUNT_DELETION_NOT_SCHEDULED", ...)`; set `ScheduledDeletionAt = null`; call `_uow.CommitAsync(ct)`
-- [ ] T024 [US2] Add `ScheduleDeletion` action to `Api/Controllers/UsersController.cs` — `[HttpDelete("me")]` calling `await _userService.ScheduleDeletionAsync(GetUserId(), ct)`; return `NoContent()`
-- [ ] T025 [US2] Add `CancelDeletion` action to `Api/Controllers/UsersController.cs` — `[HttpPost("me/cancel-deletion")]` calling `await _userService.CancelDeletionAsync(GetUserId(), ct)`; return `NoContent()`
+- [x] T022 [US2] Implement `UserService.ScheduleDeletionAsync(Guid userId, CancellationToken ct)` in `Domain/Services/UserService.cs` — load user; if `ScheduledDeletionAt != null` throw `ConflictException("ACCOUNT_DELETION_ALREADY_SCHEDULED", ...)`; set `ScheduledDeletionAt = DateTime.UtcNow.AddDays(30)`; call `_uow.CommitAsync(ct)`
+- [x] T023 [US2] Implement `UserService.CancelDeletionAsync(Guid userId, CancellationToken ct)` in `Domain/Services/UserService.cs` — load user; if `ScheduledDeletionAt == null` throw `BadRequestException("ACCOUNT_DELETION_NOT_SCHEDULED", ...)`; set `ScheduledDeletionAt = null`; call `_uow.CommitAsync(ct)`
+- [x] T024 [US2] Add `ScheduleDeletion` action to `Api/Controllers/UsersController.cs` — `[HttpDelete("me")]` calling `await _userService.ScheduleDeletionAsync(GetUserId(), ct)`; return `NoContent()`
+- [x] T025 [US2] Add `CancelDeletion` action to `Api/Controllers/UsersController.cs` — `[HttpPost("me/cancel-deletion")]` calling `await _userService.CancelDeletionAsync(GetUserId(), ct)`; return `NoContent()`
 
 **Checkpoint**: Deletion scheduling and cancellation work. 409 on double-schedule, 400 on cancel-when-not-scheduled.
 

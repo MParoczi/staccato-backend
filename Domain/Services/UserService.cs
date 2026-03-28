@@ -44,11 +44,33 @@ public class UserService(
         return user;
     }
 
-    public Task ScheduleDeletionAsync(Guid userId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+    public async Task ScheduleDeletionAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct)
+                   ?? throw new NotFoundException("User not found.");
 
-    public Task CancelDeletionAsync(Guid userId, CancellationToken ct = default)
-        => throw new NotImplementedException();
+        if (user.ScheduledDeletionAt is not null)
+            throw new ConflictException("ACCOUNT_DELETION_ALREADY_SCHEDULED",
+                "Account is already scheduled for deletion.");
+
+        user.ScheduledDeletionAt = DateTime.UtcNow.AddDays(30);
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(ct);
+    }
+
+    public async Task CancelDeletionAsync(Guid userId, CancellationToken ct = default)
+    {
+        var user = await userRepository.GetByIdAsync(userId, ct)
+                   ?? throw new NotFoundException("User not found.");
+
+        if (user.ScheduledDeletionAt is null)
+            throw new BadRequestException("ACCOUNT_DELETION_NOT_SCHEDULED",
+                "Account is not scheduled for deletion.");
+
+        user.ScheduledDeletionAt = null;
+        userRepository.Update(user);
+        await unitOfWork.CommitAsync(ct);
+    }
 
     public Task<User> UploadAvatarAsync(Guid userId, Stream stream, string contentType, CancellationToken ct = default)
         => throw new NotImplementedException();

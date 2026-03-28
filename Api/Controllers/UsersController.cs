@@ -41,4 +41,18 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
 
         return Ok(mapper.Map<UserResponse>(user));
     }
+
+    [HttpDelete("me")]
+    public async Task<IActionResult> ScheduleDeletion(CancellationToken ct)
+    {
+        await userService.ScheduleDeletionAsync(GetUserId(), ct);
+        return NoContent();
+    }
+
+    [HttpPost("me/cancel-deletion")]
+    public async Task<IActionResult> CancelDeletion(CancellationToken ct)
+    {
+        await userService.CancelDeletionAsync(GetUserId(), ct);
+        return NoContent();
+    }
 }
