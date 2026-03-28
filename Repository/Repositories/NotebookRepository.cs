@@ -37,6 +37,7 @@ public class NotebookRepository(AppDbContext context, IMapper mapper)
         Guid notebookId, CancellationToken ct = default)
     {
         var entity = await _context.Notebooks
+            .AsNoTracking()
             .Include(n => n.Instrument)
             .Include(n => n.Lessons)
             .Include(n => n.ModuleStyles)

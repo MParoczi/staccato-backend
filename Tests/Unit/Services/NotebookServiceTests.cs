@@ -233,4 +233,155 @@ public class NotebookServiceTests
         await Assert.ThrowsAsync<NotFoundException>(() =>
             svc.GetByIdAsync(notebookId, Guid.NewGuid()));
     }
+
+    // ── UpdateAsync ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateAsync_ChangesOnlyTitleAndCoverColor()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+
+        var notebook = new Notebook
+        {
+            Id         = notebookId,
+            UserId     = userId,
+            Title      = "Original Title",
+            CoverColor = "#000000",
+            UpdatedAt  = DateTime.UtcNow.AddDays(-1)
+        };
+
+        var styles = BuildStyles(notebookId);
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)styles));
+
+        var svc = CreateService();
+        var (result, _) = await svc.UpdateAsync(notebookId, userId, "New Title", "#ffffff");
+
+        Assert.Equal("New Title", result.Title);
+        Assert.Equal("#ffffff", result.CoverColor);
+
+        _notebookRepo.Verify(r => r.Update(It.IsAny<Notebook>()), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotebookNotFound_ThrowsNotFoundException()
+    {
+        var notebookId = Guid.NewGuid();
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(default((Notebook, IReadOnlyList<NotebookModuleStyle>)?));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            svc.UpdateAsync(notebookId, Guid.NewGuid(), "New Title", "#ffffff"));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
+    {
+        var notebookId  = Guid.NewGuid();
+        var ownerId     = Guid.NewGuid();
+        var requesterId = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = ownerId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            svc.UpdateAsync(notebookId, requesterId, "New Title", "#ffffff"));
+    }
+
+    // ── DeleteAsync ───────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteAsync_RemovesNotebook()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _pdfExportRepo
+            .Setup(r => r.HasActiveExportForNotebookAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var svc = CreateService();
+        await svc.DeleteAsync(notebookId, userId);
+
+        _notebookRepo.Verify(r => r.Remove(notebook), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_NotebookNotFound_ThrowsNotFoundException()
+    {
+        var notebookId = Guid.NewGuid();
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(default((Notebook, IReadOnlyList<NotebookModuleStyle>)?));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            svc.DeleteAsync(notebookId, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_NotebookBelongsToOtherUser_ThrowsForbiddenException()
+    {
+        var notebookId  = Guid.NewGuid();
+        var ownerId     = Guid.NewGuid();
+        var requesterId = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = ownerId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            svc.DeleteAsync(notebookId, requesterId));
+    }
+
+    [Fact]
+    public async Task DeleteAsync_ActiveExportExists_ThrowsConflictException()
+    {
+        var userId     = Guid.NewGuid();
+        var notebookId = Guid.NewGuid();
+
+        var notebook = new Notebook { Id = notebookId, UserId = userId };
+
+        _notebookRepo
+            .Setup(r => r.GetWithStylesAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((notebook, (IReadOnlyList<NotebookModuleStyle>)new List<NotebookModuleStyle>()));
+
+        _pdfExportRepo
+            .Setup(r => r.HasActiveExportForNotebookAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var svc = CreateService();
+
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            svc.DeleteAsync(notebookId, userId));
+
+        _notebookRepo.Verify(r => r.Remove(It.IsAny<Notebook>()), Times.Never);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

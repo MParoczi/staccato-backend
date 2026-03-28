@@ -435,6 +435,190 @@ public class NotebooksControllerTests
 
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
+
+    // ── PUT /notebooks/{id} ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateNotebook_Returns200WithUpdatedValues()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Original Title",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#111111"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var created = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
+        var notebookId = created.RootElement.GetProperty("id").GetString()!;
+
+        var updateResp = await client.PutAsJsonAsync($"/notebooks/{notebookId}", new
+        {
+            title      = "Updated Title",
+            coverColor = "#aabbcc"
+        });
+
+        Assert.Equal(HttpStatusCode.OK, updateResp.StatusCode);
+        var json = JsonDocument.Parse(await updateResp.Content.ReadAsStringAsync());
+        Assert.Equal("Updated Title", json.RootElement.GetProperty("title").GetString());
+        Assert.Equal("#aabbcc", json.RootElement.GetProperty("coverColor").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateNotebook_Returns400_WhenPageSizeIncluded()
+    {
+        using var factory = CreateFactory();
+        var client = await RegisterAsync(factory);
+
+        var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
+        {
+            title      = "Test",
+            coverColor = "#ffffff",
+            pageSize   = "A5"  // immutable field — must return 400
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateNotebook_Returns400_WhenInstrumentIdIncluded()
+    {
+        using var factory = CreateFactory();
+        var client = await RegisterAsync(factory);
+
+        var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
+        {
+            title        = "Test",
+            coverColor   = "#ffffff",
+            instrumentId = Guid.NewGuid()  // immutable field — must return 400
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, updateResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateNotebook_Returns403_WhenNotOwnedByUser()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+
+        var clientA = await RegisterAsync(factory);
+        var createResp = await clientA.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "User A Notebook",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#123456"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var clientB = await RegisterAsync(factory);
+        var updateResp = await clientB.PutAsJsonAsync($"/notebooks/{notebookId}", new
+        {
+            title      = "Hijacked",
+            coverColor = "#ffffff"
+        });
+
+        Assert.Equal(HttpStatusCode.Forbidden, updateResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateNotebook_Returns404_WhenNotFound()
+    {
+        using var factory = CreateFactory();
+        var client = await RegisterAsync(factory);
+
+        var updateResp = await client.PutAsJsonAsync($"/notebooks/{Guid.NewGuid()}", new
+        {
+            title      = "Test",
+            coverColor = "#ffffff"
+        });
+
+        Assert.Equal(HttpStatusCode.NotFound, updateResp.StatusCode);
+    }
+
+    // ── DELETE /notebooks/{id} ────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteNotebook_Returns204()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "To Delete",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ff0000"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookId = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var deleteResp = await client.DeleteAsync($"/notebooks/{notebookId}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
+
+        // Verify notebook is gone
+        var getResp = await client.GetAsync($"/notebooks/{notebookId}");
+        Assert.Equal(HttpStatusCode.NotFound, getResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteNotebook_Returns409_WhenActiveExportExists()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        // Create notebook
+        var createResp = await client.PostAsJsonAsync("/notebooks", new
+        {
+            title        = "Export Active",
+            instrumentId = SeedInstrumentId,
+            pageSize     = "A4",
+            coverColor   = "#ff0000"
+        });
+        createResp.EnsureSuccessStatusCode();
+        var notebookIdStr = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+        var notebookId = Guid.Parse(notebookIdStr);
+
+        // Get current user ID from profile
+        var profileResp = await client.GetAsync("/users/me");
+        var userId = Guid.Parse(
+            JsonDocument.Parse(await profileResp.Content.ReadAsStringAsync())
+                .RootElement.GetProperty("id").GetString()!);
+
+        // Seed an active (Pending) export directly
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            db.PdfExports.Add(new EntityModels.Entities.PdfExportEntity
+            {
+                Id         = Guid.NewGuid(),
+                NotebookId = notebookId,
+                UserId     = userId,
+                Status     = DomainModels.Enums.ExportStatus.Pending,
+                CreatedAt  = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var deleteResp = await client.DeleteAsync($"/notebooks/{notebookId}");
+        Assert.Equal(HttpStatusCode.Conflict, deleteResp.StatusCode);
+    }
 }
 
 // ── No-op seeders ─────────────────────────────────────────────────────────────
