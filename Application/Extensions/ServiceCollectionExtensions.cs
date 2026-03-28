@@ -237,6 +237,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAzureBlobService, AzureBlobService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IChordService, ChordService>();
+        services.AddScoped<IInstrumentService, InstrumentService>();
         services.AddResponseCaching();
         return services;
     }

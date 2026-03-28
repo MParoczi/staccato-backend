@@ -67,11 +67,11 @@ No new project scaffolding required — implementing into an existing 9-project 
 
 **Independent Test**: `GET /instruments` without an `Authorization` header returns `200` with an array of all instrument records, each containing `id`, `key`, `name`, and `stringCount`.
 
-- [ ] T027 [US3] Create `Domain/Services/IInstrumentService.cs` and `Domain/Services/InstrumentService.cs`: `GetAllAsync(CancellationToken ct = default)` — inject `IInstrumentRepository`, delegate to `IInstrumentRepository.GetAllAsync(ct)`, return `IReadOnlyList<Instrument>`
-- [ ] T028 [US3] Register `IInstrumentService`/`InstrumentService` as `AddScoped` in `Application/Extensions/ServiceCollectionExtensions.cs` (same file as T023 — add the second registration)
-- [ ] T029 [US3] Create `Api/Controllers/InstrumentsController.cs` with route `[Route("api/instruments")]`: `GET /instruments` — no `[Authorize]`; call `IInstrumentService.GetAllAsync(ct)`; map to `IReadOnlyList<InstrumentResponse>`; return `Ok(result)`
-- [ ] T030 [P] [US3] Create `Tests/Unit/Services/InstrumentServiceTests.cs`: happy path — `GetAllAsync` returns all instruments returned by the repository mock
-- [ ] T031 [US3] Create `Tests/Integration/Controllers/InstrumentsControllerTests.cs`: `GET /instruments` → 200 with all seeded instruments; `GET /instruments` without `Authorization` header → 200 (public endpoint, no auth required)
+- [x] T027 [US3] Create `Domain/Services/IInstrumentService.cs` and `Domain/Services/InstrumentService.cs`: `GetAllAsync(CancellationToken ct = default)` — inject `IInstrumentRepository`, delegate to `IInstrumentRepository.GetAllAsync(ct)`, return `IReadOnlyList<Instrument>`
+- [x] T028 [US3] Register `IInstrumentService`/`InstrumentService` as `AddScoped` in `Application/Extensions/ServiceCollectionExtensions.cs` (same file as T023 — add the second registration)
+- [x] T029 [US3] Create `Api/Controllers/InstrumentsController.cs` with route `[Route("api/instruments")]`: `GET /instruments` — no `[Authorize]`; call `IInstrumentService.GetAllAsync(ct)`; map to `IReadOnlyList<InstrumentResponse>`; return `Ok(result)`
+- [x] T030 [P] [US3] Create `Tests/Unit/Services/InstrumentServiceTests.cs`: happy path — `GetAllAsync` returns all instruments returned by the repository mock
+- [x] T031 [US3] Create `Tests/Integration/Controllers/InstrumentsControllerTests.cs`: `GET /instruments` → 200 with all seeded instruments; `GET /instruments` without `Authorization` header → 200 (public endpoint, no auth required)
 
 **Checkpoint**: All three public chord library endpoints are functional. Feature is complete.
 
