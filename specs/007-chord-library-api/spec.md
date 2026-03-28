@@ -27,8 +27,8 @@ a correctly-shaped array of chord summaries.
 
 1. **Given** seeded chord data exists, **When** `GET /chords?instrument=Guitar6String` is
    called, **Then** the response is `200` with an array of `ChordSummary` objects, each
-   containing `id`, `instrumentKey`, `name`, `root`, `quality`, `suffix`, and a
-   `previewPosition` matching the first chord position.
+   containing `id`, `instrumentKey`, `name`, `root`, `quality`, `extension`, `alternation`,
+   and a `previewPosition` matching the first chord position.
 
 2. **Given** seeded chord data exists, **When**
    `GET /chords?instrument=Guitar6String&root=F&quality=major` is called, **Then** only
@@ -107,6 +107,13 @@ containing `id`, `key`, `name`, and `stringCount`.
   → `200` with an empty array (valid but empty filter result, not an error).
 - What happens when the guitar_chords.json embedded resource is missing at startup? →
   Application startup fails with a clear error during `DbInitializer` execution.
+- What happens when `GET /chords?instrument=Guitar7String` is called and no chords have
+  been seeded for that instrument? → `200` with an empty array. The service validates that
+  the instrument record exists (returns `404` if not), then returns whatever chords are
+  found — zero is a valid result.
+- What happens when `PositionsJson` stored in the database cannot be deserialized at
+  runtime (malformed JSON)? → `500`. The deserialization exception propagates through the
+  global error handler. This indicates a seeder bug; it is not silently swallowed.
 
 ## Requirements *(mandatory)*
 
@@ -142,13 +149,14 @@ containing `id`, `key`, `name`, and `stringCount`.
 - **FR-009**: The chord data MUST be seeded from an embedded JSON file
   (`Persistence/Data/guitar_chords.json`) during `DbInitializer` execution, read via
   `Assembly.GetManifestResourceStream` so the file is not required on disk at runtime.
-  Seeding MUST be differential and additive: the seeder compares the JSON against existing
-  database records and inserts only entries that are present in the JSON but absent from the
-  database. Existing records are never modified or deleted; their `Guid` IDs remain stable
-  across restarts and re-deploys. The natural key for `Instrument` deduplication is the
-  `Key` enum value; the natural key for `Chord` deduplication is
-  `(InstrumentId, Root, Quality, Extension)` where `null` Extension is treated as `""`
-  for comparison.
+  Seeding MUST be differential and additive for both instruments and chords: each seeder
+  compares its source data against existing database records and inserts only entries that
+  are absent from the database. Existing records are never modified or deleted; their `Guid`
+  IDs remain stable across restarts and re-deploys. `InstrumentSeeder` MUST complete before
+  `ChordSeeder` runs, as chord records reference instrument rows via foreign key. The natural
+  key for `Instrument` deduplication is the `Key` enum value; the natural key for `Chord`
+  deduplication is `(InstrumentId, Root, Quality, Extension)` where `null` Extension is
+  treated as `""` for comparison.
 
 - **FR-010**: The chord entity MUST store `Root`, `Quality`, `Extension`, and `Alternation`
   as dedicated columns (not buried in JSON) to support efficient server-side filtering and
@@ -182,9 +190,11 @@ containing `id`, `key`, `name`, and `stringCount`.
   currently seeded chords), and a JSON array of `ChordPosition` values.
 
 - **ChordPosition**: A single voicing of a chord, embedded in the chord's position JSON.
-  Has a `Label` (e.g. "Barre 1st position"), a `BaseFret` (1 = nut position), an optional
-  `Barre` descriptor (fret number, fromString, toString), and a `Strings` array — one entry
-  per string — with state (`open`, `fretted`, or `muted`), fret number, and finger number.
+  Has a `Label` (e.g. "Barre 1st position"), a `BaseFret` (minimum 1 = nut; no maximum
+  constraint), an optional `Barre` descriptor (fret number, fromString, toString), and a
+  `Strings` array containing exactly `instrument.StringCount` entries — one per string,
+  no partial arrays — each with state (`open`, `fretted`, or `muted`), fret number, and
+  finger number.
 
 ## Success Criteria *(mandatory)*
 
@@ -232,5 +242,5 @@ containing `id`, `key`, `name`, and `stringCount`.
   chord's positions array; if a chord has only one position, that same object is used for
   both preview and full detail.
 - Case-insensitive filtering applies to both `root` and `quality` parameters; the seed data
-  stores values in canonical capitalisation (e.g. "F#", "major") but the API tolerates
-  any casing from callers.
+  stores values in canonical capitalisation (e.g. "F#", "Minor 7") but the API tolerates
+  any casing from callers (e.g. "minor 7" or "MINOR 7" both match "Minor 7").

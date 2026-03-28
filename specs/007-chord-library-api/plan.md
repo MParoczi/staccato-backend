@@ -176,9 +176,10 @@ The tasks below are ordered by dependency. Each task is independently committabl
 - Replace skip-if-any with differential: load existing `(InstrumentId, Root, Quality, Extension ?? "")` tuples as HashSet, insert only those absent
 - Note: for Major chords `Extension` is null and `Name` equals the root note letter (e.g. `"C"` for C major)
 
-**B4** — Update `InstrumentSeeder` — differential (optional improvement)
-- Currently uses skip-if-any; update to per-record differential to match spec
+**B4** — Update `InstrumentSeeder` — differential seeding (required by FR-009)
+- Currently uses skip-if-any; change to per-record differential to match spec
 - Natural key: `Key` enum value
+- Load existing instrument `Key` values into a HashSet; insert only those absent
 
 ### Group C — Repository Layer (depends on A1, A2, A3)
 
@@ -261,8 +262,8 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **I1** — Update `ChordSeederHappyPathTests`
 - Update `TestableChordSeeder` — override `GetChordStream()` instead of `ChordFilePath`
-- Update test JSON payloads to use new format (`name`, `root`, `quality`, `suffix` fields)
-- Existing `chord.Name == "C"` assertion remains correct for C major (suffix is `""`, so name = root = "C")
+- Update test JSON payloads to use new format (`name`, `root`, `quality`, `extension`, `alternation` fields — no `suffix`)
+- Existing `chord.Name == "C"` assertion remains correct for C major (quality is `"Major"`, extension is null, so name = root letter = "C")
 - Add test: `SeedAsync_PartiallySeeded_InsertsOnlyNewChords` — seeds 2 chords, calls again with 3, verifies total = 3
 
 **I2** — Update `ChordSeederFailTests`

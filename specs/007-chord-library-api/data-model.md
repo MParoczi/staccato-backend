@@ -93,9 +93,9 @@ Added:
 | Property | Type | Nullable | Notes |
 |---|---|---|---|
 | `Label` | `string` | No | Position label (e.g., "1") |
-| `BaseFret` | `int` | No | Starting fret (1 = nut) |
+| `BaseFret` | `int` | No | Starting fret; minimum 1 (nut position); no maximum constraint |
 | `Barre` | `ChordBarre?` | Yes | Optional barre descriptor |
-| `Strings` | `List<ChordString>` | No | One entry per string |
+| `Strings` | `List<ChordString>` | No | Exactly `instrument.StringCount` entries — one per string; partial arrays are invalid |
 
 #### ChordBarre *(new)*
 **File**: `DomainModels/Models/ChordBarre.cs`
