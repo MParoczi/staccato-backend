@@ -10,7 +10,7 @@ public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequ
     public UpdateProfileRequestValidator()
     {
         RuleFor(x => x.FirstName)
-            .NotNull().WithMessage("FirstName is required.")
+            .NotEmpty().WithMessage("FirstName is required.")
             .MaximumLength(100).WithMessage("FirstName must not exceed 100 characters.");
 
         RuleFor(x => x.LastName)
