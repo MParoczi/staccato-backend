@@ -38,7 +38,6 @@ public class NotebookRepository(AppDbContext context, IMapper mapper)
         var entity = await _context.Notebooks
             .AsNoTracking()
             .Include(n => n.Instrument)
-            .Include(n => n.Lessons)
             .Include(n => n.ModuleStyles)
             .FirstOrDefaultAsync(n => n.Id == notebookId, ct);
 
