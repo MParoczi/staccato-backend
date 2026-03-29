@@ -29,6 +29,11 @@ public class NotebookService(
         }
     };
 
+    private static readonly JsonSerializerOptions _camelCaseOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public Task<IReadOnlyList<NotebookSummary>> GetAllByUserAsync(
         Guid userId, CancellationToken ct = default)
     {
@@ -235,10 +240,7 @@ public class NotebookService(
                 headerTextColor = e.HeaderTextColor,
                 bodyTextColor = e.BodyTextColor,
                 fontFamily = e.FontFamily
-            }, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            })
+            }, _camelCaseOptions)
         }).ToList();
     }
 
@@ -264,10 +266,7 @@ public class NotebookService(
                 headerTextColor = e.HeaderTextColor,
                 bodyTextColor = e.BodyTextColor,
                 fontFamily = e.FontFamily
-            }, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }),
+            }, _camelCaseOptions),
             StringComparer.OrdinalIgnoreCase);
     }
 
