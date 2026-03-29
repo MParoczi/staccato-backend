@@ -79,4 +79,15 @@ public class LessonsController(ILessonService lessonService, IMapper mapper) : C
         await lessonService.DeleteAsync(id, GetUserId(), ct);
         return NoContent();
     }
+
+    // ── GET /notebooks/{id}/index ────────────────────────────────────────
+
+    [HttpGet("notebooks/{id:guid}/index")]
+    public async Task<IActionResult> GetNotebookIndex(Guid id, CancellationToken ct)
+    {
+        var entries = await lessonService.GetNotebookIndexAsync(id, GetUserId(), ct);
+        var response = new NotebookIndexResponse(
+            mapper.Map<List<NotebookIndexEntryResponse>>(entries));
+        return Ok(response);
+    }
 }

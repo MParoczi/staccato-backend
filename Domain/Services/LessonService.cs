@@ -90,6 +90,31 @@ public class LessonService(
         await unitOfWork.CommitAsync(ct);
     }
 
+    public async Task<IReadOnlyList<NotebookIndexEntry>> GetNotebookIndexAsync(
+        Guid notebookId, Guid userId, CancellationToken ct = default)
+    {
+        await VerifyNotebookOwnershipAsync(notebookId, userId, ct);
+
+        var summaries = await lessonRepo.GetSummariesByNotebookIdAsync(notebookId, ct);
+
+        var entries = new List<NotebookIndexEntry>(summaries.Count);
+        var cumulativePageCount = 0;
+
+        foreach (var summary in summaries)
+        {
+            entries.Add(new NotebookIndexEntry
+            {
+                LessonId = summary.Id,
+                Title = summary.Title,
+                CreatedAt = summary.CreatedAt,
+                StartPageNumber = 2 + cumulativePageCount
+            });
+            cumulativePageCount += summary.PageCount;
+        }
+
+        return entries;
+    }
+
     private async Task VerifyNotebookOwnershipAsync(
         Guid notebookId, Guid userId, CancellationToken ct)
     {

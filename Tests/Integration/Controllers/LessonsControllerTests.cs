@@ -546,6 +546,110 @@ public class LessonsControllerTests
         Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
     }
 
+    // ── GET /notebooks/{id}/index ───────────────────────────────────────
+
+    [Fact]
+    public async Task GetNotebookIndex_ReturnsCorrectStartPageNumbers()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+
+        // Lesson A: 1 page (auto-created) + 2 added = 3 pages
+        var respA = await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons", new { title = "A" });
+        var lessonAId = JsonDocument.Parse(await respA.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+        await client.PostAsync($"/lessons/{lessonAId}/pages", null);
+        await client.PostAsync($"/lessons/{lessonAId}/pages", null);
+
+        // Lesson B: 1 page (auto-created) + 1 added = 2 pages
+        var respB = await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons", new { title = "B" });
+        var lessonBId = JsonDocument.Parse(await respB.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+        await client.PostAsync($"/lessons/{lessonBId}/pages", null);
+
+        // Lesson C: 1 page (auto-created only)
+        await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons", new { title = "C" });
+
+        var resp = await client.GetAsync($"/notebooks/{notebookId}/index");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        var entries = doc.RootElement.GetProperty("entries");
+        Assert.Equal(3, entries.GetArrayLength());
+        Assert.Equal("A", entries[0].GetProperty("title").GetString());
+        Assert.Equal(2, entries[0].GetProperty("startPageNumber").GetInt32());   // 2 + 0
+        Assert.Equal(5, entries[1].GetProperty("startPageNumber").GetInt32());   // 2 + 3
+        Assert.Equal(7, entries[2].GetProperty("startPageNumber").GetInt32());   // 2 + 3 + 2
+    }
+
+    [Fact]
+    public async Task GetNotebookIndex_EmptyNotebook_ReturnsEmptyEntries()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+
+        var resp = await client.GetAsync($"/notebooks/{notebookId}/index");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(0, doc.RootElement.GetProperty("entries").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetNotebookIndex_UpdatesAfterPageDeletion()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+
+        // Lesson A: 2 pages
+        var respA = await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons", new { title = "A" });
+        var lessonAId = JsonDocument.Parse(await respA.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+        var addPageResp = await client.PostAsync($"/lessons/{lessonAId}/pages", null);
+        var page2Id = JsonDocument.Parse(await addPageResp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("data").GetProperty("id").GetString()!;
+
+        // Lesson B: 1 page
+        await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons", new { title = "B" });
+
+        // Before deletion: B starts at 2 + 2 = 4
+        var indexBefore = await client.GetAsync($"/notebooks/{notebookId}/index");
+        var docBefore = JsonDocument.Parse(await indexBefore.Content.ReadAsStringAsync());
+        Assert.Equal(4, docBefore.RootElement.GetProperty("entries")[1].GetProperty("startPageNumber").GetInt32());
+
+        // Delete page 2 from lesson A
+        await client.DeleteAsync($"/lessons/{lessonAId}/pages/{page2Id}");
+
+        // After deletion: B starts at 2 + 1 = 3
+        var indexAfter = await client.GetAsync($"/notebooks/{notebookId}/index");
+        var docAfter = JsonDocument.Parse(await indexAfter.Content.ReadAsStringAsync());
+        Assert.Equal(3, docAfter.RootElement.GetProperty("entries")[1].GetProperty("startPageNumber").GetInt32());
+    }
+
+    [Fact]
+    public async Task GetNotebookIndex_OtherUsersNotebook_Returns403()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var ownerClient = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(ownerClient);
+
+        var otherClient = await RegisterAsync(factory);
+        var resp = await otherClient.GetAsync($"/notebooks/{notebookId}/index");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
     // ── Auth ─────────────────────────────────────────────────────────────
 
     [Fact]
@@ -560,7 +664,8 @@ public class LessonsControllerTests
             () => client.PostAsJsonAsync($"/notebooks/{Guid.NewGuid()}/lessons", new { title = "T" }),
             () => client.GetAsync($"/lessons/{Guid.NewGuid()}"),
             () => client.PutAsJsonAsync($"/lessons/{Guid.NewGuid()}", new { title = "T" }),
-            () => client.DeleteAsync($"/lessons/{Guid.NewGuid()}")
+            () => client.DeleteAsync($"/lessons/{Guid.NewGuid()}"),
+            () => client.GetAsync($"/notebooks/{Guid.NewGuid()}/index")
         };
 
         foreach (var endpoint in endpoints)

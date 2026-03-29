@@ -122,14 +122,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Add `GetNotebookIndexAsync(Guid notebookId, Guid userId, CancellationToken ct)` method signature to `Domain/Services/ILessonService.cs`. Returns `Task<IReadOnlyList<NotebookIndexEntry>>`.
-- [ ] T034 [US3] Implement `GetNotebookIndexAsync` in `Domain/Services/LessonService.cs`. Load notebook to verify ownership. Call `GetSummariesByNotebookIdAsync` to get lessons with page counts ordered by CreatedAt. Compute `startPageNumber` with running sum: for each lesson, `startPageNumber = 2 + cumulativePageCount`, then `cumulativePageCount += lesson.PageCount`. Return list of `NotebookIndexEntry`.
-- [ ] T035 [US3] Add `GET /notebooks/{id}/index` endpoint to `Api/Controllers/LessonsController.cs`. Return 200 with `NotebookIndexResponse` containing mapped entries.
+- [x] T033 [US3] Add `GetNotebookIndexAsync(Guid notebookId, Guid userId, CancellationToken ct)` method signature to `Domain/Services/ILessonService.cs`. Returns `Task<IReadOnlyList<NotebookIndexEntry>>`.
+- [x] T034 [US3] Implement `GetNotebookIndexAsync` in `Domain/Services/LessonService.cs`. Load notebook to verify ownership. Call `GetSummariesByNotebookIdAsync` to get lessons with page counts ordered by CreatedAt. Compute `startPageNumber` with running sum: for each lesson, `startPageNumber = 2 + cumulativePageCount`, then `cumulativePageCount += lesson.PageCount`. Return list of `NotebookIndexEntry`.
+- [x] T035 [US3] Add `GET /notebooks/{id}/index` endpoint to `Api/Controllers/LessonsController.cs`. Return 200 with `NotebookIndexResponse` containing mapped entries.
 
 ### Tests for User Story 3
 
-- [ ] T036 [P] [US3] Add index calculation unit tests to `Tests/Unit/LessonServiceTests.cs`. Test: GetNotebookIndexAsync with 3 lessons (3, 2, 1 pages) returns startPageNumbers [2, 5, 7], empty notebook returns empty list, single lesson returns startPageNumber 2, notebook not found throws NotFoundException, wrong user throws ForbiddenException.
-- [ ] T037 [P] [US3] Add index integration tests to `Tests/Integration/LessonsControllerTests.cs`. Test: GET /notebooks/{id}/index returns correct entries with calculated startPageNumbers, empty notebook returns empty entries array, index updates after adding/deleting pages, another user's notebook returns 403.
+- [x] T036 [P] [US3] Add index calculation unit tests to `Tests/Unit/LessonServiceTests.cs`. Test: GetNotebookIndexAsync with 3 lessons (3, 2, 1 pages) returns startPageNumbers [2, 5, 7], empty notebook returns empty list, single lesson returns startPageNumber 2, notebook not found throws NotFoundException, wrong user throws ForbiddenException.
+- [x] T037 [P] [US3] Add index integration tests to `Tests/Integration/LessonsControllerTests.cs`. Test: GET /notebooks/{id}/index returns correct entries with calculated startPageNumbers, empty notebook returns empty entries array, index updates after adding/deleting pages, another user's notebook returns 403.
 
 **Checkpoint**: Notebook index fully functional. All three user stories work independently.
 

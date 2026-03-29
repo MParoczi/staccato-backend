@@ -282,4 +282,90 @@ public class LessonServiceTests
         await Assert.ThrowsAsync<ForbiddenException>(
             () => sut.DeleteAsync(lessonId, Guid.NewGuid()));
     }
+
+    // ── GetNotebookIndexAsync ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetNotebookIndexAsync_ThreeLessons_ReturnsCorrectStartPageNumbers()
+    {
+        var notebookId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        SetupNotebook(notebookId, userId);
+
+        var summaries = new List<LessonSummary>
+        {
+            new() { Id = Guid.NewGuid(), Title = "A", CreatedAt = DateTime.UtcNow, PageCount = 3 },
+            new() { Id = Guid.NewGuid(), Title = "B", CreatedAt = DateTime.UtcNow, PageCount = 2 },
+            new() { Id = Guid.NewGuid(), Title = "C", CreatedAt = DateTime.UtcNow, PageCount = 1 }
+        };
+        _lessonRepo.Setup(r => r.GetSummariesByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summaries);
+
+        var sut = CreateService();
+        var result = await sut.GetNotebookIndexAsync(notebookId, userId);
+
+        Assert.Equal(3, result.Count);
+        Assert.Equal(2, result[0].StartPageNumber);   // 2 + 0
+        Assert.Equal(5, result[1].StartPageNumber);   // 2 + 3
+        Assert.Equal(7, result[2].StartPageNumber);   // 2 + 3 + 2
+    }
+
+    [Fact]
+    public async Task GetNotebookIndexAsync_EmptyNotebook_ReturnsEmptyList()
+    {
+        var notebookId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        SetupNotebook(notebookId, userId);
+
+        _lessonRepo.Setup(r => r.GetSummariesByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<LessonSummary>());
+
+        var sut = CreateService();
+        var result = await sut.GetNotebookIndexAsync(notebookId, userId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetNotebookIndexAsync_SingleLesson_ReturnsStartPageNumber2()
+    {
+        var notebookId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        SetupNotebook(notebookId, userId);
+
+        var summaries = new List<LessonSummary>
+        {
+            new() { Id = Guid.NewGuid(), Title = "Solo", CreatedAt = DateTime.UtcNow, PageCount = 5 }
+        };
+        _lessonRepo.Setup(r => r.GetSummariesByNotebookIdAsync(notebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(summaries);
+
+        var sut = CreateService();
+        var result = await sut.GetNotebookIndexAsync(notebookId, userId);
+
+        Assert.Single(result);
+        Assert.Equal(2, result[0].StartPageNumber);
+    }
+
+    [Fact]
+    public async Task GetNotebookIndexAsync_NotebookNotFound_ThrowsNotFoundException()
+    {
+        _notebookRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Notebook?)null);
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => sut.GetNotebookIndexAsync(Guid.NewGuid(), Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task GetNotebookIndexAsync_WrongUser_ThrowsForbiddenException()
+    {
+        var notebookId = Guid.NewGuid();
+        SetupNotebook(notebookId, Guid.NewGuid());
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => sut.GetNotebookIndexAsync(notebookId, Guid.NewGuid()));
+    }
 }

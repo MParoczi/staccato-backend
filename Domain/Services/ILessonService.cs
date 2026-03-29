@@ -18,4 +18,7 @@ public interface ILessonService
 
     Task DeleteAsync(
         Guid lessonId, Guid userId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<NotebookIndexEntry>> GetNotebookIndexAsync(
+        Guid notebookId, Guid userId, CancellationToken ct = default);
 }
