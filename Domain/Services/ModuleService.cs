@@ -70,12 +70,36 @@ public class ModuleService(
         return module;
     }
 
-    public Task<Module> UpdateModuleAsync(
+    public async Task<Module> UpdateModuleAsync(
         Guid moduleId, ModuleType moduleType,
         int gridX, int gridY, int gridWidth, int gridHeight, int zIndex,
         string contentJson, Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var (module, page, lesson, notebook) = await VerifyModuleOwnershipAsync(moduleId, userId, ct);
+
+        // FR-003: moduleType must match stored value
+        if (moduleType != module.ModuleType)
+            throw new BadRequestException("MODULE_TYPE_IMMUTABLE",
+                "Module type cannot be changed after creation.");
+
+        // FR-009, FR-010, FR-016: content validation
+        ValidateContentAsync(moduleType, contentJson);
+
+        // FR-018: always run grid validation on PUT
+        await ValidateGridPlacementAsync(page.Id, notebook.PageSize, moduleType,
+            gridX, gridY, gridWidth, gridHeight, moduleId, ct);
+
+        module.GridX = gridX;
+        module.GridY = gridY;
+        module.GridWidth = gridWidth;
+        module.GridHeight = gridHeight;
+        module.ZIndex = zIndex;
+        module.ContentJson = contentJson;
+
+        moduleRepo.Update(module);
+        await unitOfWork.CommitAsync(ct);
+
+        return module;
     }
 
     public Task<Module> UpdateModuleLayoutAsync(

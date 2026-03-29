@@ -51,7 +51,15 @@ public class ModulesController(IModuleService moduleService, IMapper mapper) : C
     public async Task<IActionResult> UpdateModule(
         Guid moduleId, [FromBody] UpdateModuleRequest request, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var moduleType = Enum.Parse<ModuleType>(request.ModuleType, true);
+        var contentJson = request.Content.GetRawText();
+
+        var module = await moduleService.UpdateModuleAsync(
+            moduleId, moduleType,
+            request.GridX, request.GridY, request.GridWidth, request.GridHeight, request.ZIndex,
+            contentJson, GetUserId(), ct);
+
+        return Ok(mapper.Map<ModuleResponse>(module));
     }
 
     // ── PATCH /modules/{moduleId}/layout ────────────────────────────────

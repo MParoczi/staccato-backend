@@ -403,6 +403,176 @@ public class ModulesControllerTests
         Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
     }
 
+    // ── PUT /modules/{moduleId} ─────────────────────────────────────────
+
+    private static async Task<string> CreateModuleAndGetId(
+        HttpClient client, string pageId,
+        string moduleType = "Theory", int gridX = 0, int gridY = 0,
+        int gridWidth = 18, int gridHeight = 10)
+    {
+        var resp = await client.PostAsJsonAsync($"/pages/{pageId}/modules",
+            MakeCreateModuleBody(moduleType, gridX, gridY, gridWidth, gridHeight));
+        resp.EnsureSuccessStatusCode();
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        return doc.RootElement.GetProperty("id").GetString()!;
+    }
+
+    [Fact]
+    public async Task UpdateModule_HappyPathWithContent_Returns200()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        var body = new
+        {
+            moduleType = "Theory",
+            gridX = 2,
+            gridY = 5,
+            gridWidth = 18,
+            gridHeight = 12,
+            zIndex = 1,
+            content = new object[]
+            {
+                new { type = "SectionHeading", spans = new[] { new { text = "Title", bold = false } } },
+                new { type = "Text", spans = new[] { new { text = "Paragraph.", bold = false } } }
+            }
+        };
+        var resp = await client.PutAsJsonAsync($"/modules/{moduleId}", body);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(2, doc.RootElement.GetProperty("gridX").GetInt32());
+        Assert.Equal(12, doc.RootElement.GetProperty("gridHeight").GetInt32());
+        Assert.Equal(1, doc.RootElement.GetProperty("zIndex").GetInt32());
+        var content = doc.RootElement.GetProperty("content");
+        Assert.Equal(2, content.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task UpdateModule_InvalidBuildingBlock_Returns422()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        var body = new
+        {
+            moduleType = "Theory",
+            gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0,
+            content = new object[]
+            {
+                new { type = "ChordProgression", chords = new object[0] }
+            }
+        };
+        var resp = await client.PutAsJsonAsync($"/modules/{moduleId}", body);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("INVALID_BUILDING_BLOCK", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModule_ModuleTypeMismatch_Returns400()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId); // Theory
+
+        var body = new
+        {
+            moduleType = "Practice",
+            gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0,
+            content = new object[0]
+        };
+        var resp = await client.PutAsJsonAsync($"/modules/{moduleId}", body);
+
+        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("MODULE_TYPE_IMMUTABLE", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModule_BreadcrumbWithContent_Returns422()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId, "Breadcrumb", 0, 0, 20, 3);
+
+        var body = new
+        {
+            moduleType = "Breadcrumb",
+            gridX = 0, gridY = 0, gridWidth = 20, gridHeight = 3, zIndex = 0,
+            content = new object[]
+            {
+                new { type = "Text", spans = new[] { new { text = "test", bold = false } } }
+            }
+        };
+        var resp = await client.PutAsJsonAsync($"/modules/{moduleId}", body);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("BREADCRUMB_CONTENT_NOT_EMPTY", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModule_OtherUsersModule_Returns403()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var ownerClient = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(ownerClient);
+        var (_, pageId) = await CreateLessonAsync(ownerClient, notebookId);
+        var moduleId = await CreateModuleAndGetId(ownerClient, pageId);
+
+        var otherClient = await RegisterAsync(factory);
+        var body = new
+        {
+            moduleType = "Theory",
+            gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0,
+            content = new object[0]
+        };
+        var resp = await otherClient.PutAsJsonAsync($"/modules/{moduleId}", body);
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateModule_NotFound_Returns404()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var body = new
+        {
+            moduleType = "Theory",
+            gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0,
+            content = new object[0]
+        };
+        var resp = await client.PutAsJsonAsync($"/modules/{Guid.NewGuid()}", body);
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 

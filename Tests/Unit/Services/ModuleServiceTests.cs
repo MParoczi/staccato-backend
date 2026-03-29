@@ -246,4 +246,159 @@ public class ModuleServiceTests
         _moduleRepo.Verify(r => r.HasTitleModuleInLessonAsync(_lessonId, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    // ── UpdateModuleAsync ────────────────────────────────────────────────
+
+    private readonly Guid _moduleId = Guid.NewGuid();
+
+    private void SetupModuleOwnership(ModuleType moduleType = ModuleType.Theory)
+    {
+        _moduleRepo.Setup(r => r.GetByIdAsync(_moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Module
+            {
+                Id = _moduleId,
+                LessonPageId = _pageId,
+                ModuleType = moduleType,
+                GridX = 0,
+                GridY = 0,
+                GridWidth = 18,
+                GridHeight = 10,
+                ZIndex = 0,
+                ContentJson = "[]"
+            });
+        SetupOwnership();
+        SetupNoOverlap();
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_HappyPath_UpdatesContentAndPosition()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        var contentJson = "[{\"type\":\"SectionHeading\",\"spans\":[{\"text\":\"Title\",\"bold\":false}]},{\"type\":\"Text\",\"spans\":[{\"text\":\"Body\",\"bold\":false}]}]";
+        var result = await sut.UpdateModuleAsync(
+            _moduleId, ModuleType.Theory,
+            5, 10, 18, 12, 1, contentJson, _userId);
+
+        Assert.Equal(5, result.GridX);
+        Assert.Equal(10, result.GridY);
+        Assert.Equal(12, result.GridHeight);
+        Assert.Equal(1, result.ZIndex);
+        Assert.Equal(contentJson, result.ContentJson);
+        _moduleRepo.Verify(r => r.Update(It.IsAny<Module>()), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_InvalidBuildingBlock_ThrowsValidationException()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        // ChordProgression is NOT allowed in Theory modules
+        var contentJson = "[{\"type\":\"ChordProgression\",\"chords\":[]}]";
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleAsync(_moduleId, ModuleType.Theory, 0, 0, 18, 10, 0, contentJson, _userId));
+
+        Assert.Equal("INVALID_BUILDING_BLOCK", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_ModuleTypeImmutable_ThrowsBadRequestException()
+    {
+        SetupModuleOwnership(ModuleType.Theory);
+
+        var sut = CreateService();
+        // Stored as Theory, trying to change to Practice
+        var ex = await Assert.ThrowsAsync<BadRequestException>(
+            () => sut.UpdateModuleAsync(_moduleId, ModuleType.Practice, 0, 0, 18, 10, 0, "[]", _userId));
+
+        Assert.Equal("MODULE_TYPE_IMMUTABLE", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_BreadcrumbWithContent_ThrowsValidationException()
+    {
+        SetupModuleOwnership(ModuleType.Breadcrumb);
+
+        var sut = CreateService();
+        var contentJson = "[{\"type\":\"Text\",\"spans\":[]}]";
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleAsync(_moduleId, ModuleType.Breadcrumb, 0, 0, 20, 3, 0, contentJson, _userId));
+
+        Assert.Equal("BREADCRUMB_CONTENT_NOT_EMPTY", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_OverlapExcludesSelf_Succeeds()
+    {
+        SetupModuleOwnership();
+        // Overlap check should exclude the module being updated
+        _moduleRepo.Setup(r => r.CheckOverlapAsync(
+                _pageId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+                _moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var sut = CreateService();
+        var result = await sut.UpdateModuleAsync(
+            _moduleId, ModuleType.Theory, 0, 0, 18, 10, 0, "[]", _userId);
+
+        Assert.NotNull(result);
+        _moduleRepo.Verify(r => r.CheckOverlapAsync(
+            _pageId, 0, 0, 18, 10, _moduleId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_OverlapWithOther_ThrowsValidationException()
+    {
+        SetupModuleOwnership();
+        _moduleRepo.Setup(r => r.CheckOverlapAsync(
+                _pageId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+                _moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var sut = CreateService();
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleAsync(_moduleId, ModuleType.Theory, 5, 5, 18, 10, 0, "[]", _userId));
+
+        Assert.Equal("MODULE_OVERLAP", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_ContentOnlyStillRunsGridValidation()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        // Same position but with content — grid validation should still run (FR-018)
+        var contentJson = "[{\"type\":\"Text\",\"spans\":[{\"text\":\"Hello\",\"bold\":false}]}]";
+        await sut.UpdateModuleAsync(
+            _moduleId, ModuleType.Theory, 0, 0, 18, 10, 0, contentJson, _userId);
+
+        // Verify grid validation was invoked
+        _moduleRepo.Verify(r => r.CheckOverlapAsync(
+            _pageId, 0, 0, 18, 10, _moduleId, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_ModuleNotFound_ThrowsNotFoundException()
+    {
+        _moduleRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Module?)null);
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => sut.UpdateModuleAsync(Guid.NewGuid(), ModuleType.Theory, 0, 0, 10, 10, 0, "[]", _userId));
+    }
+
+    [Fact]
+    public async Task UpdateModuleAsync_OtherUsersModule_ThrowsForbiddenException()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => sut.UpdateModuleAsync(_moduleId, ModuleType.Theory, 0, 0, 18, 10, 0, "[]", Guid.NewGuid()));
+    }
 }
