@@ -192,7 +192,7 @@ User
 
 ### Authorization Rules
 
-- All endpoints except `GET /chords`, `GET /instruments`, `GET /presets`, and auth endpoints require a valid JWT Bearer token.
+- All endpoints except `GET /api/chords`, `GET /api/instruments`, `GET /presets`, and auth endpoints require a valid JWT Bearer token.
 - Include the access token in requests: `Authorization: Bearer <accessToken>`
 - Users can only access their own data. The backend enforces ownership on all notebook/lesson/module operations.
 
@@ -536,7 +536,7 @@ The user builds the sequence by selecting notes from a full chromatic scale pick
 - `chords[].label`: display label shown below the fretboard diagram (can differ from the chord's canonical name).
 - Order is significant — the `chords` array order determines the display order. The user can reorder diagrams.
 
-**Rendering:** Each chord is rendered as a fretboard diagram (see Section 9 for the chord data structure). Diagrams are displayed horizontally in a row. The frontend fetches chord position data via `GET /chords/{id}` when rendering.
+**Rendering:** Each chord is rendered as a fretboard diagram (see Section 9 for the chord data structure). Diagrams are displayed horizontally in a row. The frontend fetches chord position data via `GET /api/chords/{id}` when rendering.
 
 ### 5.4 Allowed Building Blocks Per Module
 
@@ -641,12 +641,12 @@ Users can save their own style presets from any notebook's current configuration
 interface User {
   id: string;                    // UUID
   email: string;
-  displayName: string;
-  avatarUrl: string | null;      // URL to proxied avatar endpoint, or null
-  preferredLanguage: 'English' | 'Hungarian';
-  defaultPageSize: PageSize;
+  firstName: string;
+  lastName: string;
+  language: 'en' | 'hu';
+  defaultPageSize: PageSize | null;
   defaultInstrumentId: string | null;  // UUID of default instrument
-  createdAt: string;             // ISO 8601 datetime
+  avatarUrl: string | null;      // URL to proxied avatar endpoint, or null
   scheduledDeletionAt: string | null;  // ISO 8601 datetime — set when deletion is scheduled
 }
 ```
@@ -787,7 +787,8 @@ interface ChordSummary {
   name: string;                   // e.g. "F Major"
   root: string;                   // e.g. "F"
   quality: string;                // e.g. "major"
-  suffix: string;                 // e.g. "maj7", "" for basic chords
+  extension: string | null;       // e.g. "maj7", null for basic chords
+  alternation: string | null;     // e.g. "b5", null if not applicable
   previewPosition: ChordPosition; // first position, for thumbnail rendering
 }
 ```
@@ -801,7 +802,8 @@ interface ChordDetail {
   name: string;
   root: string;
   quality: string;
-  suffix: string;
+  extension: string | null;
+  alternation: string | null;
   positions: ChordPosition[];
 }
 
@@ -834,10 +836,9 @@ interface PdfExport {
   notebookId: string;
   notebookTitle: string;
   status: 'Pending' | 'Processing' | 'Ready' | 'Failed';
-  lessonIds: string[] | null;     // null = whole notebook
-  requestedAt: string;
+  createdAt: string;
   completedAt: string | null;
-  expiresAt: string | null;       // set when status = Ready; 24h from completion
+  lessonIds: string[] | null;     // null = whole notebook
 }
 ```
 
@@ -847,7 +848,18 @@ interface PdfExport {
 interface SystemStylePreset {
   id: string;
   name: string;                   // "Classic" | "Colorful" | "Dark" | "Minimal" | "Pastel"
+  displayOrder: number;
+  isDefault: boolean;
   styles: NotebookModuleStyle[];  // 12 items
+}
+```
+
+### StyleEntry (used in user-saved presets)
+
+```typescript
+interface StyleEntry {
+  moduleType: string;             // ModuleType enum value
+  stylesJson: string;             // JSON string containing style properties
 }
 ```
 
@@ -856,9 +868,8 @@ interface SystemStylePreset {
 ```typescript
 interface UserSavedPreset {
   id: string;
-  userId: string;
   name: string;
-  styles: NotebookModuleStyle[];  // 12 items
+  styles: StyleEntry[];           // 12 items, one per module type
 }
 ```
 
@@ -885,14 +896,14 @@ type InstrumentKey =
   'Guitar6String' | 'Guitar7String' | 'Bass4String' | 'Bass5String' |
   'Ukulele4String' | 'Banjo4String' | 'Banjo5String';
 
-type Language = 'English' | 'Hungarian';
+type Language = 'en' | 'hu';
 ```
 
 ---
 
 ## 8. Complete API Reference
 
-**Base URL:** `https://{host}/api`
+**Base URL:** `https://{host}` (no `/api` prefix — only chord and instrument endpoints use `/api/` in their paths)
 **Authentication:** `Authorization: Bearer {accessToken}` (except where noted)
 **Content-Type:** `application/json` (except file upload endpoints)
 **Accept-Language:** `en` or `hu` — controls error message language
@@ -921,7 +932,7 @@ Register a new local account.
 - `displayName`: required, 2–100 chars
 - `password`: required, min 8 chars, must contain uppercase, lowercase, digit
 
-**Response 200:**
+**Response 201:**
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -1003,12 +1014,20 @@ All require authentication.
 
 ```json
 {
-  "displayName": "Jane Doe",
-  "preferredLanguage": "Hungarian",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "language": "hu",
   "defaultPageSize": "A5",
   "defaultInstrumentId": "uuid-or-null"
 }
 ```
+
+**Fields:**
+- `firstName`: required
+- `lastName`: required
+- `language`: required, `"en"` or `"hu"`
+- `defaultPageSize`: optional, one of `A4`, `A5`, `A6`, `B5`, `B6`, or `null`
+- `defaultInstrumentId`: optional, UUID or `null`
 
 **Response 200:** Updated `User` object.
 
@@ -1036,14 +1055,19 @@ Cancels a scheduled deletion.
 
 `Content-Type: multipart/form-data`
 
-Form field: `avatar` — image file (JPG, PNG, WebP). Max 2MB.
+Form field: `File` — image file (JPG, PNG, WebP). Max 2MB.
 
-**Response 200:**
-```json
-{ "avatarUrl": "https://api.example.com/users/me/avatar" }
-```
+**Response 200:** Updated `User` object (full user profile with new `avatarUrl`).
 
 **Error 400:** Invalid file type or size.
+
+---
+
+#### DELETE /users/me/avatar
+
+Removes the user's custom avatar.
+
+**Response 204.**
 
 ---
 
@@ -1058,11 +1082,14 @@ Form field: `avatar` — image file (JPG, PNG, WebP). Max 2MB.
 ```json
 {
   "name": "My Custom Preset",
-  "styles": [ /* array of 12 NotebookModuleStyle objects */ ]
+  "styles": [
+    { "moduleType": "Theory", "stylesJson": "{\"backgroundColor\":\"#E0F7FA\",\"borderColor\":\"#00838F\",...}" },
+    { "moduleType": "Practice", "stylesJson": "{...}" }
+  ]
 }
 ```
 
-**Validation:** `styles` must contain exactly 12 entries, one per `ModuleType`.
+Each `styles` entry is a `StyleEntry` with `moduleType` (string) and `stylesJson` (a JSON string containing the individual style properties). Must contain 12 entries, one per `ModuleType`.
 
 **Response 201:** Created `UserSavedPreset`.
 
@@ -1073,9 +1100,11 @@ Form field: `avatar` — image file (JPG, PNG, WebP). Max 2MB.
 ```json
 {
   "name": "Updated Name",
-  "styles": [ /* 12 styles */ ]
+  "styles": [ /* 12 StyleEntry objects, or null to keep current styles */ ]
 }
 ```
+
+Both `name` and `styles` are optional — only provided fields are updated.
 
 **Response 200:** Updated `UserSavedPreset`.
 **Error 404:** Preset not found or belongs to another user.
@@ -1138,7 +1167,7 @@ All require authentication. Users only see and modify their own notebooks.
 }
 ```
 
-**Note:** `instrumentId` and `pageSize` **cannot** be changed after creation. Including them in the request body returns **400**.
+**Note:** `instrumentId` and `pageSize` **cannot** be changed after creation. Sending a non-null value for either field returns a **400** validation error with codes `NOTEBOOK_INSTRUMENT_IMMUTABLE` / `NOTEBOOK_PAGE_SIZE_IMMUTABLE`. Omit these fields or send `null`.
 
 **Response 200:** Updated `NotebookDetail`.
 
@@ -1409,22 +1438,22 @@ Same boundary, overlap, and minimum size validation as POST/PUT.
 
 ### 8.8 Chord Endpoints
 
-No authentication required (public read-only).
+No authentication required (public read-only). Responses cached for 5 minutes.
 
-#### GET /chords
+#### GET /api/chords
 
 Query parameters:
-- `instrument` (required): `InstrumentKey` enum value, e.g. `guitar_6string`
+- `instrument` (required): `InstrumentKey` enum value, e.g. `Guitar6String`
 - `root` (optional): note name, e.g. `F`, `C#`, `Bb`
 - `quality` (optional): quality string, e.g. `major`, `minor`, `maj7`
 
-Example: `GET /chords?instrument=Guitar6String&root=F&quality=major`
+Example: `GET /api/chords?instrument=Guitar6String&root=F&quality=major`
 
 **Response 200:** Array of `ChordSummary`.
 
 ---
 
-#### GET /chords/{id}
+#### GET /api/chords/{id}
 
 **Response 200:** `ChordDetail` with full position and string data.
 
@@ -1432,9 +1461,9 @@ Example: `GET /chords?instrument=Guitar6String&root=F&quality=major`
 
 ### 8.9 Instrument Endpoints
 
-No authentication required.
+No authentication required. Responses cached for 5 minutes.
 
-#### GET /instruments
+#### GET /api/instruments
 
 **Response 200:** Array of `Instrument`.
 
@@ -1471,7 +1500,7 @@ Queue a PDF export job.
 
 #### GET /exports
 
-**Response 200:** Array of `PdfExport` for the current user, ordered by `requestedAt` descending.
+**Response 200:** Array of `PdfExport` for the current user, ordered by `createdAt` descending.
 
 ---
 
@@ -1721,6 +1750,16 @@ connection.on('PdfReady', (exportId: string, fileName: string) => {
 
 The `fileName` is the suggested download file name (e.g. `"Guitar Journey 2025.pdf"`).
 
+#### PdfFailed
+
+Fired when a PDF export fails.
+
+```typescript
+connection.on('PdfFailed', (exportId: string, errorCode: string) => {
+  // Show error notification to user
+});
+```
+
 ### Connection Lifecycle
 
 - Connect after login, disconnect on logout.
@@ -1733,7 +1772,7 @@ The `fileName` is the suggested download file name (e.g. `"Guitar Journey 2025.p
 
 ### Profile
 
-Users can update their display name, preferred language, default page size, and default instrument from the profile/settings page.
+Users can update their first name, last name, language, default page size, and default instrument from the profile/settings page.
 
 The `defaultPageSize` and `defaultInstrument` are used to pre-fill the notebook creation form.
 
@@ -1807,6 +1846,8 @@ For validation and business logic errors, the API returns:
 | `PRESET_NOT_FOUND` | 404 | Style preset not found |
 | `ACCOUNT_DELETION_ALREADY_SCHEDULED` | 409 | Account is already scheduled for deletion |
 | `ACCOUNT_DELETION_NOT_SCHEDULED` | 400 | Cancel deletion called on a non-scheduled account |
+| `DUPLICATE_PRESET_NAME` | 409 | A user-saved preset with this name already exists |
+| `INSTRUMENT_NOT_FOUND` | 404 | The specified instrument does not exist in the database |
 | `INVALID_GOOGLE_TOKEN` | 400 | Google ID token validation failed |
 
 ### Validation Errors (FluentValidation)
@@ -1837,12 +1878,12 @@ The application supports two languages:
 
 ### Frontend Responsibilities
 
-- Send `Accept-Language: en` or `Accept-Language: hu` with every API request based on the user's `preferredLanguage` setting.
+- Send `Accept-Language: en` or `Accept-Language: hu` with every API request based on the user's `language` setting.
 - All static UI strings are managed by the frontend (not the API).
 - Date formatting should respect locale:
   - English: `February 23, 2025`
   - Hungarian: `2025. február 23.`
-- Use the user's preferred language from `GET /users/me` after login.
+- Use the user's `language` field from `GET /users/me` after login (`"en"` or `"hu"`).
 - Store the selected language in the user's profile (synced with the backend via `PUT /users/me`).
 
 ### Backend Responsibilities
@@ -2154,7 +2195,7 @@ The chord selector is used when adding `ChordTablatureGroup` or `ChordProgressio
 1. Display an instrument selector (only instruments in the chord library: currently Guitar6String only)
 2. Display a root note grid (12 notes, A–G#)
 3. Display a quality list (major, minor, 7, maj7, etc.)
-4. On selection: call `GET /chords?instrument=...&root=...&quality=...`
+4. On selection: call `GET /api/chords?instrument=...&root=...&quality=...`
 5. Display matching chords as thumbnail fretboard diagrams
 6. If multiple positions exist: show position tabs/arrows
 7. On confirm: add the selected `{ chordId, label }` to the building block
