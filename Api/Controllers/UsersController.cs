@@ -67,20 +67,10 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
     }
 
     [HttpPut("me/avatar")]
-    public async Task<IActionResult> UploadAvatar(IFormFile file, CancellationToken ct)
+    public async Task<IActionResult> UploadAvatar([FromForm] UploadAvatarRequest request, CancellationToken ct)
     {
-        if (file is null || file.Length == 0)
-            return BadRequest(new { code = "INVALID_FILE", message = "A file is required." });
-
-        if (file.Length > 2_097_152)
-            return BadRequest(new { code = "FILE_TOO_LARGE", message = "File must not exceed 2 MB." });
-
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-        if (!allowedTypes.Contains(file.ContentType))
-            return BadRequest(new { code = "INVALID_FILE_TYPE", message = "File must be a JPEG, PNG, or WebP image." });
-
-        using var stream = file.OpenReadStream();
-        var user = await userService.UploadAvatarAsync(GetUserId(), stream, file.ContentType, ct);
+        using var stream = request.File.OpenReadStream();
+        var user = await userService.UploadAvatarAsync(GetUserId(), stream, request.File.ContentType, ct);
         return Ok(mapper.Map<UserResponse>(user));
     }
 
