@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentValidation;
 
 namespace ApiModels.Users;
@@ -24,7 +25,21 @@ public class SavePresetRequestValidator : AbstractValidator<SavePresetRequest>
             .WithMessage("Each moduleType must be a valid ModuleType value.")
             .Must(entries => entries.Select(e => e.ModuleType.ToLowerInvariant()).Distinct().Count() == entries.Count)
             .WithMessage("Duplicate moduleType values are not allowed.")
-            .Must(entries => entries.All(e => !string.IsNullOrEmpty(e.StylesJson)))
-            .WithMessage("Each stylesJson must be a non-empty string.");
+            .Must(entries => entries.All(e => IsValidJson(e.StylesJson)))
+            .WithMessage("Each stylesJson must be a valid JSON string.");
+    }
+
+    private static bool IsValidJson(string? json)
+    {
+        if (string.IsNullOrEmpty(json)) return false;
+        try
+        {
+            JsonDocument.Parse(json);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 }
