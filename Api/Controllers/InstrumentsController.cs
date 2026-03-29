@@ -10,6 +10,7 @@ namespace Api.Controllers;
 public class InstrumentsController(IInstrumentService instrumentService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
+    [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]
     public async Task<IActionResult> GetInstruments(CancellationToken ct)
     {
         var instruments = await instrumentService.GetAllAsync(ct);
