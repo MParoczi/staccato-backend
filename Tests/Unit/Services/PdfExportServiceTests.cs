@@ -12,6 +12,7 @@ public class PdfExportServiceTests
 {
     private readonly Mock<IPdfExportRepository> _exportRepo = new();
     private readonly Mock<INotebookRepository> _notebookRepo = new();
+    private readonly Mock<ILessonRepository> _lessonRepo = new();
     private readonly Mock<IPdfExportQueue> _queue = new();
     private readonly Mock<IAzureBlobService> _blobService = new();
     private readonly Mock<IUnitOfWork> _uow = new();
@@ -19,7 +20,7 @@ public class PdfExportServiceTests
     private PdfExportService CreateService()
     {
         return new PdfExportService(
-            _exportRepo.Object, _notebookRepo.Object,
+            _exportRepo.Object, _notebookRepo.Object, _lessonRepo.Object,
             _queue.Object, _blobService.Object, _uow.Object);
     }
 
@@ -92,6 +93,9 @@ public class PdfExportServiceTests
         _exportRepo
             .Setup(r => r.HasActiveExportForNotebookAsync(NotebookId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        _lessonRepo
+            .Setup(r => r.GetByNotebookIdOrderedByCreatedAtAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Lesson> { new() { Id = lessonId, NotebookId = NotebookId } });
 
         PdfExport? captured = null;
         _exportRepo
@@ -103,6 +107,57 @@ public class PdfExportServiceTests
         Assert.NotNull(captured);
         Assert.Single(captured!.LessonIds!);
         Assert.Equal(lessonId, captured.LessonIds![0]);
+    }
+
+    [Fact]
+    public async Task QueueExportAsync_WithValidLessonIds_Succeeds()
+    {
+        var lesson1 = Guid.NewGuid();
+        var lesson2 = Guid.NewGuid();
+        var notebook = MakeNotebook();
+        _notebookRepo
+            .Setup(r => r.GetByIdAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(notebook);
+        _exportRepo
+            .Setup(r => r.HasActiveExportForNotebookAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _lessonRepo
+            .Setup(r => r.GetByNotebookIdOrderedByCreatedAtAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Lesson>
+            {
+                new() { Id = lesson1, NotebookId = NotebookId },
+                new() { Id = lesson2, NotebookId = NotebookId }
+            });
+
+        var result = await CreateService().QueueExportAsync(UserId, NotebookId, [lesson1, lesson2]);
+
+        Assert.Equal(ExportStatus.Pending, result.Status);
+        Assert.Equal(2, result.LessonIds!.Count);
+        _queue.Verify(q => q.EnqueueAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task QueueExportAsync_InvalidLessonIds_ThrowsBadRequestException()
+    {
+        var validLesson = Guid.NewGuid();
+        var invalidLesson = Guid.NewGuid();
+        var notebook = MakeNotebook();
+        _notebookRepo
+            .Setup(r => r.GetByIdAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(notebook);
+        _exportRepo
+            .Setup(r => r.HasActiveExportForNotebookAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _lessonRepo
+            .Setup(r => r.GetByNotebookIdOrderedByCreatedAtAsync(NotebookId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Lesson>
+            {
+                new() { Id = validLesson, NotebookId = NotebookId }
+            });
+
+        var ex = await Assert.ThrowsAsync<BadRequestException>(
+            () => CreateService().QueueExportAsync(UserId, NotebookId, [validLesson, invalidLesson]));
+        Assert.Equal("INVALID_LESSON_IDS", ex.Code);
     }
 
     [Fact]
@@ -293,6 +348,18 @@ public class PdfExportServiceTests
 
         await Assert.ThrowsAsync<ForbiddenException>(
             () => CreateService().DeleteExportAsync(export.Id, UserId));
+    }
+
+    [Fact]
+    public async Task DeleteExportAsync_NotFound_ThrowsNotFoundException()
+    {
+        var exportId = Guid.NewGuid();
+        _exportRepo
+            .Setup(r => r.GetByIdAsync(exportId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PdfExport?)null);
+
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => CreateService().DeleteExportAsync(exportId, UserId));
     }
 
     // ── MarkAsProcessingAsync ──────────────────────────────────────────

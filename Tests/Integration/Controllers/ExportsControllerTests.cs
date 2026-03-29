@@ -344,6 +344,84 @@ public class ExportsControllerTests
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
     }
 
+    [Fact]
+    public async Task DeleteExport_OtherUser_Returns403()
+    {
+        using var factory = CreateFactory();
+        var (client1, notebookId) = await SetupAsync(factory);
+
+        var createResp = await client1.PostAsJsonAsync("/exports", new { notebookId });
+        createResp.EnsureSuccessStatusCode();
+        var createJson = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
+        var exportId = createJson.RootElement.GetProperty("exportId").GetString()!;
+
+        // Register user 2
+        var client2 = CreateClient(factory);
+        var regResp = await client2.PostAsJsonAsync("/auth/register", new
+        {
+            Email = $"{Guid.NewGuid()}@test.com",
+            DisplayName = "Other User",
+            Password = "Password1!"
+        });
+        regResp.EnsureSuccessStatusCode();
+        var auth2 = await regResp.Content.ReadFromJsonAsync<AuthBody>(JsonOpts);
+        client2.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", auth2!.AccessToken);
+
+        var resp = await client2.DeleteAsync($"/exports/{exportId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    // ── POST /exports with lessonIds ────────────────────────────────────
+
+    [Fact]
+    public async Task CreateExport_WithValidLessonIds_Returns202()
+    {
+        using var factory = CreateFactory();
+        var (client, notebookId) = await SetupAsync(factory);
+
+        // Create lessons
+        var lesson1Resp = await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons",
+            new { title = "Lesson 1" });
+        lesson1Resp.EnsureSuccessStatusCode();
+        var lesson1Id = JsonDocument.Parse(await lesson1Resp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var lesson2Resp = await client.PostAsJsonAsync($"/notebooks/{notebookId}/lessons",
+            new { title = "Lesson 2" });
+        lesson2Resp.EnsureSuccessStatusCode();
+        var lesson2Id = JsonDocument.Parse(await lesson2Resp.Content.ReadAsStringAsync())
+            .RootElement.GetProperty("id").GetString()!;
+
+        var resp = await client.PostAsJsonAsync("/exports", new
+        {
+            notebookId,
+            lessonIds = new[] { lesson1Id, lesson2Id }
+        });
+
+        Assert.Equal(HttpStatusCode.Accepted, resp.StatusCode);
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.True(Guid.TryParse(json.RootElement.GetProperty("exportId").GetString(), out _));
+    }
+
+    [Fact]
+    public async Task CreateExport_WithInvalidLessonIds_Returns400()
+    {
+        using var factory = CreateFactory();
+        var (client, notebookId) = await SetupAsync(factory);
+
+        var resp = await client.PostAsJsonAsync("/exports", new
+        {
+            notebookId,
+            lessonIds = new[] { Guid.NewGuid().ToString() }
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+        var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("INVALID_LESSON_IDS", json.RootElement.GetProperty("code").GetString());
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 
