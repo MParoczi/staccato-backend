@@ -435,6 +435,25 @@ public class UsersControllerTests
     // ── DELETE /users/me/presets/{id} ─────────────────────────────────────
 
     [Fact]
+    public async Task DeletePreset_OtherUsersPreset_Returns403()
+    {
+        using var factory = CreateFactory();
+        var (clientA, _) = await RegisterAsync(factory);
+        var create = await clientA.PostAsJsonAsync("/users/me/presets", new
+        {
+            name = "User A Preset",
+            styles = MakeStylesPayload()
+        });
+        var created = JsonDocument.Parse(await create.Content.ReadAsStringAsync());
+        var id = created.RootElement.GetProperty("id").GetString();
+
+        var (clientB, _) = await RegisterAsync(factory);
+        var response = await clientB.DeleteAsync($"/users/me/presets/{id}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task DeletePreset_Returns204()
     {
         using var factory = CreateFactory();
