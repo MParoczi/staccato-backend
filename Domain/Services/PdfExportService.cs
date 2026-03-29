@@ -4,6 +4,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.Repositories;
 using DomainModels.Enums;
 using DomainModels.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Domain.Services;
 
@@ -13,7 +14,8 @@ public partial class PdfExportService(
     ILessonRepository lessonRepo,
     IPdfExportQueue exportQueue,
     IAzureBlobService blobService,
-    IUnitOfWork unitOfWork) : IPdfExportService
+    IUnitOfWork unitOfWork,
+    ILogger<PdfExportService> logger) : IPdfExportService
 {
     private const int ExpiryHours = 24;
 
@@ -53,7 +55,21 @@ public partial class PdfExportService(
 
         await pdfExportRepo.AddAsync(export, ct);
         await unitOfWork.CommitAsync(ct);
-        await exportQueue.EnqueueAsync(export.Id, ct);
+
+        try
+        {
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromSeconds(5));
+            await exportQueue.EnqueueAsync(export.Id, timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            logger.LogError("Queue full — timed out enqueuing export {ExportId}", export.Id);
+            throw new ServiceUnavailableException("Export queue is full. Please try again later.");
+        }
+
+        logger.LogInformation("Export {ExportId} queued for user {UserId}, notebook {NotebookId}",
+            export.Id, userId, notebookId);
 
         return export;
     }
@@ -116,6 +132,8 @@ public partial class PdfExportService(
 
         pdfExportRepo.Remove(export);
         await unitOfWork.CommitAsync(ct);
+
+        logger.LogInformation("Export {ExportId} deleted by user {UserId}", exportId, userId);
     }
 
     public async Task MarkAsProcessingAsync(Guid exportId, CancellationToken ct = default)
@@ -150,6 +168,8 @@ public partial class PdfExportService(
         export.CompletedAt = DateTime.UtcNow;
         pdfExportRepo.Update(export);
         await unitOfWork.CommitAsync(ct);
+
+        logger.LogWarning("Export {ExportId} marked as failed", exportId);
     }
 
     public async Task<IReadOnlyList<Guid>> ResetStaleProcessingExportsAsync(

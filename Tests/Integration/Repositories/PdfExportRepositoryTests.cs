@@ -47,11 +47,16 @@ public class PdfExportRepositoryTests
         var userId = Guid.NewGuid();
         var cutoff = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        ctx.PdfExports.AddRange(
-            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-1)), // older → included
-            MakeExport(notebookId, userId, ExportStatus.Pending, cutoff.AddDays(-2)), // older → included
-            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(+1)) // newer → excluded
-        );
+        // Ready export completed >24h before cutoff → included
+        var readyExpired = MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-3));
+        readyExpired.CompletedAt = cutoff.AddDays(-2); // CompletedAt + 24h = cutoff - 1 day < cutoff
+        // Failed export created >24h before cutoff → included
+        var failedExpired = MakeExport(notebookId, userId, ExportStatus.Failed, cutoff.AddDays(-2));
+        // Ready export completed recently → excluded (CompletedAt + 24h > cutoff)
+        var readyRecent = MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-1));
+        readyRecent.CompletedAt = cutoff; // CompletedAt + 24h = cutoff + 1 day > cutoff
+
+        ctx.PdfExports.AddRange(readyExpired, failedExpired, readyRecent);
         await ctx.SaveChangesAsync();
         ctx.ChangeTracker.Clear();
 
@@ -62,17 +67,22 @@ public class PdfExportRepositoryTests
     }
 
     [Fact]
-    public async Task GetExpiredExportsAsync_ExcludesFailedExports()
+    public async Task GetExpiredExportsAsync_ExcludesPendingAndProcessingExports()
     {
         await using var ctx = CreateContext();
         var notebookId = Guid.NewGuid();
         var userId = Guid.NewGuid();
         var cutoff = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        ctx.PdfExports.AddRange(
-            MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-1)), // older, non-Failed → included
-            MakeExport(notebookId, userId, ExportStatus.Failed, cutoff.AddDays(-1)) // older but Failed → excluded
-        );
+        // Ready with expired CompletedAt → included
+        var readyExport = MakeExport(notebookId, userId, ExportStatus.Ready, cutoff.AddDays(-3));
+        readyExport.CompletedAt = cutoff.AddDays(-2);
+        // Pending → excluded (still active, not Ready/Failed)
+        var pendingExport = MakeExport(notebookId, userId, ExportStatus.Pending, cutoff.AddDays(-3));
+        // Processing → excluded (still active, not Ready/Failed)
+        var processingExport = MakeExport(notebookId, userId, ExportStatus.Processing, cutoff.AddDays(-3));
+
+        ctx.PdfExports.AddRange(readyExport, pendingExport, processingExport);
         await ctx.SaveChangesAsync();
         ctx.ChangeTracker.Clear();
 
@@ -80,7 +90,7 @@ public class PdfExportRepositoryTests
         var result = await repo.GetExpiredExportsAsync(cutoff);
 
         Assert.Single(result);
-        Assert.NotEqual(ExportStatus.Failed, result[0].Status);
+        Assert.Equal(ExportStatus.Ready, result[0].Status);
     }
 
     [Fact]

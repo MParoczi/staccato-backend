@@ -161,11 +161,11 @@
 
 **Purpose**: Observability, final verification, and quality assurance across all stories.
 
-- [ ] T042 [P] Add structured logging (ILogger) for export lifecycle events per FR-030: log queued (with exportId, userId), processing started, completed (with duration), failed (with errorCode) across `Domain/Services/PdfExportService.cs` and `Application/BackgroundServices/PdfExportBackgroundService.cs`
-- [ ] T043 [P] Add queue-full timeout handling to `PdfExportService.QueueExportAsync` — wrap `EnqueueAsync` with 5-second `CancellationTokenSource` timeout, throw `ServiceUnavailableException` on timeout (FR-026) in `Domain/Services/PdfExportService.cs`
-- [ ] T044 Build verification — `dotnet build Staccato.sln` passes with zero warnings
-- [ ] T045 Full test suite — `dotnet test Staccato.sln` passes all existing + new tests
-- [ ] T046 Run quickstart.md validation — manual smoke test of end-to-end export flow
+- [x] T042 [P] Add structured logging (ILogger) for export lifecycle events per FR-030: log queued (with exportId, userId), processing started, completed (with duration), failed (with errorCode) across `Domain/Services/PdfExportService.cs` and `Application/BackgroundServices/PdfExportBackgroundService.cs`
+- [x] T043 [P] Add queue-full timeout handling to `PdfExportService.QueueExportAsync` — wrap `EnqueueAsync` with 5-second `CancellationTokenSource` timeout, throw `ServiceUnavailableException` on timeout (FR-026) in `Domain/Services/PdfExportService.cs`
+- [x] T044 Build verification — `dotnet build Staccato.sln` passes with zero warnings
+- [x] T045 Full test suite — `dotnet test Staccato.sln` passes all existing + new tests
+- [x] T046 Run quickstart.md validation — manual smoke test of end-to-end export flow
 
 ---
 
