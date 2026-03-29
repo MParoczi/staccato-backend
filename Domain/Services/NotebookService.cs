@@ -167,7 +167,7 @@ public class NotebookService(
 
         await unitOfWork.CommitAsync(ct);
 
-        return await styleRepo.GetByNotebookIdAsync(notebookId, ct);
+        return existing;
     }
 
     public async Task<IReadOnlyList<NotebookModuleStyle>> ApplyPresetAsync(
