@@ -842,6 +842,73 @@ public class ModulesControllerTests
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
+    // ── Cross-Story Tests ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteTitleThenCreateNewTitle_OnDifferentPage_Succeeds()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (lessonId, pageId) = await CreateLessonAsync(client, notebookId);
+
+        // Create Title module on page 1
+        var titleModuleId = await CreateModuleAndGetId(client, pageId, "Title", 0, 0, 20, 4);
+
+        // Add a second page
+        await client.PostAsync($"/lessons/{lessonId}/pages", null);
+        var pagesResp = await client.GetAsync($"/lessons/{lessonId}/pages");
+        var pagesDoc = JsonDocument.Parse(await pagesResp.Content.ReadAsStringAsync());
+        var secondPageId = pagesDoc.RootElement[1].GetProperty("id").GetString()!;
+
+        // Delete the Title module from page 1
+        var deleteResp = await client.DeleteAsync($"/modules/{titleModuleId}");
+        Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
+
+        // Create a new Title module on page 2 — should succeed (slot freed)
+        var createResp = await client.PostAsJsonAsync($"/pages/{secondPageId}/modules",
+            MakeCreateModuleBody("Title", 0, 0, 20, 4));
+
+        Assert.Equal(HttpStatusCode.Created, createResp.StatusCode);
+        var doc = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
+        Assert.Equal("Title", doc.RootElement.GetProperty("moduleType").GetString());
+    }
+
+    [Theory]
+    [InlineData("GET", "/pages/{0}/modules")]
+    [InlineData("POST", "/pages/{0}/modules")]
+    [InlineData("PUT", "/modules/{0}")]
+    [InlineData("PATCH", "/modules/{0}/layout")]
+    [InlineData("DELETE", "/modules/{0}")]
+    public async Task AllEndpoints_WithoutAuth_Return401(string method, string urlTemplate)
+    {
+        using var factory = CreateFactory();
+        var client = CreateClient(factory);
+        var url = string.Format(urlTemplate, Guid.NewGuid());
+
+        HttpResponseMessage resp = method switch
+        {
+            "GET" => await client.GetAsync(url),
+            "POST" => await client.PostAsJsonAsync(url, MakeCreateModuleBody()),
+            "PUT" => await client.PutAsJsonAsync(url, new
+            {
+                moduleType = "Theory",
+                gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0,
+                content = new object[0]
+            }),
+            "PATCH" => await client.PatchAsJsonAsync(url, new
+            {
+                gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0
+            }),
+            "DELETE" => await client.DeleteAsync(url),
+            _ => throw new ArgumentException($"Unknown method: {method}")
+        };
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 

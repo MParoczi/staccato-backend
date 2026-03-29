@@ -139,10 +139,10 @@
 
 **Purpose**: Cross-story validation, cleanup, and final verification.
 
-- [ ] T036 Write cross-story integration test: delete Title module then create new Title on different page (verifies slot freed) in Tests/Integration/Controllers/ModulesControllerTests.cs
-- [ ] T037 Write cross-story integration test: all 5 endpoints return 401 without auth token (single parameterized test) in Tests/Integration/Controllers/ModulesControllerTests.cs
-- [ ] T038 Run full test suite via `dotnet test Staccato.sln` and fix any failures
-- [ ] T039 Run quickstart.md validation steps: build, test, smoke test POST endpoint
+- [x] T036 Write cross-story integration test: delete Title module then create new Title on different page (verifies slot freed) in Tests/Integration/Controllers/ModulesControllerTests.cs
+- [x] T037 Write cross-story integration test: all 5 endpoints return 401 without auth token (single parameterized test) in Tests/Integration/Controllers/ModulesControllerTests.cs
+- [x] T038 Run full test suite via `dotnet test Staccato.sln` and fix any failures
+- [x] T039 Run quickstart.md validation steps: build, test, smoke test POST endpoint
 
 ---
 
