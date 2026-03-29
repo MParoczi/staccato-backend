@@ -4,6 +4,8 @@ using Domain.Interfaces.Repositories;
 using Domain.Services;
 using DomainModels.Enums;
 using DomainModels.Models;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Tests.Unit.Services;
@@ -21,7 +23,8 @@ public class PdfExportServiceTests
     {
         return new PdfExportService(
             _exportRepo.Object, _notebookRepo.Object, _lessonRepo.Object,
-            _queue.Object, _blobService.Object, _uow.Object);
+            _queue.Object, _blobService.Object, _uow.Object,
+            new NullLogger<PdfExportService>());
     }
 
     private static readonly Guid UserId = Guid.NewGuid();

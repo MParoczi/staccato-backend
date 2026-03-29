@@ -5,7 +5,6 @@ using Domain.Services;
 using DomainModels.Enums;
 using DomainModels.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -43,9 +42,8 @@ public class ExportCleanupServiceTests
             .Setup(p => p.GetService(typeof(IServiceScopeFactory)))
             .Returns(scopeFactory.Object);
 
-        var logger = NullLoggerFactory.Instance.CreateLogger<ExportCleanupService>();
-
-        return new ExportCleanupService(scopeFactory.Object, logger);
+        return new ExportCleanupService(scopeFactory.Object,
+            new NullLogger<ExportCleanupService>());
     }
 
     private static PdfExport MakeExport(
