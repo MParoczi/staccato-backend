@@ -1,8 +1,11 @@
 using System.Security.Claims;
+using System.Text.Json;
 using ApiModels.Modules;
 using AutoMapper;
 using Domain.Services;
+using DomainModels.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -31,7 +34,15 @@ public class ModulesController(IModuleService moduleService, IMapper mapper) : C
     public async Task<IActionResult> CreateModule(
         Guid pageId, [FromBody] CreateModuleRequest request, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var moduleType = Enum.Parse<ModuleType>(request.ModuleType, true);
+        var contentJson = request.Content.GetRawText();
+
+        var module = await moduleService.CreateModuleAsync(
+            pageId, moduleType,
+            request.GridX, request.GridY, request.GridWidth, request.GridHeight, request.ZIndex,
+            contentJson, GetUserId(), ct);
+
+        return StatusCode(StatusCodes.Status201Created, mapper.Map<ModuleResponse>(module));
     }
 
     // ── PUT /modules/{moduleId} ─────────────────────────────────────────

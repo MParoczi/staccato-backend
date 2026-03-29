@@ -21,12 +21,53 @@ public class ModuleService(
         throw new NotImplementedException();
     }
 
-    public Task<Module> CreateModuleAsync(
+    public async Task<Module> CreateModuleAsync(
         Guid pageId, ModuleType moduleType,
         int gridX, int gridY, int gridWidth, int gridHeight, int zIndex,
         string contentJson, Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var (page, lesson, notebook) = await VerifyPageOwnershipAsync(pageId, userId, ct);
+
+        // FR-015: content must be empty array on POST
+        var content = JsonSerializer.Deserialize<JsonElement>(contentJson);
+        if (content.ValueKind != JsonValueKind.Array || content.GetArrayLength() != 0)
+            throw new ValidationException("BREADCRUMB_CONTENT_NOT_EMPTY",
+                "Content must be an empty array when creating a module.");
+
+        // FR-010: Breadcrumb must always have empty content
+        if (moduleType == ModuleType.Breadcrumb)
+            ValidateContentAsync(moduleType, contentJson);
+
+        // FR-011: only one Title per lesson
+        if (moduleType == ModuleType.Title)
+        {
+            var hasTitleModule = await moduleRepo.HasTitleModuleInLessonAsync(lesson.Id, null, ct);
+            if (hasTitleModule)
+                throw new ConflictException("DUPLICATE_TITLE_MODULE",
+                    "Only one Title module is allowed per lesson.");
+        }
+
+        // FR-006, FR-007, FR-008: grid placement validation
+        await ValidateGridPlacementAsync(pageId, notebook.PageSize, moduleType,
+            gridX, gridY, gridWidth, gridHeight, null, ct);
+
+        var module = new Module
+        {
+            Id = Guid.NewGuid(),
+            LessonPageId = pageId,
+            ModuleType = moduleType,
+            GridX = gridX,
+            GridY = gridY,
+            GridWidth = gridWidth,
+            GridHeight = gridHeight,
+            ZIndex = zIndex,
+            ContentJson = contentJson
+        };
+
+        await moduleRepo.AddAsync(module, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return module;
     }
 
     public Task<Module> UpdateModuleAsync(
