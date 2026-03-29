@@ -269,6 +269,56 @@ public class UsersControllerTests
         Assert.Equal("ACCOUNT_DELETION_NOT_SCHEDULED", body!.Code);
     }
 
+    // ── PUT /users/me/avatar ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task UploadAvatar_InvalidMimeType_Returns400()
+    {
+        using var factory = CreateFactory();
+        var (client, _) = await RegisterAsync(factory);
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[100]);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/pdf");
+        content.Add(fileContent, "File", "test.pdf");
+
+        var response = await client.PutAsync("/users/me/avatar", content);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UploadAvatar_ExactlyTwoMegabytes_Returns200()
+    {
+        using var factory = CreateFactory();
+        var (client, _) = await RegisterAsync(factory);
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[2_097_152]);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+        content.Add(fileContent, "File", "avatar.png");
+
+        var response = await client.PutAsync("/users/me/avatar", content);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task UploadAvatar_OneByteOverLimit_Returns400()
+    {
+        using var factory = CreateFactory();
+        var (client, _) = await RegisterAsync(factory);
+
+        var content = new MultipartFormDataContent();
+        var fileContent = new ByteArrayContent(new byte[2_097_153]);
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/png");
+        content.Add(fileContent, "File", "avatar.png");
+
+        var response = await client.PutAsync("/users/me/avatar", content);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     // ── GET /users/me/presets ─────────────────────────────────────────────
 
     [Fact]
