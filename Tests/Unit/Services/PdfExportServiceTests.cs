@@ -350,6 +350,18 @@ public class PdfExportServiceTests
             () => CreateService().DeleteExportAsync(export.Id, UserId));
     }
 
+    [Fact]
+    public async Task DeleteExportAsync_NotFound_ThrowsNotFoundException()
+    {
+        var exportId = Guid.NewGuid();
+        _exportRepo
+            .Setup(r => r.GetByIdAsync(exportId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((PdfExport?)null);
+
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => CreateService().DeleteExportAsync(exportId, UserId));
+    }
+
     // ── MarkAsProcessingAsync ──────────────────────────────────────────
 
     [Fact]

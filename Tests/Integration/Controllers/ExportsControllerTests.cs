@@ -344,6 +344,35 @@ public class ExportsControllerTests
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
     }
 
+    [Fact]
+    public async Task DeleteExport_OtherUser_Returns403()
+    {
+        using var factory = CreateFactory();
+        var (client1, notebookId) = await SetupAsync(factory);
+
+        var createResp = await client1.PostAsJsonAsync("/exports", new { notebookId });
+        createResp.EnsureSuccessStatusCode();
+        var createJson = JsonDocument.Parse(await createResp.Content.ReadAsStringAsync());
+        var exportId = createJson.RootElement.GetProperty("exportId").GetString()!;
+
+        // Register user 2
+        var client2 = CreateClient(factory);
+        var regResp = await client2.PostAsJsonAsync("/auth/register", new
+        {
+            Email = $"{Guid.NewGuid()}@test.com",
+            DisplayName = "Other User",
+            Password = "Password1!"
+        });
+        regResp.EnsureSuccessStatusCode();
+        var auth2 = await regResp.Content.ReadFromJsonAsync<AuthBody>(JsonOpts);
+        client2.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", auth2!.AccessToken);
+
+        var resp = await client2.DeleteAsync($"/exports/{exportId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
     // ── POST /exports with lessonIds ────────────────────────────────────
 
     [Fact]

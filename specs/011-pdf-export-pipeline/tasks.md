@@ -127,13 +127,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T035 [US3] Implement `GetExportsByUserAsync` (call repo GetByUserIdAsync, return list) and `DeleteExportAsync` (ownership check, delete blob via IAzureBlobService if BlobReference exists, remove record, commit) in `Domain/Services/PdfExportService.cs`
-- [ ] T036 [US3] Add `GET /exports` (call GetExportsByUserAsync, return 200 with mapped list) and `DELETE /exports/{id}` (call DeleteExportAsync, return 204) endpoints to `Api/Controllers/ExportsController.cs`
+- [x] T035 [US3] Implement `GetExportsByUserAsync` (call repo GetByUserIdAsync, return list) and `DeleteExportAsync` (ownership check, delete blob via IAzureBlobService if BlobReference exists, remove record, commit) in `Domain/Services/PdfExportService.cs`
+- [x] T036 [US3] Add `GET /exports` (call GetExportsByUserAsync, return 200 with mapped list) and `DELETE /exports/{id}` (call DeleteExportAsync, return 204) endpoints to `Api/Controllers/ExportsController.cs`
 
 ### Tests for User Story 3
 
-- [ ] T038 [US3] Unit tests for DeleteExportAsync — happy path deletes record + blob; delete without blob (Pending/Failed) succeeds; ForbiddenException for wrong user; NotFoundException for missing export. Unit tests for GetExportsByUserAsync in `Tests/Unit/PdfExportServiceTests.cs`
-- [ ] T039 [US3] Integration tests — GET /exports returns list ordered by createdAt desc; DELETE /exports/{id} returns 204; DELETE for other user's export returns 403 in `Tests/Integration/ExportsControllerTests.cs`
+- [x] T038 [US3] Unit tests for DeleteExportAsync — happy path deletes record + blob; delete without blob (Pending/Failed) succeeds; ForbiddenException for wrong user; NotFoundException for missing export. Unit tests for GetExportsByUserAsync in `Tests/Unit/PdfExportServiceTests.cs`
+- [x] T039 [US3] Integration tests — GET /exports returns list ordered by createdAt desc; DELETE /exports/{id} returns 204; DELETE for other user's export returns 403 in `Tests/Integration/ExportsControllerTests.cs`
 
 **Checkpoint**: Full export management. Users can list, inspect, and delete their exports.
 
@@ -147,11 +147,11 @@
 
 ### Implementation for User Story 4
 
-- [ ] T040 [US4] Implement `ExportCleanupService` as `BackgroundService` with a 24-hour `PeriodicTimer` — on each tick: call `GetExpiredExportsAsync(DateTime.UtcNow)`, for each expired export delete blob via `IAzureBlobService.DeleteAsync` (if BlobReference exists), remove record via repo, commit. Log cleanup count. Use `IServiceScope` per cycle in `Application/BackgroundServices/ExportCleanupService.cs`
+- [x] T040 [US4] Implement `ExportCleanupService` as `BackgroundService` with a 24-hour `PeriodicTimer` — on each tick: call `GetExpiredExportsAsync(DateTime.UtcNow)`, for each expired export delete blob via `IAzureBlobService.DeleteAsync` (if BlobReference exists), remove record via repo, commit. Log cleanup count. Use `IServiceScope` per cycle in `Application/BackgroundServices/ExportCleanupService.cs`
 
 ### Tests for User Story 4
 
-- [ ] T041 [US4] Unit tests for `ExportCleanupService` — verify expired Ready exports deleted with blob; expired Failed exports deleted (no blob); non-expired exports untouched; blob delete failure does not crash service in `Tests/Unit/ExportCleanupServiceTests.cs`
+- [x] T041 [US4] Unit tests for `ExportCleanupService` — verify expired Ready exports deleted with blob; expired Failed exports deleted (no blob); non-expired exports untouched; blob delete failure does not crash service in `Tests/Unit/ExportCleanupServiceTests.cs`
 
 **Checkpoint**: Automated lifecycle management. No manual intervention needed for expired exports.
 
