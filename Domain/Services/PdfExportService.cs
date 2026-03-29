@@ -10,6 +10,7 @@ namespace Domain.Services;
 public partial class PdfExportService(
     IPdfExportRepository pdfExportRepo,
     INotebookRepository notebookRepo,
+    ILessonRepository lessonRepo,
     IPdfExportQueue exportQueue,
     IAzureBlobService blobService,
     IUnitOfWork unitOfWork) : IPdfExportService
@@ -28,6 +29,18 @@ public partial class PdfExportService(
         if (await pdfExportRepo.HasActiveExportForNotebookAsync(notebookId, ct))
             throw new ConflictException("ACTIVE_EXPORT_EXISTS", "An active export already exists for this notebook.");
 
+        var deduplicatedLessonIds = lessonIds?.Distinct().ToList();
+
+        if (deduplicatedLessonIds is { Count: > 0 })
+        {
+            var notebookLessons = await lessonRepo.GetByNotebookIdOrderedByCreatedAtAsync(notebookId, ct);
+            var notebookLessonIds = notebookLessons.Select(l => l.Id).ToHashSet();
+            var invalidIds = deduplicatedLessonIds.Where(id => !notebookLessonIds.Contains(id)).ToList();
+            if (invalidIds.Count > 0)
+                throw new BadRequestException("INVALID_LESSON_IDS",
+                    "One or more lesson IDs do not belong to this notebook.");
+        }
+
         var export = new PdfExport
         {
             Id = Guid.NewGuid(),
@@ -35,7 +48,7 @@ public partial class PdfExportService(
             UserId = userId,
             Status = ExportStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            LessonIds = lessonIds?.Distinct().ToList()
+            LessonIds = deduplicatedLessonIds
         };
 
         await pdfExportRepo.AddAsync(export, ct);

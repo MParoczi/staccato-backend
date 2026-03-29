@@ -107,13 +107,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T031 [US2] Update `PdfExportService.QueueExportAsync` — add lesson ID validation (all IDs belong to notebook, throw BadRequestException with code INVALID_LESSON_IDS if not), deduplicate lesson IDs before saving in `Domain/Services/PdfExportService.cs`
-- [ ] T032 [US2] Update `PdfDataLoader` — when PdfExport.LessonIds is non-null, filter loaded lessons to only those IDs (maintain CreatedAt order); index page reflects only selected lessons in `Application/Pdf/PdfDataLoader.cs`
+- [x] T031 [US2] Update `PdfExportService.QueueExportAsync` — add lesson ID validation (all IDs belong to notebook, throw BadRequestException with code INVALID_LESSON_IDS if not), deduplicate lesson IDs before saving in `Domain/Services/PdfExportService.cs`
+- [x] T032 [US2] Update `PdfDataLoader` — when PdfExport.LessonIds is non-null, filter loaded lessons to only those IDs (maintain CreatedAt order); index page reflects only selected lessons in `Application/Pdf/PdfDataLoader.cs`
 
 ### Tests for User Story 2
 
-- [ ] T033 [US2] Unit tests for lesson filtering — QueueExportAsync with valid lessonIds succeeds; invalid lessonIds throws BadRequestException(INVALID_LESSON_IDS); duplicate IDs are deduplicated in `Tests/Unit/PdfExportServiceTests.cs`
-- [ ] T034 [US2] Integration tests — POST /exports with lessonIds returns 202; POST with invalid lessonIds returns 400 with INVALID_LESSON_IDS error code in `Tests/Integration/ExportsControllerTests.cs`
+- [x] T033 [US2] Unit tests for lesson filtering — QueueExportAsync with valid lessonIds succeeds; invalid lessonIds throws BadRequestException(INVALID_LESSON_IDS); duplicate IDs are deduplicated in `Tests/Unit/PdfExportServiceTests.cs`
+- [x] T034 [US2] Integration tests — POST /exports with lessonIds returns 202; POST with invalid lessonIds returns 400 with INVALID_LESSON_IDS error code in `Tests/Integration/ExportsControllerTests.cs`
 
 **Checkpoint**: Partial export works. Users can export specific lessons or full notebook.
 
