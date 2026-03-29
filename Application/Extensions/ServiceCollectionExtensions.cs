@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using ApiModels;
 using Application.BackgroundServices;
+using Application.Channels;
 using Application.Options;
 using Application.Services;
 using Azure.Storage.Blobs;
@@ -171,6 +172,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddBackgroundWorkers(this IServiceCollection services)
     {
+        services.AddSingleton<PdfExportChannel>();
+        services.AddSingleton<IPdfExportQueue>(sp => sp.GetRequiredService<PdfExportChannel>());
         services.AddHostedService<PdfExportBackgroundService>();
         services.AddHostedService<ExportCleanupService>();
         services.AddHostedService<AccountDeletionCleanupService>();
@@ -244,6 +247,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonService, LessonService>();
         services.AddScoped<ILessonPageService, LessonPageService>();
         services.AddScoped<IModuleService, ModuleService>();
+        // IPdfExportService registration added when PdfExportService is implemented (T013)
         services.AddResponseCaching();
         return services;
     }

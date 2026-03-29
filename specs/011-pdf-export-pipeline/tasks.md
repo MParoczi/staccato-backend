@@ -33,13 +33,13 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 [P] Create `CreatePdfExportRequest` record with `NotebookId` (Guid) and `LessonIds` (List<Guid>?) in `ApiModels/Requests/CreatePdfExportRequest.cs`
-- [ ] T007 [P] Create `PdfExportResponse` record with Id, NotebookId, NotebookTitle, Status, CreatedAt, CompletedAt, LessonIds in `ApiModels/Responses/PdfExportResponse.cs`
-- [ ] T008 [P] Create `CreatePdfExportResponse` record with ExportId and Status in `ApiModels/Responses/CreatePdfExportResponse.cs`
-- [ ] T009 [P] Create `CreatePdfExportRequestValidator` — NotebookId not empty; LessonIds if present must not be empty list; each ID must not be Guid.Empty in `ApiModels/Validators/CreatePdfExportRequestValidator.cs`
-- [ ] T010 Create `IPdfExportService` interface with methods: `QueueExportAsync`, `GetExportByIdAsync`, `DownloadExportAsync`, `GetExportsByUserAsync`, `DeleteExportAsync`, `MarkAsProcessingAsync`, `MarkAsReadyAsync`, `MarkAsFailedAsync`, `ResetStaleProcessingExportsAsync` in `Domain/Services/IPdfExportService.cs`
-- [ ] T011 Add `PdfExport → PdfExportResponse` and `PdfExport → CreatePdfExportResponse` mappings to `Api/Mapping/DomainToResponseProfile.cs`
-- [ ] T012 Register `PdfExportChannel` as singleton, forward `IPdfExportQueue` to same instance, register `IPdfExportService` as scoped in `Application/Extensions/ServiceCollectionExtensions.cs`
+- [x] T006 [P] Create `CreatePdfExportRequest` record with `NotebookId` (Guid) and `LessonIds` (List<Guid>?) in `ApiModels/Exports/CreatePdfExportRequest.cs`
+- [x] T007 [P] Create `PdfExportResponse` record with Id, NotebookId, NotebookTitle, Status, CreatedAt, CompletedAt, LessonIds in `ApiModels/Exports/PdfExportResponse.cs`
+- [x] T008 [P] Create `CreatePdfExportResponse` record with ExportId and Status in `ApiModels/Exports/CreatePdfExportResponse.cs`
+- [x] T009 [P] Create `CreatePdfExportRequestValidator` — NotebookId not empty; LessonIds if present must not be empty list; each ID must not be Guid.Empty in `ApiModels/Exports/CreatePdfExportRequestValidator.cs`
+- [x] T010 Create `IPdfExportService` interface with methods: `QueueExportAsync`, `GetExportByIdAsync`, `DownloadExportAsync`, `GetExportsByUserAsync`, `DeleteExportAsync`, `MarkAsProcessingAsync`, `MarkAsReadyAsync`, `MarkAsFailedAsync`, `ResetStaleProcessingExportsAsync` in `Domain/Services/IPdfExportService.cs`
+- [x] T011 Add `PdfExport → PdfExportResponse` and `PdfExport → CreatePdfExportResponse` mappings to `Api/Mapping/DomainToResponseProfile.cs`
+- [x] T012 Register `PdfExportChannel` as singleton, forward `IPdfExportQueue` to same instance in `Application/Extensions/ServiceCollectionExtensions.cs` (IPdfExportService deferred to T013)
 
 **Checkpoint**: Foundation ready — interfaces defined, DTOs created, DI configured. User story implementation can begin.
 
