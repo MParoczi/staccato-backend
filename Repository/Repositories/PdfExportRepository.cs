@@ -24,7 +24,9 @@ public class PdfExportRepository(AppDbContext context, IMapper mapper)
         DateTime utcCutoff, CancellationToken ct = default)
     {
         var entities = await _context.PdfExports
-            .Where(e => e.Status != ExportStatus.Failed && e.CreatedAt < utcCutoff)
+            .Where(e =>
+                (e.Status == ExportStatus.Ready && e.CompletedAt != null && e.CompletedAt.Value.AddHours(24) <= utcCutoff) ||
+                (e.Status == ExportStatus.Failed && e.CreatedAt.AddHours(24) <= utcCutoff))
             .ToListAsync(ct);
         return _mapper.Map<IReadOnlyList<PdfExport>>(entities);
     }
@@ -45,5 +47,14 @@ public class PdfExportRepository(AppDbContext context, IMapper mapper)
             e => e.NotebookId == notebookId &&
                  (e.Status == ExportStatus.Pending || e.Status == ExportStatus.Processing),
             ct);
+    }
+
+    public async Task<IReadOnlyList<PdfExport>> GetByStatusAsync(
+        ExportStatus status, CancellationToken ct = default)
+    {
+        var entities = await _context.PdfExports
+            .Where(e => e.Status == status)
+            .ToListAsync(ct);
+        return _mapper.Map<IReadOnlyList<PdfExport>>(entities);
     }
 }

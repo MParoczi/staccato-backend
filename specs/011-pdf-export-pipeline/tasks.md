@@ -19,11 +19,11 @@
 
 **Purpose**: Create the foundational abstractions and infrastructure contracts needed by all stories. No business logic.
 
-- [ ] T001 [P] Create `IPdfExportQueue` interface with `EnqueueAsync(Guid exportId, CancellationToken ct)` in `Domain/Interfaces/IPdfExportQueue.cs`
-- [ ] T002 [P] Create `PdfExportChannel` implementing `IPdfExportQueue`, wrapping `Channel<Guid>` with `BoundedChannelOptions(capacity: 50, FullMode: Wait)`, exposing `ChannelReader<Guid> Reader` in `Application/Channels/PdfExportChannel.cs`
-- [ ] T003 [P] Add `Task PdfFailed(string exportId, string errorCode)` to `INotificationClient` interface in `Application/Hubs/NotificationHub.cs`
-- [ ] T004 [P] Add `GetByStatusAsync(ExportStatus status, CancellationToken ct)` to `IPdfExportRepository` in `Domain/Interfaces/Repositories/IPdfExportRepository.cs`
-- [ ] T005 Implement `GetByStatusAsync` in `PdfExportRepository` and update `GetExpiredExportsAsync` to return both Ready exports (CompletedAt + 24h <= cutoff) and Failed exports (CreatedAt + 24h <= cutoff) in `Repository/Repositories/PdfExportRepository.cs`
+- [x] T001 [P] Create `IPdfExportQueue` interface with `EnqueueAsync(Guid exportId, CancellationToken ct)` in `Domain/Interfaces/IPdfExportQueue.cs`
+- [x] T002 [P] Create `PdfExportChannel` implementing `IPdfExportQueue`, wrapping `Channel<Guid>` with `BoundedChannelOptions(capacity: 50, FullMode: Wait)`, exposing `ChannelReader<Guid> Reader` in `Application/Channels/PdfExportChannel.cs`
+- [x] T003 [P] Add `Task PdfFailed(string exportId, string errorCode)` to `INotificationClient` interface in `Application/Hubs/NotificationHub.cs`
+- [x] T004 [P] Add `GetByStatusAsync(ExportStatus status, CancellationToken ct)` to `IPdfExportRepository` in `Domain/Interfaces/Repositories/IPdfExportRepository.cs`
+- [x] T005 Implement `GetByStatusAsync` in `PdfExportRepository` and update `GetExpiredExportsAsync` to return both Ready exports (CompletedAt + 24h <= cutoff) and Failed exports (CreatedAt + 24h <= cutoff) in `Repository/Repositories/PdfExportRepository.cs`
 
 ---
 
