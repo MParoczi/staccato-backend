@@ -90,9 +90,9 @@ public class ChordSeeder(AppDbContext context)
 
     private sealed class ChordRecord
     {
-        public string Name { get; } = string.Empty;
-        public string Root { get; } = string.Empty;
-        public string Quality { get; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Root { get; set; } = string.Empty;
+        public string Quality { get; set; } = string.Empty;
         public string? Extension { get; set; }
         public string? Alternation { get; set; }
         public List<JsonElement>? Positions { get; set; }
