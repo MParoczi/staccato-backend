@@ -463,4 +463,58 @@ public class ModuleServiceTests
 
         Assert.Equal("MODULE_OVERLAP", ex.Code);
     }
+
+    // ── GetModulesByPageIdAsync ──────────────────────────────────────────
+
+    [Fact]
+    public async Task GetModulesByPageIdAsync_HappyPath_ReturnsModules()
+    {
+        SetupOwnership();
+        var modules = new List<Module>
+        {
+            new() { Id = Guid.NewGuid(), LessonPageId = _pageId, ModuleType = ModuleType.Theory },
+            new() { Id = Guid.NewGuid(), LessonPageId = _pageId, ModuleType = ModuleType.Practice }
+        };
+        _moduleRepo.Setup(r => r.GetByPageIdAsync(_pageId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(modules);
+
+        var sut = CreateService();
+        var result = await sut.GetModulesByPageIdAsync(_pageId, _userId);
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetModulesByPageIdAsync_EmptyPage_ReturnsEmptyList()
+    {
+        SetupOwnership();
+        _moduleRepo.Setup(r => r.GetByPageIdAsync(_pageId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Module>());
+
+        var sut = CreateService();
+        var result = await sut.GetModulesByPageIdAsync(_pageId, _userId);
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetModulesByPageIdAsync_PageNotFound_ThrowsNotFoundException()
+    {
+        _lessonPageRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LessonPage?)null);
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => sut.GetModulesByPageIdAsync(Guid.NewGuid(), _userId));
+    }
+
+    [Fact]
+    public async Task GetModulesByPageIdAsync_OtherUsersPage_ThrowsForbiddenException()
+    {
+        SetupOwnership();
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => sut.GetModulesByPageIdAsync(_pageId, Guid.NewGuid()));
+    }
 }

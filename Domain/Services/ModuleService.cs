@@ -15,10 +15,11 @@ public class ModuleService(
     INotebookRepository notebookRepo,
     IUnitOfWork unitOfWork) : IModuleService
 {
-    public Task<IReadOnlyList<Module>> GetModulesByPageIdAsync(
+    public async Task<IReadOnlyList<Module>> GetModulesByPageIdAsync(
         Guid pageId, Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        await VerifyPageOwnershipAsync(pageId, userId, ct);
+        return await moduleRepo.GetByPageIdAsync(pageId, ct);
     }
 
     public async Task<Module> CreateModuleAsync(

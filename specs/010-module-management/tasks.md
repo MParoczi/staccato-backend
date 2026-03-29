@@ -109,10 +109,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T028 [US4] Implement GetModulesByPageIdAsync in Domain/Services/ModuleService.cs — verify page ownership, call repository GetByPageIdAsync, return module list.
-- [ ] T029 [P] [US4] Implement GET /pages/{pageId}/modules endpoint in Api/Controllers/ModulesController.cs — route `[HttpGet("/pages/{pageId:guid}/modules")]`, call GetModulesByPageIdAsync, map to List<ModuleResponse>, return Ok(response).
-- [ ] T030 [P] [US4] Write unit tests for GetModulesByPageIdAsync in Tests/Unit/ModuleServiceTests.cs — happy path (returns modules), empty page (returns empty list), NotFoundException for non-existent page, ForbiddenException for other user's page.
-- [ ] T031 [US4] Write integration tests for GET /pages/{pageId}/modules in Tests/Integration/Controllers/ModulesControllerTests.cs — 200 with modules (verify ordering, content deserialized), 200 with empty array, 403 for other user's page, 401 without auth.
+- [x] T028 [US4] Implement GetModulesByPageIdAsync in Domain/Services/ModuleService.cs — verify page ownership, call repository GetByPageIdAsync, return module list.
+- [x] T029 [P] [US4] Implement GET /pages/{pageId}/modules endpoint in Api/Controllers/ModulesController.cs — route `[HttpGet("/pages/{pageId:guid}/modules")]`, call GetModulesByPageIdAsync, map to List<ModuleResponse>, return Ok(response).
+- [x] T030 [P] [US4] Write unit tests for GetModulesByPageIdAsync in Tests/Unit/ModuleServiceTests.cs — happy path (returns modules), empty page (returns empty list), NotFoundException for non-existent page, ForbiddenException for other user's page.
+- [x] T031 [US4] Write integration tests for GET /pages/{pageId}/modules in Tests/Integration/Controllers/ModulesControllerTests.cs — 200 with modules (verify ordering, content deserialized), 200 with empty array, 403 for other user's page, 401 without auth.
 
 **Checkpoint**: GET endpoint fully functional. Module listing with correct ordering. Unit + integration tests pass.
 

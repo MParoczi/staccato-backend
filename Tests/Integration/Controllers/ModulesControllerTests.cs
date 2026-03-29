@@ -697,6 +697,87 @@ public class ModulesControllerTests
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
 
+    // ── GET /pages/{pageId}/modules ────────────────────────────────────
+
+    [Fact]
+    public async Task GetModules_ReturnsModulesWithCorrectOrdering()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+
+        // Create modules at different positions
+        await client.PostAsJsonAsync($"/pages/{pageId}/modules",
+            MakeCreateModuleBody("Theory", 20, 10, 18, 10)); // gridY=10, gridX=20
+        await client.PostAsJsonAsync($"/pages/{pageId}/modules",
+            MakeCreateModuleBody("Theory", 0, 0, 18, 10)); // gridY=0, gridX=0
+        await client.PostAsJsonAsync($"/pages/{pageId}/modules",
+            MakeCreateModuleBody("Theory", 0, 10, 18, 10)); // gridY=10, gridX=0
+
+        var resp = await client.GetAsync($"/pages/{pageId}/modules");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        var arr = doc.RootElement;
+        Assert.Equal(3, arr.GetArrayLength());
+        // Ordered by GridY asc then GridX asc
+        Assert.Equal(0, arr[0].GetProperty("gridY").GetInt32());
+        Assert.Equal(0, arr[0].GetProperty("gridX").GetInt32());
+        Assert.Equal(10, arr[1].GetProperty("gridY").GetInt32());
+        Assert.Equal(0, arr[1].GetProperty("gridX").GetInt32());
+        Assert.Equal(10, arr[2].GetProperty("gridY").GetInt32());
+        Assert.Equal(20, arr[2].GetProperty("gridX").GetInt32());
+        // Verify content is deserialized
+        Assert.Equal(JsonValueKind.Array, arr[0].GetProperty("content").ValueKind);
+    }
+
+    [Fact]
+    public async Task GetModules_EmptyPage_ReturnsEmptyArray()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+
+        var resp = await client.GetAsync($"/pages/{pageId}/modules");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(0, doc.RootElement.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task GetModules_OtherUsersPage_Returns403()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var ownerClient = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(ownerClient);
+        var (_, pageId) = await CreateLessonAsync(ownerClient, notebookId);
+
+        var otherClient = await RegisterAsync(factory);
+        var resp = await otherClient.GetAsync($"/pages/{pageId}/modules");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetModules_WithoutAuth_Returns401()
+    {
+        using var factory = CreateFactory();
+        var client = CreateClient(factory);
+
+        var resp = await client.GetAsync($"/pages/{Guid.NewGuid()}/modules");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 
