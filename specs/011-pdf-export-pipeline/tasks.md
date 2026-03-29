@@ -59,41 +59,41 @@
 
 #### Controller (Core Endpoints)
 
-- [ ] T014 [US1] Create `ExportsController` with `[Authorize]`, implement `POST /exports` (call QueueExportAsync, return 202 with CreatePdfExportResponse), `GET /exports/{id}` (call GetExportByIdAsync, return 200), `GET /exports/{id}/download` (call DownloadExportAsync, return FileStreamResult with Content-Disposition) in `Api/Controllers/ExportsController.cs`
+- [x] T014 [US1] Create `ExportsController` with `[Authorize]`, implement `POST /exports` (call QueueExportAsync, return 202 with CreatePdfExportResponse), `GET /exports/{id}` (call GetExportByIdAsync, return 200), `GET /exports/{id}/download` (call DownloadExportAsync, return FileStreamResult with Content-Disposition) in `Api/Controllers/ExportsController.cs`
 
 #### PDF Rendering Infrastructure
 
-- [ ] T015 [P] [US1] Create `PdfRenderModels.cs` with `PdfExportData` (including `Language` for locale-dependent rendering per FR-005/FR-006), `LessonRenderData`, `PageRenderData`, `ModuleRenderData`, `ModuleStyleData` record types matching the data-model.md schema in `Application/Pdf/PdfRenderModels.cs`
-- [ ] T016 [P] [US1] Create `DottedPaperBackground` as a reusable QuestPDF component using Canvas API — draw light gray (#CCCCCC) circles at 0.5mm diameter, 5mm spacing across the page in `Application/Pdf/DottedPaperBackground.cs`
-- [ ] T017 [P] [US1] Create `CoverPageRenderer` — solid color background filling page (notebook CoverColor), centered title, instrument name, owner name (FirstName LastName), locale-formatted creation date, no page number in `Application/Pdf/CoverPageRenderer.cs`
-- [ ] T018 [P] [US1] Create `IndexPageRenderer` — dotted paper background, localized "Table of Contents" heading (en/hu), lesson titles with global page numbers, page numbered starting at 1, multi-page support in `Application/Pdf/IndexPageRenderer.cs`
+- [x] T015 [P] [US1] Create `PdfRenderModels.cs` with `PdfExportData` (including `Language` for locale-dependent rendering per FR-005/FR-006), `LessonRenderData`, `PageRenderData`, `ModuleRenderData`, `ModuleStyleData` record types matching the data-model.md schema in `Application/Pdf/PdfRenderModels.cs`
+- [x] T016 [P] [US1] Create `DottedPaperBackground` as a reusable QuestPDF component using Canvas API — draw light gray (#CCCCCC) circles at 0.5mm diameter, 5mm spacing across the page in `Application/Pdf/DottedPaperBackground.cs`
+- [x] T017 [P] [US1] Create `CoverPageRenderer` — solid color background filling page (notebook CoverColor), centered title, instrument name, owner name (FirstName LastName), locale-formatted creation date, no page number in `Application/Pdf/CoverPageRenderer.cs`
+- [x] T018 [P] [US1] Create `IndexPageRenderer` — dotted paper background, localized "Table of Contents" heading (en/hu), lesson titles with global page numbers, page numbered starting at 1, multi-page support in `Application/Pdf/IndexPageRenderer.cs`
 
 #### Module and Building Block Rendering
 
-- [ ] T019 [P] [US1] Create `ModuleRenderer` — render module box at grid position (gridUnit * 5mm), apply NotebookModuleStyle (background, border color/width/radius, header bg/text color, body text color), clip content to bounds, render in ZIndex order in `Application/Pdf/ModuleRenderer.cs`
-- [ ] T020 [P] [US1] Create text-based building block renderers (SectionHeading, Date, Text) with TextSpan bold support, skip empty blocks in `Application/Pdf/BuildingBlockRenderers.cs`
-- [ ] T021 [P] [US1] Add list building block renderers (BulletList with bullet markers, NumberedList with sequential numbers, CheckboxList with checked/unchecked indicators) in `Application/Pdf/BuildingBlockRenderers.cs`
-- [ ] T022 [P] [US1] Add Table building block renderer (column headers, rows, cells with TextSpan support) in `Application/Pdf/BuildingBlockRenderers.cs`
-- [ ] T023 [P] [US1] Add MusicalNotes renderer (circular badges per note) and ChordProgression renderer (horizontal pill badges with beat counts, section labels, repeat markers) in `Application/Pdf/BuildingBlockRenderers.cs`
-- [ ] T024 [US1] Add ChordTablatureGroup renderer using QuestPDF Canvas API — draw fretboard diagrams as vector graphics (string lines, fret lines, finger position dots, barre indicators, muted/open markers, chord name label), render placeholder with DisplayName when chord not found in `Application/Pdf/BuildingBlockRenderers.cs`
+- [x] T019 [P] [US1] Create `ModuleRenderer` — render module box at grid position (gridUnit * 5mm), apply NotebookModuleStyle (background, border color/width/radius, header bg/text color, body text color), clip content to bounds, render in ZIndex order in `Application/Pdf/ModuleRenderer.cs`
+- [x] T020 [P] [US1] Create text-based building block renderers (SectionHeading, Date, Text) with TextSpan bold support, skip empty blocks in `Application/Pdf/BuildingBlockRenderers.cs`
+- [x] T021 [P] [US1] Add list building block renderers (BulletList with bullet markers, NumberedList with sequential numbers, CheckboxList with checked/unchecked indicators) in `Application/Pdf/BuildingBlockRenderers.cs`
+- [x] T022 [P] [US1] Add Table building block renderer (column headers, rows, cells with TextSpan support) in `Application/Pdf/BuildingBlockRenderers.cs`
+- [x] T023 [P] [US1] Add MusicalNotes renderer (circular badges per note) and ChordProgression renderer (horizontal pill badges with beat counts, section labels, repeat markers) in `Application/Pdf/BuildingBlockRenderers.cs`
+- [x] T024 [US1] Add ChordTablatureGroup renderer using QuestPDF Canvas API — draw fretboard diagrams as vector graphics (string lines, fret lines, finger position dots, barre indicators, muted/open markers, chord name label), render placeholder with DisplayName when chord not found in `Application/Pdf/BuildingBlockRenderers.cs`
 
 #### Document Assembly and Page Layout
 
-- [ ] T025 [US1] Create `LessonPageRenderer` — dotted paper background, iterate modules sorted by ZIndex, delegate to ModuleRenderer, render empty module box for empty ContentJson in `Application/Pdf/LessonPageRenderer.cs`
-- [ ] T026 [US1] Create `StaccatoPdfDocument` implementing `QuestPDF.Infrastructure.IDocument` — compose CoverPage, IndexPage, LessonPages using page size from PageSizeDimensions, global sequential page numbering in bottom-right (starting at 1 for index, cover excluded) in `Application/Pdf/StaccatoPdfDocument.cs`
+- [x] T025 [US1] Create `LessonPageRenderer` — dotted paper background, iterate modules sorted by ZIndex, delegate to ModuleRenderer, render empty module box for empty ContentJson in `Application/Pdf/LessonPageRenderer.cs`
+- [x] T026 [US1] Create `StaccatoPdfDocument` implementing `QuestPDF.Infrastructure.IDocument` — compose CoverPage, IndexPage, LessonPages using page size from PageSizeDimensions, global sequential page numbering in bottom-right (starting at 1 for index, cover excluded) in `Application/Pdf/StaccatoPdfDocument.cs`
 
 #### Data Loading
 
-- [ ] T027 [US1] Create `PdfDataLoader` — inject repository interfaces, load PdfExport → Notebook (with User for owner name and Language) → Instrument → NotebookModuleStyles → Lessons (ordered by CreatedAt) → LessonPages (ordered by PageNumber) → Modules → deserialize ContentJson into BuildingBlock objects → load referenced Chords. Return `PdfExportData` in `Application/Pdf/PdfDataLoader.cs`
+- [x] T027 [US1] Create `PdfDataLoader` — inject repository interfaces, load PdfExport → Notebook (with User for owner name and Language) → Instrument → NotebookModuleStyles → Lessons (ordered by CreatedAt) → LessonPages (ordered by PageNumber) → Modules → deserialize ContentJson into BuildingBlock objects → load referenced Chords. Return `PdfExportData` in `Application/Pdf/PdfDataLoader.cs`
 
 #### Background Service
 
-- [ ] T028 [US1] Implement `PdfExportBackgroundService` as `BackgroundService` — on startup call `ResetStaleProcessingExportsAsync` and re-enqueue recovered exports; in `ExecuteAsync` loop: `await foreach` on `PdfExportChannel.Reader`, create `IServiceScope` per job, call MarkAsProcessing, load data via PdfDataLoader, render via StaccatoPdfDocument, upload via IAzureBlobService at path `exports/{userId}/{exportId}.pdf`, call MarkAsReady, notify via `IHubContext<NotificationHub, INotificationClient>.Clients.User(userId).PdfReady(exportId, fileName)`. On failure: call MarkAsFailed, notify PdfFailed with errorCode. Handle missing record gracefully (FR-027). Respect CancellationToken for graceful shutdown (FR-029) in `Application/BackgroundServices/PdfExportBackgroundService.cs`
+- [x] T028 [US1] Implement `PdfExportBackgroundService` as `BackgroundService` — on startup call `ResetStaleProcessingExportsAsync` and re-enqueue recovered exports; in `ExecuteAsync` loop: `await foreach` on `PdfExportChannel.Reader`, create `IServiceScope` per job, call MarkAsProcessing, load data via PdfDataLoader, render via StaccatoPdfDocument, upload via IAzureBlobService at path `exports/{userId}/{exportId}.pdf`, call MarkAsReady, notify via `IHubContext<NotificationHub, INotificationClient>.Clients.User(userId).PdfReady(exportId, fileName)`. On failure: call MarkAsFailed, notify PdfFailed with errorCode. Handle missing record gracefully (FR-027). Respect CancellationToken for graceful shutdown (FR-029) in `Application/BackgroundServices/PdfExportBackgroundService.cs`
 
 ### Tests for User Story 1 + 5
 
-- [ ] T029 [US1] Unit tests for `PdfExportService` — happy path for QueueExportAsync, GetExportByIdAsync, DownloadExportAsync, MarkAs* methods; exception paths: NotFoundException (export not found), ForbiddenException (wrong user), ConflictException (active export exists, ACTIVE_EXPORT_EXISTS), NotFoundException (download not Ready, EXPORT_NOT_READY), NotFoundException (download expired, EXPORT_EXPIRED) in `Tests/Unit/PdfExportServiceTests.cs`
-- [ ] T030 [US1] Integration tests for `ExportsController` — POST /exports returns 202 with exportId; POST /exports with active export returns 409; GET /exports/{id} returns export details; GET /exports/{id} for other user returns 403; GET /exports/{id}/download for non-Ready returns 404 in `Tests/Integration/ExportsControllerTests.cs`
+- [x] T029 [US1] Unit tests for `PdfExportService` — happy path for QueueExportAsync, GetExportByIdAsync, DownloadExportAsync, MarkAs* methods; exception paths: NotFoundException (export not found), ForbiddenException (wrong user), ConflictException (active export exists, ACTIVE_EXPORT_EXISTS), NotFoundException (download not Ready, EXPORT_NOT_READY), NotFoundException (download expired, EXPORT_EXPIRED) in `Tests/Unit/PdfExportServiceTests.cs`
+- [x] T030 [US1] Integration tests for `ExportsController` — POST /exports returns 202 with exportId; POST /exports with active export returns 409; GET /exports/{id} returns export details; GET /exports/{id} for other user returns 403; GET /exports/{id}/download for non-Ready returns 404 in `Tests/Integration/ExportsControllerTests.cs`
 
 **Checkpoint**: Full notebook export pipeline functional end-to-end. User can queue, process, notify, and download. All 10 building block types render. MVP complete.
 

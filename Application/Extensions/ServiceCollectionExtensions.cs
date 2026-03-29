@@ -7,6 +7,7 @@ using ApiModels;
 using Application.BackgroundServices;
 using Application.Channels;
 using Application.Options;
+using Application.Pdf;
 using Application.Services;
 using Azure.Storage.Blobs;
 using Domain.Interfaces;
@@ -174,6 +175,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<PdfExportChannel>();
         services.AddSingleton<IPdfExportQueue>(sp => sp.GetRequiredService<PdfExportChannel>());
+        services.AddScoped<PdfDataLoader>();
         services.AddHostedService<PdfExportBackgroundService>();
         services.AddHostedService<ExportCleanupService>();
         services.AddHostedService<AccountDeletionCleanupService>();
@@ -247,7 +249,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILessonService, LessonService>();
         services.AddScoped<ILessonPageService, LessonPageService>();
         services.AddScoped<IModuleService, ModuleService>();
-        // IPdfExportService registration added when PdfExportService is implemented (T013)
+        services.AddScoped<IPdfExportService, PdfExportService>();
         services.AddResponseCaching();
         return services;
     }
