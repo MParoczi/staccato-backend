@@ -19,11 +19,11 @@
 
 **Purpose**: Add ZIndex to the data model and extend the repository for Title uniqueness checks.
 
-- [ ] T001 [P] Add `public int ZIndex { get; set; }` property to DomainModels/Models/Module.cs
-- [ ] T002 [P] Add `public int ZIndex { get; set; }` property to EntityModels/Entities/ModuleEntity.cs
-- [ ] T003 Add `.Property(m => m.ZIndex).IsRequired()` to Persistence/Configurations/ModuleConfiguration.cs and generate EF migration via `dotnet ef migrations add AddModuleZIndex --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`
-- [ ] T004 Add `Task<bool> HasTitleModuleInLessonAsync(Guid lessonId, Guid? excludeModuleId, CancellationToken ct = default)` to Domain/Interfaces/Repositories/IModuleRepository.cs
-- [ ] T005 Implement HasTitleModuleInLessonAsync in Repository/Repositories/ModuleRepository.cs — join Modules through LessonPages where LessonId matches, filter by ModuleType == Title, exclude optional moduleId
+- [x] T001 [P] Add `public int ZIndex { get; set; }` property to DomainModels/Models/Module.cs
+- [x] T002 [P] Add `public int ZIndex { get; set; }` property to EntityModels/Entities/ModuleEntity.cs
+- [x] T003 Add `.Property(m => m.ZIndex).IsRequired()` to Persistence/Configurations/ModuleConfiguration.cs and generate EF migration via `dotnet ef migrations add AddModuleZIndex --project Persistence/Persistence.csproj --startup-project Application/Application.csproj`
+- [x] T004 Add `Task<bool> HasTitleModuleInLessonAsync(Guid lessonId, Guid? excludeModuleId, CancellationToken ct = default)` to Domain/Interfaces/Repositories/IModuleRepository.cs
+- [x] T005 Implement HasTitleModuleInLessonAsync in Repository/Repositories/ModuleRepository.cs — join Modules through LessonPages where LessonId matches, filter by ModuleType == Title, exclude optional moduleId
 
 **Checkpoint**: `dotnet build Staccato.sln` passes. AutoMapper picks up ZIndex automatically via existing bidirectional mapping.
 

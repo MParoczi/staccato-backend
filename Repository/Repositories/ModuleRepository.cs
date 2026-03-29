@@ -1,5 +1,6 @@
 using AutoMapper;
 using Domain.Interfaces.Repositories;
+using DomainModels.Enums;
 using DomainModels.Models;
 using EntityModels.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -33,5 +34,14 @@ public class ModuleRepository(AppDbContext context, IMapper mapper)
                     m.GridX < gridX + gridWidth && m.GridX + m.GridWidth > gridX &&
                     m.GridY < gridY + gridHeight && m.GridY + m.GridHeight > gridY,
                 ct);
+    }
+
+    public Task<bool> HasTitleModuleInLessonAsync(Guid lessonId, Guid? excludeModuleId = null,
+        CancellationToken ct = default)
+    {
+        return _context.Modules
+            .Where(m => m.LessonPage.LessonId == lessonId)
+            .Where(m => excludeModuleId == null || m.Id != excludeModuleId)
+            .AnyAsync(m => m.ModuleType == ModuleType.Title, ct);
     }
 }
