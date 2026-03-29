@@ -33,4 +33,28 @@
     <data name="SERVICE_UNAVAILABLE" xml:space="preserve">
     <value>Egy külső szolgáltatás átmenetileg nem érhető el. Kérem, próbálja újra.</value>
   </data>
+    <data name="MODULE_OVERLAP" xml:space="preserve">
+    <value>A modul átfedi az oldalon lévő másik modult.</value>
+  </data>
+    <data name="MODULE_OUT_OF_BOUNDS" xml:space="preserve">
+    <value>A modul túlnyúlik az oldal határán.</value>
+  </data>
+    <data name="MODULE_TOO_SMALL" xml:space="preserve">
+    <value>A modul nem felel meg a típusához tartozó minimális méretkövetelményeknek.</value>
+  </data>
+    <data name="INVALID_BUILDING_BLOCK" xml:space="preserve">
+    <value>A tartalom olyan építőelem-típust tartalmaz, amely nem engedélyezett ehhez a modultípushoz.</value>
+  </data>
+    <data name="BREADCRUMB_CONTENT_NOT_EMPTY" xml:space="preserve">
+    <value>A navigációs sáv moduloknak üres tartalommal kell rendelkezniük.</value>
+  </data>
+    <data name="DUPLICATE_TITLE_MODULE" xml:space="preserve">
+    <value>Leckénként csak egy Cím modul engedélyezett.</value>
+  </data>
+    <data name="MODULE_TYPE_IMMUTABLE" xml:space="preserve">
+    <value>A modul típusa nem módosítható a létrehozás után.</value>
+  </data>
+    <data name="MALFORMED_CONTENT_JSON" xml:space="preserve">
+    <value>A tartalom mező hibás vagy nem értelmezhető JSON-t tartalmaz.</value>
+  </data>
 </root>

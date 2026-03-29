@@ -33,4 +33,28 @@
     <data name="SERVICE_UNAVAILABLE" xml:space="preserve">
     <value>An external service is temporarily unavailable. Please try again later.</value>
   </data>
+    <data name="MODULE_OVERLAP" xml:space="preserve">
+    <value>The module overlaps with an existing module on this page.</value>
+  </data>
+    <data name="MODULE_OUT_OF_BOUNDS" xml:space="preserve">
+    <value>The module extends beyond the page boundary.</value>
+  </data>
+    <data name="MODULE_TOO_SMALL" xml:space="preserve">
+    <value>The module does not meet the minimum size requirements for its type.</value>
+  </data>
+    <data name="INVALID_BUILDING_BLOCK" xml:space="preserve">
+    <value>The content contains a building block type that is not allowed for this module type.</value>
+  </data>
+    <data name="BREADCRUMB_CONTENT_NOT_EMPTY" xml:space="preserve">
+    <value>Breadcrumb modules must have empty content.</value>
+  </data>
+    <data name="DUPLICATE_TITLE_MODULE" xml:space="preserve">
+    <value>Only one Title module is allowed per lesson.</value>
+  </data>
+    <data name="MODULE_TYPE_IMMUTABLE" xml:space="preserve">
+    <value>Module type cannot be changed after creation.</value>
+  </data>
+    <data name="MALFORMED_CONTENT_JSON" xml:space="preserve">
+    <value>The content field contains malformed or unparseable JSON.</value>
+  </data>
 </root>

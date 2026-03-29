@@ -242,6 +242,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<INotebookService, NotebookService>();
         services.AddScoped<ILessonService, LessonService>();
         services.AddScoped<ILessonPageService, LessonPageService>();
+        services.AddScoped<IModuleService, ModuleService>();
         services.AddResponseCaching();
         return services;
     }
