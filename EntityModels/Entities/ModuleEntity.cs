@@ -10,6 +10,7 @@ public class ModuleEntity : IEntity
     public int GridY { get; set; }
     public int GridWidth { get; set; }
     public int GridHeight { get; set; }
+    public int ZIndex { get; set; }
     public string ContentJson { get; set; } = "[]";
 
     public LessonPageEntity LessonPage { get; set; } = null!;

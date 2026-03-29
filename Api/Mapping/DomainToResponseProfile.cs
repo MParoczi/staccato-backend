@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using ApiModels.Chords;
 using ApiModels.Instruments;
 using ApiModels.Lessons;
+using ApiModels.Modules;
 using ApiModels.Notebooks;
 using ApiModels.Users;
 using AutoMapper;
@@ -160,6 +161,18 @@ public class DomainToResponseProfile : Profile
                 s.Title,
                 s.CreatedAt.ToString("o"),
                 s.StartPageNumber));
+
+        CreateMap<Module, ModuleResponse>()
+            .ConvertUsing((src, _, _) => new ModuleResponse(
+                src.Id,
+                src.LessonPageId,
+                src.ModuleType.ToString(),
+                src.GridX,
+                src.GridY,
+                src.GridWidth,
+                src.GridHeight,
+                src.ZIndex,
+                JsonSerializer.Deserialize<JsonElement>(src.ContentJson)));
 
         // NotebookDetailResponse requires Styles — controller builds final response using:
         //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }

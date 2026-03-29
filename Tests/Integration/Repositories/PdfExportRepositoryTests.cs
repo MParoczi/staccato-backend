@@ -2,6 +2,7 @@ using AutoMapper;
 using DomainModels.Enums;
 using EntityModels.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Persistence.Context;
 using Repository.Mapping;
 using Repository.Repositories;
@@ -19,7 +20,7 @@ public class PdfExportRepositoryTests
 
     private static IMapper CreateMapper()
     {
-        return new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>())
+        return new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>(), NullLoggerFactory.Instance)
             .CreateMapper();
     }
 

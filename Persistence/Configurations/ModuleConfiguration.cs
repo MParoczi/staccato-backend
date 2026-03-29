@@ -17,6 +17,7 @@ public class ModuleConfiguration : IEntityTypeConfiguration<ModuleEntity>
         builder.Property(m => m.GridY).IsRequired();
         builder.Property(m => m.GridWidth).IsRequired();
         builder.Property(m => m.GridHeight).IsRequired();
+        builder.Property(m => m.ZIndex).IsRequired();
         builder.Property(m => m.ContentJson).IsRequired().HasColumnType("nvarchar(max)");
 
         builder.HasOne(m => m.LessonPage)

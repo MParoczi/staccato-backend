@@ -3,6 +3,7 @@ using DomainModels.Enums;
 using EntityModels.Entities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Persistence.Context;
 using Repository.Mapping;
 using Repository.Repositories;
@@ -53,7 +54,7 @@ public class RefreshTokenRepositoryTests
                                               );
                                               """);
 
-        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>())
+        var mapper = new MapperConfiguration(cfg => cfg.AddProfile<EntityToDomainProfile>(), NullLoggerFactory.Instance)
             .CreateMapper();
 
         return (ctx, mapper, conn);
