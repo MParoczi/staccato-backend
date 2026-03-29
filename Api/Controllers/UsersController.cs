@@ -30,7 +30,12 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
     [HttpPut("me")]
     public async Task<IActionResult> UpdateProfile(UpdateProfileRequest request, CancellationToken ct)
     {
-        var language = request.Language == "en" ? Language.English : Language.Hungarian;
+        var language = request.Language switch
+        {
+            "en" => Language.English,
+            "hu" => Language.Hungarian,
+            _ => throw new ArgumentOutOfRangeException(nameof(request.Language), request.Language, "Unsupported language.")
+        };
         var defaultPageSize = request.DefaultPageSize != null
             ? Enum.Parse<PageSize>(request.DefaultPageSize)
             : (PageSize?)null;
