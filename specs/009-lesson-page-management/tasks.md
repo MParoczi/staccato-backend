@@ -139,9 +139,9 @@
 
 **Purpose**: Final validation across all stories.
 
-- [ ] T038 Build the entire solution with `dotnet build Staccato.sln` and fix any compilation errors.
-- [ ] T039 Run full test suite with `dotnet test Staccato.sln` and verify all tests pass.
-- [ ] T040 Verify no remaining TODO markers or placeholder code in new files.
+- [x] T038 Build the entire solution with `dotnet build Staccato.sln` and fix any compilation errors.
+- [x] T039 Run full test suite with `dotnet test Staccato.sln` and verify all tests pass.
+- [x] T040 Verify no remaining TODO markers or placeholder code in new files.
 
 ---
 
