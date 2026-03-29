@@ -162,6 +162,22 @@ public class ChordsControllerTests
     }
 
     [Fact]
+    public async Task GetChords_WithLowercaseRootAndQuality_ReturnsCaseInsensitiveMatch()
+    {
+        using var factory = CreateFactory();
+        await SeedAsync(factory, "A", "Major");
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/chords?instrument=Guitar6String&root=a&quality=major");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(1, json.RootElement.GetArrayLength());
+        Assert.Equal("A", json.RootElement[0].GetProperty("root").GetString());
+        Assert.Equal("Major", json.RootElement[0].GetProperty("quality").GetString());
+    }
+
+    [Fact]
     public async Task GetChords_MissingInstrumentParam_Returns400()
     {
         using var factory = CreateFactory();
