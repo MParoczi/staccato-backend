@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T024 [US3] Implement UpdateModuleLayoutAsync in Domain/Services/ModuleService.cs — verify module ownership, run ValidateGridPlacementAsync with excludeModuleId (FR-006/007/008), update only gridX, gridY, gridWidth, gridHeight, zIndex (leave ContentJson and ModuleType unchanged), call repository Update + UnitOfWork CommitAsync, return updated Module.
-- [ ] T025 [P] [US3] Implement PATCH /modules/{moduleId}/layout endpoint in Api/Controllers/ModulesController.cs — route `[HttpPatch("/modules/{moduleId:guid}/layout")]`, accept PatchModuleLayoutRequest body, call UpdateModuleLayoutAsync, map to ModuleResponse, return Ok(response).
-- [ ] T026 [P] [US3] Write unit tests for UpdateModuleLayoutAsync in Tests/Unit/ModuleServiceTests.cs — happy path (position updated, content unchanged), MODULE_TOO_SMALL (resize below minimum), MODULE_OUT_OF_BOUNDS (drag past boundary), MODULE_OVERLAP (move into occupied space).
-- [ ] T027 [US3] Write integration tests for PATCH /modules/{moduleId}/layout in Tests/Integration/Controllers/ModulesControllerTests.cs — 200 happy path (verify content unchanged), 422 for boundary/overlap/size violations, 403 for other user's module, 404 for non-existent module.
+- [x] T024 [US3] Implement UpdateModuleLayoutAsync in Domain/Services/ModuleService.cs — verify module ownership, run ValidateGridPlacementAsync with excludeModuleId (FR-006/007/008), update only gridX, gridY, gridWidth, gridHeight, zIndex (leave ContentJson and ModuleType unchanged), call repository Update + UnitOfWork CommitAsync, return updated Module.
+- [x] T025 [P] [US3] Implement PATCH /modules/{moduleId}/layout endpoint in Api/Controllers/ModulesController.cs — route `[HttpPatch("/modules/{moduleId:guid}/layout")]`, accept PatchModuleLayoutRequest body, call UpdateModuleLayoutAsync, map to ModuleResponse, return Ok(response).
+- [x] T026 [P] [US3] Write unit tests for UpdateModuleLayoutAsync in Tests/Unit/ModuleServiceTests.cs — happy path (position updated, content unchanged), MODULE_TOO_SMALL (resize below minimum), MODULE_OUT_OF_BOUNDS (drag past boundary), MODULE_OVERLAP (move into occupied space).
+- [x] T027 [US3] Write integration tests for PATCH /modules/{moduleId}/layout in Tests/Integration/Controllers/ModulesControllerTests.cs — 200 happy path (verify content unchanged), 422 for boundary/overlap/size violations, 403 for other user's module, 404 for non-existent module.
 
 **Checkpoint**: PATCH endpoint fully functional. Grid validation enforced on layout-only updates. Unit + integration tests pass.
 

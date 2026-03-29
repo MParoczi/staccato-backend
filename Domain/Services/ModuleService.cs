@@ -102,11 +102,26 @@ public class ModuleService(
         return module;
     }
 
-    public Task<Module> UpdateModuleLayoutAsync(
+    public async Task<Module> UpdateModuleLayoutAsync(
         Guid moduleId, int gridX, int gridY, int gridWidth, int gridHeight, int zIndex,
         Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var (module, page, lesson, notebook) = await VerifyModuleOwnershipAsync(moduleId, userId, ct);
+
+        // FR-006, FR-007, FR-008: grid placement validation
+        await ValidateGridPlacementAsync(page.Id, notebook.PageSize, module.ModuleType,
+            gridX, gridY, gridWidth, gridHeight, moduleId, ct);
+
+        module.GridX = gridX;
+        module.GridY = gridY;
+        module.GridWidth = gridWidth;
+        module.GridHeight = gridHeight;
+        module.ZIndex = zIndex;
+
+        moduleRepo.Update(module);
+        await unitOfWork.CommitAsync(ct);
+
+        return module;
     }
 
     public Task DeleteModuleAsync(

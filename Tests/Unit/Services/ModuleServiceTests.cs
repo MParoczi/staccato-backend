@@ -401,4 +401,66 @@ public class ModuleServiceTests
         await Assert.ThrowsAsync<ForbiddenException>(
             () => sut.UpdateModuleAsync(_moduleId, ModuleType.Theory, 0, 0, 18, 10, 0, "[]", Guid.NewGuid()));
     }
+
+    // ── UpdateModuleLayoutAsync ──────────────────────────────────────────
+
+    [Fact]
+    public async Task UpdateModuleLayoutAsync_HappyPath_UpdatesPositionLeavesContent()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        var result = await sut.UpdateModuleLayoutAsync(
+            _moduleId, 5, 5, 18, 10, 2, _userId);
+
+        Assert.Equal(5, result.GridX);
+        Assert.Equal(5, result.GridY);
+        Assert.Equal(2, result.ZIndex);
+        Assert.Equal("[]", result.ContentJson); // Content unchanged
+        Assert.Equal(ModuleType.Theory, result.ModuleType); // Type unchanged
+        _moduleRepo.Verify(r => r.Update(It.IsAny<Module>()), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayoutAsync_TooSmall_ThrowsValidationException()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        // Theory min: 8x5, resizing to 6x3
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleLayoutAsync(_moduleId, 0, 0, 6, 3, 0, _userId));
+
+        Assert.Equal("MODULE_TOO_SMALL", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayoutAsync_OutOfBounds_ThrowsValidationException()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        // A4: 42x59. gridX(40) + gridWidth(8) = 48 > 42
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleLayoutAsync(_moduleId, 40, 0, 8, 5, 0, _userId));
+
+        Assert.Equal("MODULE_OUT_OF_BOUNDS", ex.Code);
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayoutAsync_Overlap_ThrowsValidationException()
+    {
+        SetupModuleOwnership();
+        _moduleRepo.Setup(r => r.CheckOverlapAsync(
+                _pageId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+                _moduleId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var sut = CreateService();
+        var ex = await Assert.ThrowsAsync<ValidationException>(
+            () => sut.UpdateModuleLayoutAsync(_moduleId, 5, 5, 18, 10, 0, _userId));
+
+        Assert.Equal("MODULE_OVERLAP", ex.Code);
+    }
 }

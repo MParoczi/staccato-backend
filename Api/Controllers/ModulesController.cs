@@ -68,7 +68,12 @@ public class ModulesController(IModuleService moduleService, IMapper mapper) : C
     public async Task<IActionResult> UpdateModuleLayout(
         Guid moduleId, [FromBody] PatchModuleLayoutRequest request, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var module = await moduleService.UpdateModuleLayoutAsync(
+            moduleId,
+            request.GridX, request.GridY, request.GridWidth, request.GridHeight, request.ZIndex,
+            GetUserId(), ct);
+
+        return Ok(mapper.Map<ModuleResponse>(module));
     }
 
     // ── DELETE /modules/{moduleId} ──────────────────────────────────────

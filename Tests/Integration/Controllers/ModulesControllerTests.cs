@@ -573,6 +573,130 @@ public class ModulesControllerTests
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
 
+    // ── PATCH /modules/{moduleId}/layout ────────────────────────────────
+
+    [Fact]
+    public async Task UpdateModuleLayout_HappyPath_Returns200WithContentUnchanged()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        var body = new { gridX = 5, gridY = 5, gridWidth = 20, gridHeight = 12, zIndex = 3 };
+        var resp = await client.PatchAsJsonAsync($"/modules/{moduleId}/layout", body);
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal(5, doc.RootElement.GetProperty("gridX").GetInt32());
+        Assert.Equal(5, doc.RootElement.GetProperty("gridY").GetInt32());
+        Assert.Equal(20, doc.RootElement.GetProperty("gridWidth").GetInt32());
+        Assert.Equal(12, doc.RootElement.GetProperty("gridHeight").GetInt32());
+        Assert.Equal(3, doc.RootElement.GetProperty("zIndex").GetInt32());
+        // Content unchanged
+        var content = doc.RootElement.GetProperty("content");
+        Assert.Equal(JsonValueKind.Array, content.ValueKind);
+        Assert.Equal(0, content.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayout_OutOfBounds_Returns422()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        // A4: 42x59. 40 + 8 = 48 > 42
+        var body = new { gridX = 40, gridY = 0, gridWidth = 8, gridHeight = 5, zIndex = 0 };
+        var resp = await client.PatchAsJsonAsync($"/modules/{moduleId}/layout", body);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("MODULE_OUT_OF_BOUNDS", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayout_Overlap_Returns422()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+
+        // Create two non-overlapping modules
+        await CreateModuleAndGetId(client, pageId, "Theory", 0, 0, 20, 10);
+        var moduleId2 = await CreateModuleAndGetId(client, pageId, "Theory", 20, 0, 18, 10);
+
+        // Move module2 to overlap module1
+        var body = new { gridX = 5, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0 };
+        var resp = await client.PatchAsJsonAsync($"/modules/{moduleId2}/layout", body);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("MODULE_OVERLAP", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayout_TooSmall_Returns422()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        // Theory min: 8x5, resizing to 4x3
+        var body = new { gridX = 0, gridY = 0, gridWidth = 4, gridHeight = 3, zIndex = 0 };
+        var resp = await client.PatchAsJsonAsync($"/modules/{moduleId}/layout", body);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, resp.StatusCode);
+        var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        Assert.Equal("MODULE_TOO_SMALL", doc.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayout_OtherUsersModule_Returns403()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var ownerClient = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(ownerClient);
+        var (_, pageId) = await CreateLessonAsync(ownerClient, notebookId);
+        var moduleId = await CreateModuleAndGetId(ownerClient, pageId);
+
+        var otherClient = await RegisterAsync(factory);
+        var body = new { gridX = 5, gridY = 5, gridWidth = 18, gridHeight = 10, zIndex = 0 };
+        var resp = await otherClient.PatchAsJsonAsync($"/modules/{moduleId}/layout", body);
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task UpdateModuleLayout_NotFound_Returns404()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var body = new { gridX = 0, gridY = 0, gridWidth = 18, gridHeight = 10, zIndex = 0 };
+        var resp = await client.PatchAsJsonAsync($"/modules/{Guid.NewGuid()}/layout", body);
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 
