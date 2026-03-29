@@ -17,4 +17,11 @@ public interface ILessonRepository : IRepository<Lesson>
     /// </summary>
     Task<(Lesson Lesson, IReadOnlyList<LessonPage> Pages)?> GetWithPagesAsync(
         Guid lessonId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns all lesson summaries for the notebook ordered by CreatedAt ascending,
+    ///     each including a page count. Returns an empty list when the notebook has no lessons.
+    /// </summary>
+    Task<IReadOnlyList<LessonSummary>> GetSummariesByNotebookIdAsync(
+        Guid notebookId, CancellationToken ct = default);
 }

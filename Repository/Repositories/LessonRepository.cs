@@ -24,13 +24,41 @@ public class LessonRepository(AppDbContext context, IMapper mapper)
         Guid lessonId, CancellationToken ct = default)
     {
         var entity = await _context.Lessons
+            .AsNoTracking()
             .Include(l => l.LessonPages.OrderBy(p => p.PageNumber))
+            .ThenInclude(p => p.Modules)
             .FirstOrDefaultAsync(l => l.Id == lessonId, ct);
 
         if (entity is null) return null;
 
         var lesson = _mapper.Map<Lesson>(entity);
-        var pages = _mapper.Map<IReadOnlyList<LessonPage>>(entity.LessonPages);
+        var pages = entity.LessonPages
+            .OrderBy(p => p.PageNumber)
+            .Select(p => new LessonPage
+            {
+                Id = p.Id,
+                LessonId = p.LessonId,
+                PageNumber = p.PageNumber,
+                ModuleCount = p.Modules.Count
+            })
+            .ToList() as IReadOnlyList<LessonPage>;
         return (lesson, pages);
+    }
+
+    public async Task<IReadOnlyList<LessonSummary>> GetSummariesByNotebookIdAsync(
+        Guid notebookId, CancellationToken ct = default)
+    {
+        return await _context.Lessons
+            .Where(l => l.NotebookId == notebookId)
+            .OrderBy(l => l.CreatedAt)
+            .Select(l => new LessonSummary
+            {
+                Id = l.Id,
+                NotebookId = l.NotebookId,
+                Title = l.Title,
+                CreatedAt = l.CreatedAt,
+                PageCount = l.LessonPages.Count
+            })
+            .ToListAsync(ct);
     }
 }

@@ -240,6 +240,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IChordService, ChordService>();
         services.AddScoped<IInstrumentService, InstrumentService>();
         services.AddScoped<INotebookService, NotebookService>();
+        services.AddScoped<ILessonService, LessonService>();
+        services.AddScoped<ILessonPageService, LessonPageService>();
         services.AddResponseCaching();
         return services;
     }
