@@ -162,6 +162,46 @@ public class ChordsControllerTests
     }
 
     [Fact]
+    public async Task GetChords_MultipleChords_ReturnedOrderedByRootThenQuality()
+    {
+        using var factory = CreateFactory();
+        // Seed in non-alphabetical order: G/Major, A/Minor, A/Major
+        await SeedAsync(factory, "G", "Major");
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var instrument = await db.Instruments.FirstAsync();
+        db.Chords.AddRange(
+            new ChordEntity
+            {
+                Id = Guid.NewGuid(), InstrumentId = instrument.Id,
+                Name = "Am", Root = "A", Quality = "Minor", PositionsJson = OnePositionJson
+            },
+            new ChordEntity
+            {
+                Id = Guid.NewGuid(), InstrumentId = instrument.Id,
+                Name = "A", Root = "A", Quality = "Major", PositionsJson = OnePositionJson
+            });
+        await db.SaveChangesAsync();
+
+        var client = factory.CreateClient();
+        var response = await client.GetAsync("/api/chords?instrument=Guitar6String");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var items = json.RootElement;
+        Assert.Equal(3, items.GetArrayLength());
+
+        // Expected order: A/Major, A/Minor, G/Major
+        Assert.Equal("A", items[0].GetProperty("root").GetString());
+        Assert.Equal("Major", items[0].GetProperty("quality").GetString());
+        Assert.Equal("A", items[1].GetProperty("root").GetString());
+        Assert.Equal("Minor", items[1].GetProperty("quality").GetString());
+        Assert.Equal("G", items[2].GetProperty("root").GetString());
+        Assert.Equal("Major", items[2].GetProperty("quality").GetString());
+    }
+
+    [Fact]
     public async Task GetChords_WithLowercaseRootAndQuality_ReturnsCaseInsensitiveMatch()
     {
         using var factory = CreateFactory();
