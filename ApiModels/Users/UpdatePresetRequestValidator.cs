@@ -21,7 +21,7 @@ public class UpdatePresetRequestValidator : AbstractValidator<UpdatePresetReques
         {
             RuleFor(x => x.Name)
                 .NotEmpty().WithMessage("Name must not be empty.")
-                .MaximumLength(100).WithMessage("Name must not exceed 100 characters.");
+                .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
         });
 
         When(x => x.Styles != null, () =>

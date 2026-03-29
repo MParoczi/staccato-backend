@@ -15,7 +15,7 @@ public class SavePresetRequestValidator : AbstractValidator<SavePresetRequest>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(100).WithMessage("Name must not exceed 100 characters.");
+            .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
 
         RuleFor(x => x.Styles)
             .NotNull().WithMessage("Styles is required.")
