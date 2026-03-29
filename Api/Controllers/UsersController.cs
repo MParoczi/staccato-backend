@@ -79,7 +79,8 @@ public class UsersController(IUserService userService, IMapper mapper) : Control
         if (!allowedTypes.Contains(file.ContentType))
             return BadRequest(new { code = "INVALID_FILE_TYPE", message = "File must be a JPEG, PNG, or WebP image." });
 
-        var user = await userService.UploadAvatarAsync(GetUserId(), file.OpenReadStream(), file.ContentType, ct);
+        using var stream = file.OpenReadStream();
+        var user = await userService.UploadAvatarAsync(GetUserId(), stream, file.ContentType, ct);
         return Ok(mapper.Map<UserResponse>(user));
     }
 
