@@ -5,6 +5,7 @@ using ApiModels.Users;
 using AutoMapper;
 using DomainModels.Enums;
 using DomainModels.Models;
+using Microsoft.Extensions.Logging.Abstractions;
 using Repository.Mapping;
 
 namespace Tests.Unit.Mapping;
@@ -17,7 +18,7 @@ public class DomainToResponseProfileTests
         {
             cfg.AddProfile<EntityToDomainProfile>();
             cfg.AddProfile<DomainToResponseProfile>();
-        }).CreateMapper();
+        }, NullLoggerFactory.Instance).CreateMapper();
     }
 
     [Fact]

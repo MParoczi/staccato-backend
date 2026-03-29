@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Persistence;
 using Persistence.Context;
 using Persistence.Seed;
@@ -149,6 +149,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMappingProfiles(this IServiceCollection services)
     {
         services.AddAutoMapper(
+            _ => { },
             typeof(ServiceCollectionExtensions).Assembly,
             Assembly.Load("Api"),
             Assembly.Load("Repository"));
@@ -268,18 +269,11 @@ public static class ServiceCollectionExtensions
             };
             options.AddSecurityDefinition("Bearer", bearerScheme);
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            options.AddSecurityRequirement(_ => new OpenApiSecurityRequirement
             {
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
+                    new OpenApiSecuritySchemeReference("Bearer"),
+                    new List<string>()
                 }
             });
         });
