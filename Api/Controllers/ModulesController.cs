@@ -81,6 +81,7 @@ public class ModulesController(IModuleService moduleService, IMapper mapper) : C
     [HttpDelete("/modules/{moduleId:guid}")]
     public async Task<IActionResult> DeleteModule(Guid moduleId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await moduleService.DeleteModuleAsync(moduleId, GetUserId(), ct);
+        return NoContent();
     }
 }

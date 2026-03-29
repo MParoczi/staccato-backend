@@ -126,10 +126,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T032 [US5] Implement DeleteModuleAsync in Domain/Services/ModuleService.cs — verify module ownership, call repository Remove + UnitOfWork CommitAsync.
-- [ ] T033 [P] [US5] Implement DELETE /modules/{moduleId} endpoint in Api/Controllers/ModulesController.cs — route `[HttpDelete("/modules/{moduleId:guid}")]`, call DeleteModuleAsync, return NoContent().
-- [ ] T034 [P] [US5] Write unit tests for DeleteModuleAsync in Tests/Unit/ModuleServiceTests.cs — happy path (module removed), NotFoundException for non-existent module, ForbiddenException for other user's module.
-- [ ] T035 [US5] Write integration tests for DELETE /modules/{moduleId} in Tests/Integration/Controllers/ModulesControllerTests.cs — 204 happy path (verify module gone via GET), 403 for other user's module, 404 for non-existent module, 401 without auth.
+- [x] T032 [US5] Implement DeleteModuleAsync in Domain/Services/ModuleService.cs — verify module ownership, call repository Remove + UnitOfWork CommitAsync.
+- [x] T033 [P] [US5] Implement DELETE /modules/{moduleId} endpoint in Api/Controllers/ModulesController.cs — route `[HttpDelete("/modules/{moduleId:guid}")]`, call DeleteModuleAsync, return NoContent().
+- [x] T034 [P] [US5] Write unit tests for DeleteModuleAsync in Tests/Unit/ModuleServiceTests.cs — happy path (module removed), NotFoundException for non-existent module, ForbiddenException for other user's module.
+- [x] T035 [US5] Write integration tests for DELETE /modules/{moduleId} in Tests/Integration/Controllers/ModulesControllerTests.cs — 204 happy path (verify module gone via GET), 403 for other user's module, 404 for non-existent module, 401 without auth.
 
 **Checkpoint**: DELETE endpoint fully functional. Hard delete with ownership check. Unit + integration tests pass.
 

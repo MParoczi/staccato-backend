@@ -778,6 +778,70 @@ public class ModulesControllerTests
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
+    // ── DELETE /modules/{moduleId} ──────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteModule_HappyPath_Returns204AndModuleGone()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(client);
+        var (_, pageId) = await CreateLessonAsync(client, notebookId);
+        var moduleId = await CreateModuleAndGetId(client, pageId);
+
+        var resp = await client.DeleteAsync($"/modules/{moduleId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+
+        // Verify module is gone via GET
+        var getResp = await client.GetAsync($"/pages/{pageId}/modules");
+        var doc = JsonDocument.Parse(await getResp.Content.ReadAsStringAsync());
+        Assert.Equal(0, doc.RootElement.GetArrayLength());
+    }
+
+    [Fact]
+    public async Task DeleteModule_OtherUsersModule_Returns403()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var ownerClient = await RegisterAsync(factory);
+        var notebookId = await CreateNotebookAsync(ownerClient);
+        var (_, pageId) = await CreateLessonAsync(ownerClient, notebookId);
+        var moduleId = await CreateModuleAndGetId(ownerClient, pageId);
+
+        var otherClient = await RegisterAsync(factory);
+        var resp = await otherClient.DeleteAsync($"/modules/{moduleId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteModule_NotFound_Returns404()
+    {
+        using var factory = CreateFactory();
+        await SeedInstrumentAsync(factory);
+        await SeedColorfulPresetAsync(factory);
+        var client = await RegisterAsync(factory);
+
+        var resp = await client.DeleteAsync($"/modules/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task DeleteModule_WithoutAuth_Returns401()
+    {
+        using var factory = CreateFactory();
+        var client = CreateClient(factory);
+
+        var resp = await client.DeleteAsync($"/modules/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
     private record AuthBody(string AccessToken, int ExpiresIn);
 }
 

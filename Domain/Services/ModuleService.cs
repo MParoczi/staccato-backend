@@ -125,10 +125,13 @@ public class ModuleService(
         return module;
     }
 
-    public Task DeleteModuleAsync(
+    public async Task DeleteModuleAsync(
         Guid moduleId, Guid userId, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var (module, _, _, _) = await VerifyModuleOwnershipAsync(moduleId, userId, ct);
+
+        moduleRepo.Remove(module);
+        await unitOfWork.CommitAsync(ct);
     }
 
     private async Task<(LessonPage Page, Lesson Lesson, Notebook Notebook)> VerifyPageOwnershipAsync(

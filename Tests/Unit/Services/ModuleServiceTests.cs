@@ -517,4 +517,39 @@ public class ModuleServiceTests
         await Assert.ThrowsAsync<ForbiddenException>(
             () => sut.GetModulesByPageIdAsync(_pageId, Guid.NewGuid()));
     }
+
+    // ── DeleteModuleAsync ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteModuleAsync_HappyPath_RemovesModule()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        await sut.DeleteModuleAsync(_moduleId, _userId);
+
+        _moduleRepo.Verify(r => r.Remove(It.Is<Module>(m => m.Id == _moduleId)), Times.Once);
+        _unitOfWork.Verify(u => u.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteModuleAsync_ModuleNotFound_ThrowsNotFoundException()
+    {
+        _moduleRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Module?)null);
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<NotFoundException>(
+            () => sut.DeleteModuleAsync(Guid.NewGuid(), _userId));
+    }
+
+    [Fact]
+    public async Task DeleteModuleAsync_OtherUsersModule_ThrowsForbiddenException()
+    {
+        SetupModuleOwnership();
+
+        var sut = CreateService();
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => sut.DeleteModuleAsync(_moduleId, Guid.NewGuid()));
+    }
 }
