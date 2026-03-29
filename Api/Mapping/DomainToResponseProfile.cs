@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ApiModels.Chords;
+using ApiModels.Exports;
 using ApiModels.Instruments;
 using ApiModels.Lessons;
 using ApiModels.Modules;
@@ -173,6 +174,22 @@ public class DomainToResponseProfile : Profile
                 src.GridHeight,
                 src.ZIndex,
                 JsonSerializer.Deserialize<JsonElement>(src.ContentJson)));
+
+        // PdfExportResponse — NotebookTitle defaults to empty; caller fills via `with { NotebookTitle = ... }`
+        CreateMap<PdfExport, PdfExportResponse>()
+            .ConstructUsing((s, _) => new PdfExportResponse(
+                s.Id,
+                s.NotebookId,
+                string.Empty,
+                s.Status.ToString(),
+                s.CreatedAt.ToString("o"),
+                s.CompletedAt?.ToString("o"),
+                s.LessonIds));
+
+        CreateMap<PdfExport, CreatePdfExportResponse>()
+            .ConstructUsing((s, _) => new CreatePdfExportResponse(
+                s.Id,
+                s.Status.ToString()));
 
         // NotebookDetailResponse requires Styles — controller builds final response using:
         //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }

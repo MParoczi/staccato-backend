@@ -1,3 +1,4 @@
+using DomainModels.Enums;
 using DomainModels.Models;
 
 namespace Domain.Interfaces.Repositories;
@@ -26,4 +27,10 @@ public interface IPdfExportRepository : IRepository<PdfExport>
     ///     Used by NotebookService.DeleteAsync to block deletion with 409 ACTIVE_EXPORT_EXISTS.
     /// </summary>
     Task<bool> HasActiveExportForNotebookAsync(Guid notebookId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns all exports with the given status.
+    ///     Used by PdfExportBackgroundService for stale Processing recovery on startup.
+    /// </summary>
+    Task<IReadOnlyList<PdfExport>> GetByStatusAsync(ExportStatus status, CancellationToken ct = default);
 }
