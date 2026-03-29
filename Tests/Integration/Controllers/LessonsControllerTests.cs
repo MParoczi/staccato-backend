@@ -580,9 +580,9 @@ public class LessonsControllerTests
         var entries = doc.RootElement.GetProperty("entries");
         Assert.Equal(3, entries.GetArrayLength());
         Assert.Equal("A", entries[0].GetProperty("title").GetString());
-        Assert.Equal(2, entries[0].GetProperty("startPageNumber").GetInt32());   // 2 + 0
-        Assert.Equal(5, entries[1].GetProperty("startPageNumber").GetInt32());   // 2 + 3
-        Assert.Equal(7, entries[2].GetProperty("startPageNumber").GetInt32());   // 2 + 3 + 2
+        Assert.Equal(2, entries[0].GetProperty("startPageNumber").GetInt32()); // 2 + 0
+        Assert.Equal(5, entries[1].GetProperty("startPageNumber").GetInt32()); // 2 + 3
+        Assert.Equal(7, entries[2].GetProperty("startPageNumber").GetInt32()); // 2 + 3 + 2
     }
 
     [Fact]

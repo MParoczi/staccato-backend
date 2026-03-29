@@ -9,8 +9,8 @@ namespace Tests.Unit.Services;
 
 public class LessonServiceTests
 {
-    private readonly Mock<ILessonRepository> _lessonRepo = new();
     private readonly Mock<ILessonPageRepository> _lessonPageRepo = new();
+    private readonly Mock<ILessonRepository> _lessonRepo = new();
     private readonly Mock<INotebookRepository> _notebookRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
@@ -59,8 +59,7 @@ public class LessonServiceTests
             .ReturnsAsync((Notebook?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.CreateAsync(Guid.NewGuid(), Guid.NewGuid(), "Title"));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.CreateAsync(Guid.NewGuid(), Guid.NewGuid(), "Title"));
     }
 
     [Fact]
@@ -70,8 +69,7 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.CreateAsync(notebookId, Guid.NewGuid(), "Title"));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.CreateAsync(notebookId, Guid.NewGuid(), "Title"));
     }
 
     // ── GetByNotebookIdAsync ──────────────────────────────────────────────
@@ -104,8 +102,7 @@ public class LessonServiceTests
             .ReturnsAsync((Notebook?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.GetByNotebookIdAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.GetByNotebookIdAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
@@ -115,8 +112,7 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.GetByNotebookIdAsync(notebookId, Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.GetByNotebookIdAsync(notebookId, Guid.NewGuid()));
     }
 
     // ── GetByIdAsync ──────────────────────────────────────────────────────
@@ -152,8 +148,7 @@ public class LessonServiceTests
             .ReturnsAsync(((Lesson, IReadOnlyList<LessonPage>)?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.GetByIdAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.GetByIdAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
@@ -169,8 +164,7 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.GetByIdAsync(lessonId, Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.GetByIdAsync(lessonId, Guid.NewGuid()));
     }
 
     // ── UpdateAsync ───────────────────────────────────────────────────────
@@ -213,8 +207,7 @@ public class LessonServiceTests
             .ReturnsAsync(((Lesson, IReadOnlyList<LessonPage>)?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Title"));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.UpdateAsync(Guid.NewGuid(), Guid.NewGuid(), "Title"));
     }
 
     [Fact]
@@ -230,8 +223,7 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.UpdateAsync(lessonId, Guid.NewGuid(), "Title"));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.UpdateAsync(lessonId, Guid.NewGuid(), "Title"));
     }
 
     // ── DeleteAsync ───────────────────────────────────────────────────────
@@ -262,8 +254,7 @@ public class LessonServiceTests
             .ReturnsAsync(((Lesson, IReadOnlyList<LessonPage>)?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.DeleteAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.DeleteAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
@@ -279,8 +270,7 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.DeleteAsync(lessonId, Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.DeleteAsync(lessonId, Guid.NewGuid()));
     }
 
     // ── GetNotebookIndexAsync ─────────────────────────────────────────────
@@ -305,9 +295,9 @@ public class LessonServiceTests
         var result = await sut.GetNotebookIndexAsync(notebookId, userId);
 
         Assert.Equal(3, result.Count);
-        Assert.Equal(2, result[0].StartPageNumber);   // 2 + 0
-        Assert.Equal(5, result[1].StartPageNumber);   // 2 + 3
-        Assert.Equal(7, result[2].StartPageNumber);   // 2 + 3 + 2
+        Assert.Equal(2, result[0].StartPageNumber); // 2 + 0
+        Assert.Equal(5, result[1].StartPageNumber); // 2 + 3
+        Assert.Equal(7, result[2].StartPageNumber); // 2 + 3 + 2
     }
 
     [Fact]
@@ -354,8 +344,7 @@ public class LessonServiceTests
             .ReturnsAsync((Notebook?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.GetNotebookIndexAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.GetNotebookIndexAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
@@ -365,7 +354,6 @@ public class LessonServiceTests
         SetupNotebook(notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.GetNotebookIndexAsync(notebookId, Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.GetNotebookIndexAsync(notebookId, Guid.NewGuid()));
     }
 }

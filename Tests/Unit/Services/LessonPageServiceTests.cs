@@ -9,8 +9,8 @@ namespace Tests.Unit.Services;
 
 public class LessonPageServiceTests
 {
-    private readonly Mock<ILessonRepository> _lessonRepo = new();
     private readonly Mock<ILessonPageRepository> _lessonPageRepo = new();
+    private readonly Mock<ILessonRepository> _lessonRepo = new();
     private readonly Mock<INotebookRepository> _notebookRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
@@ -121,8 +121,7 @@ public class LessonPageServiceTests
             .ReturnsAsync((Lesson?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.AddPageAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.AddPageAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     [Fact]
@@ -133,8 +132,7 @@ public class LessonPageServiceTests
         SetupLessonOwnership(lessonId, notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.AddPageAsync(lessonId, Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.AddPageAsync(lessonId, Guid.NewGuid()));
     }
 
     // ── GetByLessonIdAsync ───────────────────────────────────────────────
@@ -170,8 +168,7 @@ public class LessonPageServiceTests
             .ReturnsAsync((Lesson?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.GetByLessonIdAsync(Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.GetByLessonIdAsync(Guid.NewGuid(), Guid.NewGuid()));
     }
 
     // ── DeletePageAsync ──────────────────────────────────────────────────
@@ -214,8 +211,7 @@ public class LessonPageServiceTests
             .ReturnsAsync(1);
 
         var sut = CreateService();
-        var ex = await Assert.ThrowsAsync<BadRequestException>(
-            () => sut.DeletePageAsync(lessonId, pageId, userId));
+        var ex = await Assert.ThrowsAsync<BadRequestException>(() => sut.DeletePageAsync(lessonId, pageId, userId));
 
         Assert.Equal("LAST_PAGE_DELETION", ex.Code);
     }
@@ -235,8 +231,7 @@ public class LessonPageServiceTests
             .ReturnsAsync(page);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.DeletePageAsync(lessonId, pageId, userId));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.DeletePageAsync(lessonId, pageId, userId));
     }
 
     [Fact]
@@ -251,8 +246,7 @@ public class LessonPageServiceTests
             .ReturnsAsync((LessonPage?)null);
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<NotFoundException>(
-            () => sut.DeletePageAsync(lessonId, Guid.NewGuid(), userId));
+        await Assert.ThrowsAsync<NotFoundException>(() => sut.DeletePageAsync(lessonId, Guid.NewGuid(), userId));
     }
 
     [Fact]
@@ -263,7 +257,6 @@ public class LessonPageServiceTests
         SetupLessonOwnership(lessonId, notebookId, Guid.NewGuid());
 
         var sut = CreateService();
-        await Assert.ThrowsAsync<ForbiddenException>(
-            () => sut.DeletePageAsync(lessonId, Guid.NewGuid(), Guid.NewGuid()));
+        await Assert.ThrowsAsync<ForbiddenException>(() => sut.DeletePageAsync(lessonId, Guid.NewGuid(), Guid.NewGuid()));
     }
 }

@@ -26,7 +26,7 @@ public class LessonRepository(AppDbContext context, IMapper mapper)
         var entity = await _context.Lessons
             .AsNoTracking()
             .Include(l => l.LessonPages.OrderBy(p => p.PageNumber))
-                .ThenInclude(p => p.Modules)
+            .ThenInclude(p => p.Modules)
             .FirstOrDefaultAsync(l => l.Id == lessonId, ct);
 
         if (entity is null) return null;

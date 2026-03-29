@@ -135,7 +135,7 @@ public class ChordsControllerTests
     public async Task GetChords_WithRootAndQualityFilters_Returns200Filtered()
     {
         using var factory = CreateFactory();
-        await SeedAsync(factory, "A", "Major");
+        await SeedAsync(factory);
 
         // Seed a second chord that should NOT match
         using var scope = factory.Services.CreateScope();
@@ -166,7 +166,7 @@ public class ChordsControllerTests
     {
         using var factory = CreateFactory();
         // Seed in non-alphabetical order: G/Major, A/Minor, A/Major
-        await SeedAsync(factory, "G", "Major");
+        await SeedAsync(factory, "G");
 
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -205,7 +205,7 @@ public class ChordsControllerTests
     public async Task GetChords_WithLowercaseRootAndQuality_ReturnsCaseInsensitiveMatch()
     {
         using var factory = CreateFactory();
-        await SeedAsync(factory, "A", "Major");
+        await SeedAsync(factory);
         var client = factory.CreateClient();
 
         var response = await client.GetAsync("/api/chords?instrument=Guitar6String&root=a&quality=major");
