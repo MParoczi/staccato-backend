@@ -74,7 +74,9 @@ public class DomainToResponseProfile : Profile
                 s.Quality,
                 s.Extension,
                 s.Alternation,
-                ctx.Mapper.Map<ChordPositionResponse>(s.Positions[0])));
+                s.Positions.Count > 0
+                    ? ctx.Mapper.Map<ChordPositionResponse>(s.Positions[0])
+                    : null!));
 
         CreateMap<Chord, ChordDetailResponse>()
             .ConstructUsing((s, ctx) => new ChordDetailResponse(
