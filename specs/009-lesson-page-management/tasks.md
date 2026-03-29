@@ -31,38 +31,38 @@
 
 ### Domain Models
 
-- [ ] T001 [P] Create `LessonSummary` domain model with Id, NotebookId, Title, CreatedAt, PageCount in `DomainModels/Models/LessonSummary.cs`
-- [ ] T002 [P] Create `NotebookIndexEntry` domain model with LessonId, Title, CreatedAt, StartPageNumber in `DomainModels/Models/NotebookIndexEntry.cs`
-- [ ] T003 [P] Add `ModuleCount` property (int) to existing `LessonPage` domain model in `DomainModels/Models/LessonPage.cs`
+- [x] T001 [P] Create `LessonSummary` domain model with Id, NotebookId, Title, CreatedAt, PageCount in `DomainModels/Models/LessonSummary.cs`
+- [x] T002 [P] Create `NotebookIndexEntry` domain model with LessonId, Title, CreatedAt, StartPageNumber in `DomainModels/Models/NotebookIndexEntry.cs`
+- [x] T003 [P] Add `ModuleCount` property (int) to existing `LessonPage` domain model in `DomainModels/Models/LessonPage.cs`
 
 ### Repository Extensions
 
-- [ ] T004 [P] Add `GetSummariesByNotebookIdAsync(Guid notebookId, CancellationToken ct)` to `Domain/Interfaces/Repositories/ILessonRepository.cs`. Returns `Task<IReadOnlyList<LessonSummary>>` ordered by CreatedAt ascending with page counts.
-- [ ] T005 [P] Add `GetPageCountByLessonIdAsync(Guid lessonId, CancellationToken ct)` and `GetMaxPageNumberByLessonIdAsync(Guid lessonId, CancellationToken ct)` to `Domain/Interfaces/Repositories/ILessonPageRepository.cs`. Both return `Task<int>`.
-- [ ] T006 Implement `GetSummariesByNotebookIdAsync` in `Repository/Repositories/LessonRepository.cs` using EF `.Select()` projection with `LessonPages.Count()` for PageCount.
-- [ ] T007 Implement `GetPageCountByLessonIdAsync` and `GetMaxPageNumberByLessonIdAsync` in `Repository/Repositories/LessonPageRepository.cs`. Use `CountAsync` and `MaxAsync` respectively.
-- [ ] T008 Update `GetByLessonIdOrderedAsync` in `Repository/Repositories/LessonPageRepository.cs` to populate `ModuleCount` (via `Include(p => p.Modules)` or `.Select()` projection with `Modules.Count()`).
-- [ ] T009 Update `GetWithPagesAsync` in `Repository/Repositories/LessonRepository.cs` to populate `ModuleCount` on returned pages.
+- [x] T004 [P] Add `GetSummariesByNotebookIdAsync(Guid notebookId, CancellationToken ct)` to `Domain/Interfaces/Repositories/ILessonRepository.cs`. Returns `Task<IReadOnlyList<LessonSummary>>` ordered by CreatedAt ascending with page counts.
+- [x] T005 [P] Add `GetPageCountByLessonIdAsync(Guid lessonId, CancellationToken ct)` and `GetMaxPageNumberByLessonIdAsync(Guid lessonId, CancellationToken ct)` to `Domain/Interfaces/Repositories/ILessonPageRepository.cs`. Both return `Task<int>`.
+- [x] T006 Implement `GetSummariesByNotebookIdAsync` in `Repository/Repositories/LessonRepository.cs` using EF `.Select()` projection with `LessonPages.Count()` for PageCount.
+- [x] T007 Implement `GetPageCountByLessonIdAsync` and `GetMaxPageNumberByLessonIdAsync` in `Repository/Repositories/LessonPageRepository.cs`. Use `CountAsync` and `MaxAsync` respectively.
+- [x] T008 Update `GetByLessonIdOrderedAsync` in `Repository/Repositories/LessonPageRepository.cs` to populate `ModuleCount` (via `Include(p => p.Modules)` or `.Select()` projection with `Modules.Count()`).
+- [x] T009 Update `GetWithPagesAsync` in `Repository/Repositories/LessonRepository.cs` to populate `ModuleCount` on returned pages.
 
 ### API Models (Request DTOs + Validators)
 
-- [ ] T010 [P] Create `CreateLessonRequest` class (Title property) in `ApiModels/Lessons/CreateLessonRequest.cs`
-- [ ] T011 [P] Create `CreateLessonRequestValidator` with NotEmpty + MaximumLength(200) rules for Title in `ApiModels/Lessons/CreateLessonRequestValidator.cs`
-- [ ] T012 [P] Create `UpdateLessonRequest` class (Title property) in `ApiModels/Lessons/UpdateLessonRequest.cs`
-- [ ] T013 [P] Create `UpdateLessonRequestValidator` with NotEmpty + MaximumLength(200) rules for Title in `ApiModels/Lessons/UpdateLessonRequestValidator.cs`
+- [x] T010 [P] Create `CreateLessonRequest` class (Title property) in `ApiModels/Lessons/CreateLessonRequest.cs`
+- [x] T011 [P] Create `CreateLessonRequestValidator` with NotEmpty + MaximumLength(200) rules for Title in `ApiModels/Lessons/CreateLessonRequestValidator.cs`
+- [x] T012 [P] Create `UpdateLessonRequest` class (Title property) in `ApiModels/Lessons/UpdateLessonRequest.cs`
+- [x] T013 [P] Create `UpdateLessonRequestValidator` with NotEmpty + MaximumLength(200) rules for Title in `ApiModels/Lessons/UpdateLessonRequestValidator.cs`
 
 ### API Models (Response DTOs)
 
-- [ ] T014 [P] Create `LessonSummaryResponse` record (Id, Title, CreatedAt, PageCount) in `ApiModels/Lessons/LessonSummaryResponse.cs`
-- [ ] T015 [P] Create `LessonDetailResponse` record (Id, NotebookId, Title, CreatedAt, Pages list) in `ApiModels/Lessons/LessonDetailResponse.cs`
-- [ ] T016 [P] Create `LessonPageResponse` record (Id, LessonId, PageNumber, ModuleCount) in `ApiModels/Lessons/LessonPageResponse.cs`
-- [ ] T017 [P] Create `LessonPageWithWarningResponse` record (Data as LessonPageResponse, Warning as string?) in `ApiModels/Lessons/LessonPageWithWarningResponse.cs`
-- [ ] T018 [P] Create `NotebookIndexEntryResponse` record (LessonId, Title, CreatedAt, StartPageNumber) in `ApiModels/Lessons/NotebookIndexEntryResponse.cs`
-- [ ] T019 [P] Create `NotebookIndexResponse` record (Entries as list of NotebookIndexEntryResponse) in `ApiModels/Lessons/NotebookIndexResponse.cs`
+- [x] T014 [P] Create `LessonSummaryResponse` record (Id, Title, CreatedAt, PageCount) in `ApiModels/Lessons/LessonSummaryResponse.cs`
+- [x] T015 [P] Create `LessonDetailResponse` record (Id, NotebookId, Title, CreatedAt, Pages list) in `ApiModels/Lessons/LessonDetailResponse.cs`
+- [x] T016 [P] Create `LessonPageResponse` record (Id, LessonId, PageNumber, ModuleCount) in `ApiModels/Lessons/LessonPageResponse.cs`
+- [x] T017 [P] Create `LessonPageWithWarningResponse` record (Data as LessonPageResponse, Warning as string?) in `ApiModels/Lessons/LessonPageWithWarningResponse.cs`
+- [x] T018 [P] Create `NotebookIndexEntryResponse` record (LessonId, Title, CreatedAt, StartPageNumber) in `ApiModels/Lessons/NotebookIndexEntryResponse.cs`
+- [x] T019 [P] Create `NotebookIndexResponse` record (Entries as list of NotebookIndexEntryResponse) in `ApiModels/Lessons/NotebookIndexResponse.cs`
 
 ### AutoMapper Mappings
 
-- [ ] T020 Add domain-to-response mappings for LessonSummary→LessonSummaryResponse, Lesson→LessonDetailResponse (with pages), LessonPage→LessonPageResponse, NotebookIndexEntry→NotebookIndexEntryResponse in `Api/Mapping/DomainToResponseProfile.cs`. Use `ConstructUsing` with ISO 8601 date formatting (`ToString("o")`).
+- [x] T020 Add domain-to-response mappings for LessonSummary→LessonSummaryResponse, Lesson→LessonDetailResponse (with pages), LessonPage→LessonPageResponse, NotebookIndexEntry→NotebookIndexEntryResponse in `Api/Mapping/DomainToResponseProfile.cs`. Use `ConstructUsing` with ISO 8601 date formatting (`ToString("o")`).
 
 **Checkpoint**: All shared models, DTOs, repository methods, and mappings ready. User story implementation can begin.
 

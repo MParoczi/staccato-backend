@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using ApiModels.Chords;
 using ApiModels.Instruments;
+using ApiModels.Lessons;
 using ApiModels.Notebooks;
 using ApiModels.Users;
 using AutoMapper;
@@ -138,6 +139,27 @@ public class DomainToResponseProfile : Profile
                     e.FontFamily)).ToList();
                 return new SystemStylePresetResponse(src.Id, src.Name, src.DisplayOrder, src.IsDefault, styles);
             });
+
+        CreateMap<LessonSummary, LessonSummaryResponse>()
+            .ConstructUsing((s, _) => new LessonSummaryResponse(
+                s.Id,
+                s.Title,
+                s.CreatedAt.ToString("o"),
+                s.PageCount));
+
+        CreateMap<LessonPage, LessonPageResponse>()
+            .ConstructUsing((s, _) => new LessonPageResponse(
+                s.Id,
+                s.LessonId,
+                s.PageNumber,
+                s.ModuleCount));
+
+        CreateMap<NotebookIndexEntry, NotebookIndexEntryResponse>()
+            .ConstructUsing((s, _) => new NotebookIndexEntryResponse(
+                s.LessonId,
+                s.Title,
+                s.CreatedAt.ToString("o"),
+                s.StartPageNumber));
 
         // NotebookDetailResponse requires Styles — controller builds final response using:
         //   mapper.Map<NotebookDetailResponse>(notebook) with { Styles = mapper.Map<List<ModuleStyleResponse>>(styles) }

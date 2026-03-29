@@ -17,4 +17,15 @@ public interface ILessonPageRepository : IRepository<LessonPage>
     /// </summary>
     Task<(LessonPage Page, IReadOnlyList<Module> Modules)?> GetPageWithModulesAsync(
         Guid pageId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns the total number of pages for the given lesson.
+    /// </summary>
+    Task<int> GetPageCountByLessonIdAsync(Guid lessonId, CancellationToken ct = default);
+
+    /// <summary>
+    ///     Returns the highest page number for the given lesson.
+    ///     Returns 0 if the lesson has no pages.
+    /// </summary>
+    Task<int> GetMaxPageNumberByLessonIdAsync(Guid lessonId, CancellationToken ct = default);
 }
