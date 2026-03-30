@@ -6,13 +6,15 @@ namespace Domain.Services;
 public interface IChordService
 {
     /// <summary>
-    ///     Returns chords for the given instrument, with optional root and quality filters.
+    ///     Returns chords for the given instrument, with optional root, quality, extension, and alternation filters.
     ///     Throws <see cref="Exceptions.NotFoundException" /> with code INSTRUMENT_NOT_FOUND if the instrument key is not in the database.
     /// </summary>
     Task<IReadOnlyList<Chord>> SearchAsync(
         InstrumentKey instrumentKey,
         string? root,
         string? quality,
+        string? extension,
+        string? alternation,
         CancellationToken ct = default);
 
     /// <summary>

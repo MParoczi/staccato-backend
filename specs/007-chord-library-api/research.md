@@ -18,7 +18,7 @@
 | `Instrument` domain model | `DomainModels/Models/Instrument.cs` | Complete |
 | `ChordStringState` enum | `DomainModels/Enums/ChordStringState.cs` | `Open`, `Fretted`, `Muted` |
 | `InstrumentKey` enum | `DomainModels/Enums/InstrumentKey.cs` | All 7 keys present |
-| `IChordRepository` interface | `Domain/Interfaces/Repositories/IChordRepository.cs` | `SearchAsync(instrumentId, root?, quality?)` |
+| `IChordRepository` interface | `Domain/Interfaces/Repositories/IChordRepository.cs` | `SearchAsync(instrumentId, root?, quality?, extension?, alternation?)` |
 | `DbInitializer` | `Persistence/DbInitializer.cs` | Calls all seeders in order |
 | `EntityToDomainProfile` | `Repository/Mapping/EntityToDomainProfile.cs` | Has `ChordEntity↔Chord` and `InstrumentEntity↔Instrument` |
 | Repository + service DI | `Application/Extensions/ServiceCollectionExtensions.cs` | `IChordRepository` and `IInstrumentRepository` already registered |

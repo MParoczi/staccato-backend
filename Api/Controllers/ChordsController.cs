@@ -17,11 +17,13 @@ public class ChordsController(IChordService chordService, IMapper mapper) : Cont
         [FromQuery] [Required] InstrumentKey? instrument,
         [FromQuery] string? root,
         [FromQuery] string? quality,
+        [FromQuery] string? extension,
+        [FromQuery] string? alternation,
         CancellationToken ct)
     {
         if (!ModelState.IsValid)
             return ValidationProblem(ModelState);
-        var chords = await chordService.SearchAsync(instrument!.Value, root, quality, ct);
+        var chords = await chordService.SearchAsync(instrument!.Value, root, quality, extension, alternation, ct);
         return Ok(mapper.Map<IReadOnlyList<ChordSummaryResponse>>(chords));
     }
 

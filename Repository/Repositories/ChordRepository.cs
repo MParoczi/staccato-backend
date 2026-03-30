@@ -14,6 +14,8 @@ public class ChordRepository(AppDbContext context, IMapper mapper)
         Guid instrumentId,
         string? root,
         string? quality,
+        string? extension,
+        string? alternation,
         CancellationToken ct = default)
     {
         var query = _context.Chords
@@ -25,6 +27,12 @@ public class ChordRepository(AppDbContext context, IMapper mapper)
 
         if (quality is not null)
             query = query.Where(c => c.Quality.ToLower() == quality.ToLower());
+
+        if (extension is not null)
+            query = query.Where(c => c.Extension != null && c.Extension.ToLower() == extension.ToLower());
+
+        if (alternation is not null)
+            query = query.Where(c => c.Alternation != null && c.Alternation.ToLower() == alternation.ToLower());
 
         var entities = await query
             .OrderBy(c => c.Root)

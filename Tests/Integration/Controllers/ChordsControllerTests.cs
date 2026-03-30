@@ -73,7 +73,9 @@ public class ChordsControllerTests
     private static async Task<(Guid InstrumentId, Guid ChordId)> SeedAsync(
         WebApplicationFactory<Program> factory,
         string root = "A",
-        string quality = "Major")
+        string quality = "Major",
+        string? extension = null,
+        string? alternation = null)
     {
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -94,8 +96,8 @@ public class ChordsControllerTests
             Name = root,
             Root = root,
             Quality = quality,
-            Extension = null,
-            Alternation = null,
+            Extension = extension,
+            Alternation = alternation,
             PositionsJson = OnePositionJson
         };
         db.Chords.Add(chord);
@@ -237,6 +239,70 @@ public class ChordsControllerTests
         var response = await client.GetAsync("/chords?instrument=Theremin");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetChords_WithExtensionFilter_Returns200Filtered()
+    {
+        using var factory = CreateFactory();
+        await SeedAsync(factory, extension: "7");
+
+        // Seed a chord without extension
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var instrument = await db.Instruments.FirstAsync();
+        db.Chords.Add(new ChordEntity
+        {
+            Id = Guid.NewGuid(),
+            InstrumentId = instrument.Id,
+            Name = "A",
+            Root = "A",
+            Quality = "Major",
+            Extension = null,
+            Alternation = null,
+            PositionsJson = OnePositionJson
+        });
+        await db.SaveChangesAsync();
+
+        var client = factory.CreateClient();
+        var response = await client.GetAsync("/chords?instrument=Guitar6String&extension=7");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(1, json.RootElement.GetArrayLength());
+        Assert.Equal("7", json.RootElement[0].GetProperty("extension").GetString());
+    }
+
+    [Fact]
+    public async Task GetChords_WithAlternationFilter_Returns200Filtered()
+    {
+        using var factory = CreateFactory();
+        await SeedAsync(factory, alternation: "sus4");
+
+        // Seed a chord without alternation
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var instrument = await db.Instruments.FirstAsync();
+        db.Chords.Add(new ChordEntity
+        {
+            Id = Guid.NewGuid(),
+            InstrumentId = instrument.Id,
+            Name = "A",
+            Root = "A",
+            Quality = "Major",
+            Extension = null,
+            Alternation = null,
+            PositionsJson = OnePositionJson
+        });
+        await db.SaveChangesAsync();
+
+        var client = factory.CreateClient();
+        var response = await client.GetAsync("/chords?instrument=Guitar6String&alternation=sus4");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(1, json.RootElement.GetArrayLength());
+        Assert.Equal("sus4", json.RootElement[0].GetProperty("alternation").GetString());
     }
 
     // ── GET /chords/{id} ──────────────────────────────────────────────

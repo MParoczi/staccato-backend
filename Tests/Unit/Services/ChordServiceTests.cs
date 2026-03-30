@@ -63,10 +63,10 @@ public class ChordServiceTests
             .Setup(r => r.GetByKeyAsync(InstrumentKey.Guitar6String, It.IsAny<CancellationToken>()))
             .ReturnsAsync(instrument);
         _chordRepo
-            .Setup(r => r.SearchAsync(instrument.Id, null, null, It.IsAny<CancellationToken>()))
+            .Setup(r => r.SearchAsync(instrument.Id, null, null, null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chords);
 
-        var result = await CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null);
+        var result = await CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null, null, null);
 
         Assert.Equal(chords, result);
     }
@@ -81,13 +81,32 @@ public class ChordServiceTests
             .Setup(r => r.GetByKeyAsync(InstrumentKey.Guitar6String, It.IsAny<CancellationToken>()))
             .ReturnsAsync(instrument);
         _chordRepo
-            .Setup(r => r.SearchAsync(instrument.Id, "A", "Minor", It.IsAny<CancellationToken>()))
+            .Setup(r => r.SearchAsync(instrument.Id, "A", "Minor", null, null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chords);
 
-        var result = await CreateService().SearchAsync(InstrumentKey.Guitar6String, "A", "Minor");
+        var result = await CreateService().SearchAsync(InstrumentKey.Guitar6String, "A", "Minor", null, null);
 
         Assert.Equal(chords, result);
-        _chordRepo.Verify(r => r.SearchAsync(instrument.Id, "A", "Minor", It.IsAny<CancellationToken>()), Times.Once);
+        _chordRepo.Verify(r => r.SearchAsync(instrument.Id, "A", "Minor", null, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SearchAsync_WithExtensionAndAlternationFilters_PassesFiltersToRepository()
+    {
+        var instrument = MakeInstrument();
+        var chords = new List<Chord> { MakeChord(instrument.Id) };
+
+        _instrumentRepo
+            .Setup(r => r.GetByKeyAsync(InstrumentKey.Guitar6String, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(instrument);
+        _chordRepo
+            .Setup(r => r.SearchAsync(instrument.Id, null, null, "7", "sus4", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(chords);
+
+        var result = await CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null, "7", "sus4");
+
+        Assert.Equal(chords, result);
+        _chordRepo.Verify(r => r.SearchAsync(instrument.Id, null, null, "7", "sus4", It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -97,7 +116,7 @@ public class ChordServiceTests
             .Setup(r => r.GetByKeyAsync(InstrumentKey.Guitar6String, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Instrument?)null);
 
-        var ex = await Assert.ThrowsAsync<NotFoundException>(() => CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null));
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() => CreateService().SearchAsync(InstrumentKey.Guitar6String, null, null, null, null));
 
         Assert.Equal("INSTRUMENT_NOT_FOUND", ex.Code);
     }

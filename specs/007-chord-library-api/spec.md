@@ -11,7 +11,7 @@
 
 A frontend chord selector needs to display available chords for a given instrument. The user
 opens the chord picker, selects an instrument (e.g. 6-string guitar), optionally filters by
-root note (e.g. "F") and quality (e.g. "major"), and receives a list of matching chord
+root note (e.g. "F"), quality (e.g. "major"), extension (e.g. "7"), and alternation (e.g. "sus4"), and receives a list of matching chord
 summaries — each including a preview fretboard position ready for thumbnail rendering.
 
 **Why this priority**: This is the primary read path. All chord diagram features in the
@@ -135,7 +135,7 @@ containing `id`, `key`, `name`, and `stringCount`.
 - **FR-005**: Each chord summary in the `GET /chords` response MUST include a
   `previewPosition` populated from the first stored position for that chord.
 
-- **FR-006**: `root` and `quality` filtering on `GET /chords` MUST be case-insensitive.
+- **FR-006**: `root`, `quality`, `extension`, and `alternation` filtering on `GET /chords` MUST be case-insensitive.
 
 - **FR-006a**: Results from `GET /chords` MUST be ordered by `Root` ascending, then by
   `Quality` ascending — grouping all voicings of the same root note together.
@@ -200,7 +200,7 @@ containing `id`, `key`, `name`, and `stringCount`.
 
 ### Measurable Outcomes
 
-- **SC-001**: Chord list queries filtered by instrument, root, and quality return only
+- **SC-001**: Chord list queries filtered by instrument, root, quality, extension, and alternation return only
   matching results with 100% accuracy — no false positives, no missing matches.
 
 - **SC-002**: A developer can build and seed the database from scratch in one step, with all
@@ -241,6 +241,6 @@ containing `id`, `key`, `name`, and `stringCount`.
 - The `previewPosition` in `ChordSummary` is always the first element (index 0) of the
   chord's positions array; if a chord has only one position, that same object is used for
   both preview and full detail.
-- Case-insensitive filtering applies to both `root` and `quality` parameters; the seed data
+- Case-insensitive filtering applies to `root`, `quality`, `extension`, and `alternation` parameters; the seed data
   stores values in canonical capitalisation (e.g. "F#", "Minor 7") but the API tolerates
   any casing from callers (e.g. "minor 7" or "MINOR 7" both match "Minor 7").

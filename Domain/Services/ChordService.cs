@@ -11,13 +11,15 @@ public class ChordService(IChordRepository chordRepository, IInstrumentRepositor
         InstrumentKey instrumentKey,
         string? root,
         string? quality,
+        string? extension,
+        string? alternation,
         CancellationToken ct = default)
     {
         var instrument = await instrumentRepository.GetByKeyAsync(instrumentKey, ct);
         if (instrument is null)
             throw new NotFoundException("INSTRUMENT_NOT_FOUND", "Instrument not found.");
 
-        return await chordRepository.SearchAsync(instrument.Id, root, quality, ct);
+        return await chordRepository.SearchAsync(instrument.Id, root, quality, extension, alternation, ct);
     }
 
     public async Task<Chord> GetByIdAsync(Guid id, CancellationToken ct = default)

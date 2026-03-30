@@ -6,11 +6,13 @@ public interface IChordRepository : IRepository<Chord>
 {
     /// <summary>
     ///     Returns chords matching the given instrument and optional filters.
-    ///     Null root or quality means "no filter on that dimension".
+    ///     Null root, quality, extension, or alternation means "no filter on that dimension".
     /// </summary>
     Task<IReadOnlyList<Chord>> SearchAsync(
         Guid instrumentId,
         string? root,
         string? quality,
+        string? extension,
+        string? alternation,
         CancellationToken ct = default);
 }

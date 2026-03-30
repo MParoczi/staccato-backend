@@ -191,7 +191,7 @@ The tasks below are ordered by dependency. Each task is independently committabl
 - Add mappings for `ChordPosition`, `ChordBarre`, `ChordString` (if needed; may be handled inline)
 
 **C2** — Update `ChordRepository`
-- `SearchAsync`: fix `c.Name == root` → `c.Root.ToLower() == root.ToLower()` (case-insensitive); fix `c.Suffix == quality` → `c.Quality.ToLower() == quality.ToLower()`; add `.Include(c => c.Instrument)`; add `.OrderBy(c => c.Root).ThenBy(c => c.Quality)`
+- `SearchAsync`: fix `c.Name == root` → `c.Root.ToLower() == root.ToLower()` (case-insensitive); fix `c.Suffix == quality` → `c.Quality.ToLower() == quality.ToLower()`; add optional `extension` and `alternation` case-insensitive filters; add `.Include(c => c.Instrument)`; add `.OrderBy(c => c.Root).ThenBy(c => c.Quality)`
 - Override `GetByIdAsync`: add `.Include(c => c.Instrument)` (base class doesn't include navigation properties)
 
 **C3** — Update `IInstrumentRepository` + `InstrumentRepository`
@@ -218,10 +218,10 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **E2** — Create `IChordService` + `ChordService`
 - `Domain/Services/IChordService.cs`:
-  - `Task<IReadOnlyList<Chord>> SearchAsync(InstrumentKey instrumentKey, string? root, string? quality, CancellationToken ct = default)`
+  - `Task<IReadOnlyList<Chord>> SearchAsync(InstrumentKey instrumentKey, string? root, string? quality, string? extension, string? alternation, CancellationToken ct = default)`
   - `Task<Chord> GetByIdAsync(Guid id, CancellationToken ct = default)`
 - `Domain/Services/ChordService.cs`:
-  - `SearchAsync`: call `IInstrumentRepository.GetByKeyAsync(key, ct)` → if null throw `NotFoundException` with code `INSTRUMENT_NOT_FOUND`; then call `IChordRepository.SearchAsync(instrument.Id, root, quality, ct)`
+  - `SearchAsync`: call `IInstrumentRepository.GetByKeyAsync(key, ct)` → if null throw `NotFoundException` with code `INSTRUMENT_NOT_FOUND`; then call `IChordRepository.SearchAsync(instrument.Id, root, quality, extension, alternation, ct)`
   - `GetByIdAsync`: call `IChordRepository.GetByIdAsync(id, ct)` → if null throw `NotFoundException`
 
 ### Group F — AutoMapper Response Profiles (depends on A2, A3, D1)
@@ -243,7 +243,7 @@ The tasks below are ordered by dependency. Each task is independently committabl
 
 **G2** — Create `ChordsController`
 - Route: `[Route("chords")]`
-- `GET /chords?instrument=&root=&quality=`: no `[Authorize]`; `instrument` bound as `InstrumentKey` enum (model binding handles 400 for invalid values); `[FromQuery] InstrumentKey instrument` — required via `[Required]` or FluentValidation; `[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]`
+- `GET /chords?instrument=&root=&quality=&extension=&alternation=`: no `[Authorize]`; `instrument` bound as `InstrumentKey` enum (model binding handles 400 for invalid values); `[FromQuery] InstrumentKey instrument` — required via `[Required]` or FluentValidation; `extension` and `alternation` are optional string filters; `[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]`
 - `GET /chords/{id}`: no `[Authorize]`; `[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]`
 
 **Note on `instrument` validation**: model binding to `InstrumentKey` enum will return a model-state error (400) automatically when the value is not a valid enum member. No additional FluentValidation validator needed for a simple enum-bound query param. If the param is absent, binding will fail with a required-field validation error.
@@ -283,6 +283,8 @@ The tasks below are ordered by dependency. Each task is independently committabl
 **I5** — Create `ChordsControllerTests`
 - `GET /chords?instrument=Guitar6String` → 200 with chord summaries
 - `GET /chords?instrument=Guitar6String&root=A&quality=major` → 200 with filtered results
+- `GET /chords?instrument=Guitar6String&extension=7` → 200 with extension-filtered results
+- `GET /chords?instrument=Guitar6String&alternation=sus4` → 200 with alternation-filtered results
 - `GET /chords` (no instrument param) → 400
 - `GET /chords?instrument=Invalid` → 400
 - `GET /chords/{id}` with valid ID → 200 with full positions

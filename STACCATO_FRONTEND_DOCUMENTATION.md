@@ -1446,8 +1446,10 @@ Query parameters:
 - `instrument` (required): `InstrumentKey` enum value, e.g. `Guitar6String`
 - `root` (optional): note name, e.g. `F`, `C#`, `Bb`
 - `quality` (optional): quality string, e.g. `major`, `minor`, `maj7`
+- `extension` (optional): extension string, e.g. `7`, `9`, `11`, `13`
+- `alternation` (optional): alternation string, e.g. `sus4`, `sus2`, `add9`
 
-Example: `GET /chords?instrument=Guitar6String&root=F&quality=major`
+Example: `GET /chords?instrument=Guitar6String&root=F&quality=major&extension=7`
 
 **Response 200:** Array of `ChordSummary`.
 
@@ -2195,7 +2197,7 @@ The chord selector is used when adding `ChordTablatureGroup` or `ChordProgressio
 1. Display an instrument selector (only instruments in the chord library: currently Guitar6String only)
 2. Display a root note grid (12 notes, A–G#)
 3. Display a quality list (major, minor, 7, maj7, etc.)
-4. On selection: call `GET /chords?instrument=...&root=...&quality=...`
+4. On selection: call `GET /chords?instrument=...&root=...&quality=...&extension=...&alternation=...`
 5. Display matching chords as thumbnail fretboard diagrams
 6. If multiple positions exist: show position tabs/arrows
 7. On confirm: add the selected `{ chordId, label }` to the building block

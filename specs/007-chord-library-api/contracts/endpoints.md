@@ -45,7 +45,7 @@ Returns all seeded instrument records.
 
 ## GET /chords
 
-Returns chord summaries filtered by instrument key, with optional root and quality filters.
+Returns chord summaries filtered by instrument key, with optional root, quality, extension, and alternation filters.
 
 **Authentication**: none
 **Response caching**: `Cache-Control: public, max-age=300` (5 minutes)
@@ -57,6 +57,8 @@ Returns chord summaries filtered by instrument key, with optional root and quali
 | `instrument` | **Yes** | `InstrumentKey` enum string | `Guitar6String` | Missing → 400; invalid value → 400 |
 | `root` | No | string | `F`, `C#`, `Bb` | Case-insensitive; omit to return all roots |
 | `quality` | No | string | `Minor 7`, `Seventh` | Case-insensitive; one of 13 named qualities (see spec §Key Entities); omit to return all qualities |
+| `extension` | No | string | `7`, `9`, `add9` | Case-insensitive; omit to return all extensions |
+| `alternation` | No | string | `sus4`, `sus2`, `#9` | Case-insensitive; omit to return all alternations |
 
 ### Response 200
 

@@ -231,7 +231,7 @@ All routes are lowercase kebab-case with no trailing slash or version prefix.
 
 | Method | Route | Description | Auth |
 |---|---|---|---|
-| GET | `chords` | Search chords (by instrument, root, quality) | No |
+| GET | `chords` | Search chords (by instrument, root, quality, extension, alternation) | No |
 | GET | `chords/{id}` | Get chord by ID | No |
 
 ### Instruments — `instruments/`
