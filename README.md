@@ -227,18 +227,18 @@ All routes are lowercase kebab-case with no trailing slash or version prefix.
 | PATCH | `modules/{moduleId}/layout` | Update module layout only |
 | DELETE | `modules/{moduleId}` | Delete a module |
 
-### Chords — `api/chords/`
+### Chords — `chords/`
 
 | Method | Route | Description | Auth |
 |---|---|---|---|
-| GET | `api/chords` | Search chords (by instrument, root, quality) | No |
-| GET | `api/chords/{id}` | Get chord by ID | No |
+| GET | `chords` | Search chords (by instrument, root, quality) | No |
+| GET | `chords/{id}` | Get chord by ID | No |
 
-### Instruments — `api/instruments/`
+### Instruments — `instruments/`
 
 | Method | Route | Description | Auth |
 |---|---|---|---|
-| GET | `api/instruments` | List all instruments | No |
+| GET | `instruments` | List all instruments | No |
 
 ### System Presets — `presets/`
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/instruments")]
+[Route("instruments")]
 public class InstrumentsController(IInstrumentService instrumentService, IMapper mapper) : ControllerBase
 {
     [HttpGet]

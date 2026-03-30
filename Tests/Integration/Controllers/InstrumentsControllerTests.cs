@@ -17,7 +17,7 @@ using Persistence.Seed;
 namespace Tests.Integration.Controllers;
 
 /// <summary>
-///     End-to-end integration tests for the <c>/api/instruments</c> endpoint.
+///     End-to-end integration tests for the <c>/instruments</c> endpoint.
 /// </summary>
 public class InstrumentsControllerTests
 {
@@ -78,7 +78,7 @@ public class InstrumentsControllerTests
         await db.SaveChangesAsync();
     }
 
-    // ── GET /api/instruments ──────────────────────────────────────────────
+    // ── GET /instruments ──────────────────────────────────────────────
 
     [Fact]
     public async Task GetInstruments_Returns200WithAllSeededInstruments()
@@ -87,7 +87,7 @@ public class InstrumentsControllerTests
         await SeedInstrumentsAsync(factory);
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/instruments");
+        var response = await client.GetAsync("/instruments");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -110,7 +110,7 @@ public class InstrumentsControllerTests
         var client = factory.CreateClient();
         // No Authorization header set — endpoint must be public
 
-        var response = await client.GetAsync("/api/instruments");
+        var response = await client.GetAsync("/instruments");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -121,7 +121,7 @@ public class InstrumentsControllerTests
         using var factory = CreateFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/instruments");
+        var response = await client.GetAsync("/instruments");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());

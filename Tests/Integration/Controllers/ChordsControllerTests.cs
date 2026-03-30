@@ -17,7 +17,7 @@ using Persistence.Seed;
 namespace Tests.Integration.Controllers;
 
 /// <summary>
-///     End-to-end integration tests for the <c>/api/chords</c> endpoints.
+///     End-to-end integration tests for the <c>/chords</c> endpoints.
 /// </summary>
 public class ChordsControllerTests
 {
@@ -104,7 +104,7 @@ public class ChordsControllerTests
         return (instrument.Id, chord.Id);
     }
 
-    // ── GET /api/chords ───────────────────────────────────────────────────
+    // ── GET /chords ───────────────────────────────────────────────────
 
     [Fact]
     public async Task GetChords_WithValidInstrument_Returns200WithSummaries()
@@ -113,7 +113,7 @@ public class ChordsControllerTests
         var (_, chordId) = await SeedAsync(factory);
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/chords?instrument=Guitar6String");
+        var response = await client.GetAsync("/chords?instrument=Guitar6String");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -153,7 +153,7 @@ public class ChordsControllerTests
         await db.SaveChangesAsync();
 
         var client = factory.CreateClient();
-        var response = await client.GetAsync("/api/chords?instrument=Guitar6String&root=A&quality=Major");
+        var response = await client.GetAsync("/chords?instrument=Guitar6String&root=A&quality=Major");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -185,7 +185,7 @@ public class ChordsControllerTests
         await db.SaveChangesAsync();
 
         var client = factory.CreateClient();
-        var response = await client.GetAsync("/api/chords?instrument=Guitar6String");
+        var response = await client.GetAsync("/chords?instrument=Guitar6String");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -208,7 +208,7 @@ public class ChordsControllerTests
         await SeedAsync(factory);
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/chords?instrument=Guitar6String&root=a&quality=major");
+        var response = await client.GetAsync("/chords?instrument=Guitar6String&root=a&quality=major");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -223,7 +223,7 @@ public class ChordsControllerTests
         using var factory = CreateFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/chords");
+        var response = await client.GetAsync("/chords");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -234,12 +234,12 @@ public class ChordsControllerTests
         using var factory = CreateFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/api/chords?instrument=Theremin");
+        var response = await client.GetAsync("/chords?instrument=Theremin");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // ── GET /api/chords/{id} ──────────────────────────────────────────────
+    // ── GET /chords/{id} ──────────────────────────────────────────────
 
     [Fact]
     public async Task GetChordById_ExistingId_Returns200WithAllPositions()
@@ -248,7 +248,7 @@ public class ChordsControllerTests
         var (_, chordId) = await SeedAsync(factory);
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync($"/api/chords/{chordId}");
+        var response = await client.GetAsync($"/chords/{chordId}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -266,7 +266,7 @@ public class ChordsControllerTests
         using var factory = CreateFactory();
         var client = factory.CreateClient();
 
-        var response = await client.GetAsync($"/api/chords/{Guid.NewGuid()}");
+        var response = await client.GetAsync($"/chords/{Guid.NewGuid()}");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

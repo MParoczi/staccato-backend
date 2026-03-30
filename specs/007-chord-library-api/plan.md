@@ -238,11 +238,11 @@ The tasks below are ordered by dependency. Each task is independently committabl
 ### Group G — Controllers (depends on D1, E1, E2, F1)
 
 **G1** — Create `InstrumentsController`
-- Route: `[Route("api/instruments")]`
+- Route: `[Route("instruments")]`
 - `GET /instruments`: no `[Authorize]`; call `IInstrumentService.GetAllAsync`; map to `IReadOnlyList<InstrumentResponse>`; return `Ok(result)`
 
 **G2** — Create `ChordsController`
-- Route: `[Route("api/chords")]`
+- Route: `[Route("chords")]`
 - `GET /chords?instrument=&root=&quality=`: no `[Authorize]`; `instrument` bound as `InstrumentKey` enum (model binding handles 400 for invalid values); `[FromQuery] InstrumentKey instrument` — required via `[Required]` or FluentValidation; `[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]`
 - `GET /chords/{id}`: no `[Authorize]`; `[ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any)]`
 

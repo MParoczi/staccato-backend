@@ -192,7 +192,7 @@ User
 
 ### Authorization Rules
 
-- All endpoints except `GET /api/chords`, `GET /api/instruments`, `GET /presets`, and auth endpoints require a valid JWT Bearer token.
+- All endpoints except `GET /chords`, `GET /instruments`, `GET /presets`, and auth endpoints require a valid JWT Bearer token.
 - Include the access token in requests: `Authorization: Bearer <accessToken>`
 - Users can only access their own data. The backend enforces ownership on all notebook/lesson/module operations.
 
@@ -536,7 +536,7 @@ The user builds the sequence by selecting notes from a full chromatic scale pick
 - `chords[].label`: display label shown below the fretboard diagram (can differ from the chord's canonical name).
 - Order is significant — the `chords` array order determines the display order. The user can reorder diagrams.
 
-**Rendering:** Each chord is rendered as a fretboard diagram (see Section 9 for the chord data structure). Diagrams are displayed horizontally in a row. The frontend fetches chord position data via `GET /api/chords/{id}` when rendering.
+**Rendering:** Each chord is rendered as a fretboard diagram (see Section 9 for the chord data structure). Diagrams are displayed horizontally in a row. The frontend fetches chord position data via `GET /chords/{id}` when rendering.
 
 ### 5.4 Allowed Building Blocks Per Module
 
@@ -1440,20 +1440,20 @@ Same boundary, overlap, and minimum size validation as POST/PUT.
 
 No authentication required (public read-only). Responses cached for 5 minutes.
 
-#### GET /api/chords
+#### GET /chords
 
 Query parameters:
 - `instrument` (required): `InstrumentKey` enum value, e.g. `Guitar6String`
 - `root` (optional): note name, e.g. `F`, `C#`, `Bb`
 - `quality` (optional): quality string, e.g. `major`, `minor`, `maj7`
 
-Example: `GET /api/chords?instrument=Guitar6String&root=F&quality=major`
+Example: `GET /chords?instrument=Guitar6String&root=F&quality=major`
 
 **Response 200:** Array of `ChordSummary`.
 
 ---
 
-#### GET /api/chords/{id}
+#### GET /chords/{id}
 
 **Response 200:** `ChordDetail` with full position and string data.
 
@@ -1463,7 +1463,7 @@ Example: `GET /api/chords?instrument=Guitar6String&root=F&quality=major`
 
 No authentication required. Responses cached for 5 minutes.
 
-#### GET /api/instruments
+#### GET /instruments
 
 **Response 200:** Array of `Instrument`.
 
@@ -2195,7 +2195,7 @@ The chord selector is used when adding `ChordTablatureGroup` or `ChordProgressio
 1. Display an instrument selector (only instruments in the chord library: currently Guitar6String only)
 2. Display a root note grid (12 notes, A–G#)
 3. Display a quality list (major, minor, 7, maj7, etc.)
-4. On selection: call `GET /api/chords?instrument=...&root=...&quality=...`
+4. On selection: call `GET /chords?instrument=...&root=...&quality=...`
 5. Display matching chords as thumbnail fretboard diagrams
 6. If multiple positions exist: show position tabs/arrows
 7. On confirm: add the selected `{ chordId, label }` to the building block

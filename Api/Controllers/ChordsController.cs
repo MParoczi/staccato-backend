@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("api/chords")]
+[Route("chords")]
 public class ChordsController(IChordService chordService, IMapper mapper) : ControllerBase
 {
     [HttpGet]
