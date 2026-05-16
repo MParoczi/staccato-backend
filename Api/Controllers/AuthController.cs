@@ -49,7 +49,7 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
         return Ok(new AuthResponse(result.AccessToken, result.ExpiresIn));
     }
 
-    [HttpDelete("logout")]
+    [HttpPost("logout")]
     public async Task<IActionResult> Logout(CancellationToken ct)
     {
         var tokenValue = Request.Cookies["staccato_refresh"];
@@ -73,6 +73,11 @@ public class AuthController(IAuthService authService, IWebHostEnvironment env) :
 
     private void ClearRefreshCookie()
     {
-        Response.Cookies.Delete("staccato_refresh");
+        Response.Cookies.Delete("staccato_refresh", new CookieOptions
+        {
+            HttpOnly = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = !env.IsDevelopment()
+        });
     }
 }

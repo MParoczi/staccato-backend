@@ -347,7 +347,7 @@ public class AuthControllerTests
         var cookie = await RegisterAndGetCookie(client, "logout-valid@example.com");
 
         var response = await client.SendAsync(
-            WithCookie(HttpMethod.Delete, "/auth/logout", cookie));
+            WithCookie(HttpMethod.Post, "/auth/logout", cookie));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -370,9 +370,26 @@ public class AuthControllerTests
         using var factory = CreateFactory();
         var client = CreateClient(factory);
 
-        var response = await client.DeleteAsync("/auth/logout");
+        var response = await client.PostAsync("/auth/logout", null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_ThenRefresh_Returns401()
+    {
+        using var factory = CreateFactory();
+        var client = CreateClient(factory);
+        var cookie = await RegisterAndGetCookie(client, "logout-then-refresh@example.com");
+
+        var logoutResponse = await client.SendAsync(
+            WithCookie(HttpMethod.Post, "/auth/logout", cookie));
+        Assert.Equal(HttpStatusCode.NoContent, logoutResponse.StatusCode);
+
+        var refreshResponse = await client.SendAsync(
+            WithCookie(HttpMethod.Post, "/auth/refresh", cookie));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
     }
 
     // ── Rate Limiting ─────────────────────────────────────────────────────
